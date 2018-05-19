@@ -1,6 +1,6 @@
 # DS Contest Tools
 
-Ferramentas para preparação de Contest by Daniel Saad.
+Ferramentas para preparação de Contest, por Daniel Saad.
 
 
 ## Introdução
