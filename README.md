@@ -22,7 +22,7 @@ Para rodar as ferramentas é necessário ter instalado de antemão:
 * `g++` >= 4.8: para compilação dos fontes.
 
 
-## Estrutura do Projeto
+## Estrutura do projeto
 
 A estrutura de pastas do projeto é a seguinte:
 
@@ -41,9 +41,9 @@ python3 build.py init <ID>
 
 Onde `<ID>` é o ID do problema (A,B,C,...) a ser inicializado.
 
-## Preparação de Problemas
+## Preparação de problemas
 
-## Construção de um Problema
+## Construção de um problema
 Para construir o pdf associado ao problema bem como criar as entradas e saídas do mesmo execute:
 ```sh
 python3 build.py build <ID>
