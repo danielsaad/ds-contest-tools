@@ -1,16 +1,25 @@
-# II Maratona de Programação do IFB
-Repositório da II Maratona de Programação do IFB
+# DS Contest Tools
+
+Ferramentas para preparação de Contest by Daniel Saad.
+
+
+## Introdução
+
+Estas ferramentas são inspiradas na suíte de ferramentas ejtools, elaborara pelo Prof. Edson Alves (UnB/FGA), mas elas seguem uma abordagem diferente, uma vez que é baseada na biblioteca `testlib`, utilizada na preparação de problemas do `Codeforces` de Mike Mirzayanov.
+
+Atualmente ela suporta a importação de problemas para os seguintes sistemas:
+* BOCA
+
 
 ## Pré-requisitos
 
-Para rodar esse script é necessário:
-* Python 3;
-* pdflatex, para geração de pdfs;
-* pdfjam, geralmente disponível junto com o ambiente LaTeX;
-* cmake, para compilação dos fontes e instalação dos executáveis;
-* make, para compilação dos fontes e instalação dos executáveis;
-* g++ >= 4.8;
-* 
+Para rodar as ferramentas é necessário ter instalado de antemão:
+* `python3`: as principais ferramentas estão escritas nesta linguagem;
+* `pdflatex`: para geração de PDFs a partir de arquivos .tex;
+* `pdfjam`: para fazer a união de arquivos PDFs,  geralmente disponível junto com o ambiente LaTeX;
+* `cmake`, para gerar makefiles;
+* `make`, para compilação dos fontes e instalação dos executáveis;
+* `g++` >= 4.8: para compilação dos fontes.
 
 ## Instruções
 
@@ -23,6 +32,8 @@ python3 build.py init <ID>
 ```
 
 Onde `<ID>` é o ID do problema (A,B,C,...) a ser inicializado.
+
+### Preparação de Problemas
 
 ### Construção de um Problema
 Para construir o pdf associado ao problema bem como criar as entradas e saídas do mesmo execute:
@@ -44,6 +55,7 @@ python3 build.py buildall
 ```
 
 Além de construir todos, ele irá criar o arquivo Maratona/Maratona.pdf, contendo a união de todos os problemas.
+
 ### Conversão para o formato do BOCA
 
 Para converter um problema para o formato do BOCA, basta executar:
