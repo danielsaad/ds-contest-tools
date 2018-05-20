@@ -5,7 +5,7 @@ Ferramentas para preparação de Contest, por Daniel Saad.
 
 ## Introdução
 
-Estas ferramentas são inspiradas na suíte de ferramentas ejtools, elaborara pelo Prof. Edson Alves (UnB/FGA), mas elas seguem uma abordagem diferente, uma vez que é baseada na biblioteca `testlib`, utilizada na preparação de problemas do `Codeforces` de Mike Mirzayanov.
+A ideia destas ferramentas são inspiradas na suíte de ferramentas ejtools, elaborada pelo Prof. Edson Alves (UnB/FGA), mas elas seguem uma abordagem diferente, uma vez que são baseadas na biblioteca `testlib`, utilizada na preparação de problemas do `Codeforces` de Mike Mirzayanov.
 
 Atualmente ela suporta a exportação de problemas para os seguintes sistemas:
 * BOCA
@@ -42,6 +42,16 @@ python3 build.py init <ID>
 Onde `<ID>` é o ID do problema (A,B,C,...) a ser inicializado.
 
 ## Preparação de problemas
+
+### Elaboração do enunciado
+
+### Elaboração da solução esperada
+
+### Elaboração dos casos de teste
+
+### Elaboração do validador dos casos de teste
+
+### Elaboração do corretor
 
 ## Construção de um problema
 Para construir o pdf associado ao problema bem como criar as entradas e saídas do mesmo execute:
