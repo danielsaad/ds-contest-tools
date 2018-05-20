@@ -32,6 +32,7 @@ A estrutura de pastas do projeto é a seguinte:
 * `/submissoes`: contém as submissões para correção manual.
 * `/Problemas`: contém os problemas elaborados para o contest.
 * `/boca`: contém os arquivos .zip dos problemas no formato BOCA, após a exportação.
+
 ## Inicialização de um Problema
 
 Para inicializar um problema novo, utilize:
@@ -43,7 +44,16 @@ Onde `<ID>` é o ID do problema (A,B,C,...) a ser inicializado.
 
 ## Preparação de problemas
 
+A preparação de um problema segue cinco etapas, que não precisam ser feitas em ordem. Elas consistem de:
+* Elaboração do enunciado;
+* Elaboração da solução esperada;
+* Elaboração dos casos de teste;
+* Elaboração do validador dos casos de teste;
+* Elaboração do corretor.
+
 ### Elaboração do enunciado
+
+A elaboração do enunciado pode ser feita diretamente através 
 
 ### Elaboração da solução esperada
 
