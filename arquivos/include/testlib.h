@@ -208,7 +208,7 @@ const char* latestFeatures[] = {
 #   elif defined(CONTESTER)
 #       define WA_EXIT_CODE 0xAB
 #   elif defined BOCA_SUPPORT
-#       define OK_EXIT_CODE 5
+#       define WA_EXIT_CODE 5
 #   else
 #       define WA_EXIT_CODE 1
 #   endif
@@ -220,7 +220,7 @@ const char* latestFeatures[] = {
 #   elif defined(CONTESTER)
 #       define PE_EXIT_CODE 0xAA
 #   elif defined BOCA_SUPPORT
-#       define OK_EXIT_CODE 6
+#       define PE_EXIT_CODE  6
 #   else
 #       define PE_EXIT_CODE 2
 #   endif
@@ -232,7 +232,7 @@ const char* latestFeatures[] = {
 #   elif defined(CONTESTER)
 #       define FAIL_EXIT_CODE 0xA3
 #   elif defined BOCA_SUPPORT
-#       define OK_EXIT_CODE 7
+#       define FAIL_EXIT_CODE 7
 #   else
 #       define FAIL_EXIT_CODE 3
 #   endif
