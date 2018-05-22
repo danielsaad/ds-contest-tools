@@ -195,6 +195,8 @@ const char* latestFeatures[] = {
 #ifndef OK_EXIT_CODE
 #   ifdef CONTESTER
 #       define OK_EXIT_CODE 0xAC
+#   elif defined BOCA_SUPPORT
+#       define OK_EXIT_CODE 4
 #   else
 #       define OK_EXIT_CODE 0
 #   endif
@@ -205,6 +207,8 @@ const char* latestFeatures[] = {
 #       define WA_EXIT_CODE 5
 #   elif defined(CONTESTER)
 #       define WA_EXIT_CODE 0xAB
+#   elif defined BOCA_SUPPORT
+#       define OK_EXIT_CODE 5
 #   else
 #       define WA_EXIT_CODE 1
 #   endif
@@ -215,6 +219,8 @@ const char* latestFeatures[] = {
 #       define PE_EXIT_CODE 4
 #   elif defined(CONTESTER)
 #       define PE_EXIT_CODE 0xAA
+#   elif defined BOCA_SUPPORT
+#       define OK_EXIT_CODE 6
 #   else
 #       define PE_EXIT_CODE 2
 #   endif
@@ -225,6 +231,8 @@ const char* latestFeatures[] = {
 #       define FAIL_EXIT_CODE 6
 #   elif defined(CONTESTER)
 #       define FAIL_EXIT_CODE 0xA3
+#   elif defined BOCA_SUPPORT
+#       define OK_EXIT_CODE 7
 #   else
 #       define FAIL_EXIT_CODE 3
 #   endif
@@ -239,7 +247,10 @@ const char* latestFeatures[] = {
 #endif
 
 #ifndef POINTS_EXIT_CODE
-#   define POINTS_EXIT_CODE 7
+#ifndef BOCA_SUPPORT
+#   define POINTS_EXIT_CODE 3
+#else 
+#   define POINTS_EXIT_CODE 5
 #endif
 
 #ifndef UNEXPECTED_EOF_EXIT_CODE
@@ -3995,9 +4006,15 @@ void registerTestlibCmd(int argc, char* argv[])
         }
     }
 
+    #ifdef BOCA_SUPPORT
+    inf.init(argv[3], _input);
+    ouf.init(argv[1], _output);
+    ans.init(argv[2], _answer);
+    #else
     inf.init(argv[1], _input);
     ouf.init(argv[2], _output);
     ans.init(argv[3], _answer);
+    #endif
 }
 
 void registerTestlib(int argc, ...)
