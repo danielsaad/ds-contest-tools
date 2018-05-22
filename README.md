@@ -5,9 +5,9 @@ Ferramentas para preparação de Contest, por Daniel Saad.
 
 ## Introdução
 
-A ideia destas ferramentas são inspiradas na suíte de ferramentas ejtools, elaborada pelo Prof. Edson Alves (UnB/FGA), mas elas seguem uma abordagem diferente, uma vez que são baseadas na biblioteca `testlib`, utilizada na preparação de problemas do `Codeforces` de Mike Mirzayanov.
+Estas ferramentas para preparação de *contests* são inspiradas na suíte de ferramentas `ejtools`, elaborada pelo Prof. Edson Alves (UnB/FGA), mas elas seguem uma abordagem diferente, uma vez que são baseadas na biblioteca `testlib`, utilizada na preparação de problemas do `Codeforces`, desenvolvida por Mike Mirzayanov.
 
-Atualmente ela suporta a exportação de problemas para os seguintes sistemas:
+Atualmente, esta coleção de ferramentas suportam a exportação de problemas para os seguintes sistemas:
 * BOCA
 
 
