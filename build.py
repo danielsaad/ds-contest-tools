@@ -92,7 +92,6 @@ def parse_yaml(f):
         rhs = line.split(": ")[1]
         rhs = rhs.strip('\"')
         d[lhs] = rhs
-        # print(d[lhs])
     smd =  statement_metadata(d['problem_id'],d['title'],int(d['timelimit']),d['author'])
     return smd
 
@@ -100,9 +99,10 @@ def get_io(io_folder,problem_metadata):
     l = []
     io_samples = problem_metadata["io_samples"]
     io_files = [os.path.join(io_folder,str(f)) for f in range(1,io_samples+1)]
-    print(os.getcwd())
     for f in io_files:
-        print(f)
+        if(not os.path.isfile(f)):
+            print(f,'file doest not exists.')
+            sys.exit(1)
         tc_io = []
         with open(f) as inf:
             for line in inf.readlines():
@@ -143,7 +143,6 @@ def print_to_latex(problem_folder, md_file):
         for tc in range(0,len(in_list)):
             tc_input = in_list[tc]
             tc_output = out_list[tc]
-            print(tc_input)
             max_lines = max(len(tc_input),len(tc_output))
             for i in range(0,max_lines):
                 if(tc % 2):
@@ -160,17 +159,21 @@ def print_to_latex(problem_folder, md_file):
 
 # Builds a pdf file from a markdown
 def build_pdf(problem_folder):
+    print('-Building PDF')
     problem_metadata = parse_json(os.path.join(problem_folder,'problem.json'))
     md_list = glob.glob(os.path.join(problem_folder,'*.md'))
     filepath = md_list[0]
-    print('fp = ' ,filepath)
     if(not os.path.exists(filepath)):
         print("Statement file does not exists")
         sys.exit(1)
     print_to_latex(problem_folder,filepath)
     cwd = os.getcwd()
     os.chdir(problem_folder)
-    subprocess.run(["pdflatex",problem_metadata["problem"]["label"]+".tex"])
+    p = subprocess.run(["pdflatex", problem_metadata["problem"]["label"]+".tex"],
+                       stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if(p.returncode):
+        print("Generation of PDF file failed")
+        sys.exit(1)
     os.chdir(cwd)    
 
 def build_executables(problem_folder):
@@ -186,6 +189,7 @@ def build_executables(problem_folder):
     os.chdir(build_debug_folder) 
 
     # run cmake and install executables
+    print("-Compiling debug executables")
     p = subprocess.run(['cmake','..','-DCMAKE_BUILD_TYPE=DEBUG'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     if(p.returncode):
         print("CMAKE failed.")
@@ -206,6 +210,7 @@ def build_executables(problem_folder):
     # change cwd to build folder
     os.chdir(build_folder)
     # run cmake and install executables
+    print("-Compiling release executables")
     p = subprocess.run(['cmake','..','-DCMAKE_BUILD_TYPE=RELEASE'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     if(p.returncode):
         print("CMAKE failed.")
@@ -234,7 +239,7 @@ def run_programs(problem_folder):
     os.chdir(input_folder)
     # run generator 
     generator_path = os.path.join('../bin','generator')
-    print("Running generator",problem_folder)
+    print('-Generating inputs')
     subprocess.run(generator_path)
 
     # Run validator on generated inputs
@@ -242,23 +247,26 @@ def run_programs(problem_folder):
     input_files.sort(key=custom_key)
     for fname in input_files:
         with open(fname) as f:
-            print("Validating input ",fname)
             p = subprocess.Popen([os.path.join('../bin','validator')],stdin=f,stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
             out,err = p.communicate()
-            print(out,err)
+            if(out or err):
+                print("Failed validation on input",fname)
+                exit(1)
 
     # change cwd to output folder
     os.chdir(old_cwd)
     os.chdir(output_folder)
     # Run ac solution on inputs to produce outputs
+    print("-Producing outputs")
     for fname in input_files:
         with open(os.path.join('../input',fname),'r') as inf, open(fname,'w') as ouf:
-            print('Producing output on input',fname)
             ac_solution = os.path.join('../bin','ac')
             p = subprocess.Popen([ac_solution],stdin=inf,stdout=ouf)
             _,err = p.communicate()
-            print(out,err)
+            if(p.returncode):
+                print("Generation of output for input",fname,'failed')
+                sys.exit(1)
     os.chdir(old_cwd)
 
 
