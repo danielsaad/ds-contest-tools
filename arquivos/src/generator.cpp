@@ -22,7 +22,7 @@ int main(int argc, char* argv[]){
     //The first 3 tests are manually generated
     manual_tests();
     registerGen(argc, argv, 1);
-    for(uint64_t i=number_of_manual_test+1;i<=number_of_tests;i++){
+    for(uint64_t i=number_of_manual_tests+1;i<=number_of_tests;i++){
         generate_test(i);
     }    
 }

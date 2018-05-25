@@ -1,13 +1,31 @@
 {
-    "title" : "Título do Problema",
-    "label" : "Rótulo do problema (A,B,C...)",
-    "author" : "Nome do autor",
-    "timelimit": 1,
-    "time_complexiy" : "\\Theta(nW)",
-    "tags" : [
-        "Programação Dinâmica",
-        "Problema da Mochila"
-    ],
-    "comments" : "Esse é um problema que pode ser resolvido ao aplicar a programação dinâmica do problema da Mochila",
-    "number_of_io_samples": 3
+    "problem" : {
+        "id" : 1100,
+        "title" : "Título do Problema",
+        "label" : "A",
+        "event" : "II Maratona de Programação do IFB",
+        "time_limit" : 1,
+        "time_complexiy" : "\\Theta(nW)",
+        "category" : "Beginner",
+        "level" : 1,
+        "subgroup" : "Easy",
+        "subject" : {
+            "en_us" : ["Dynamic programming", "Knapsack problem"],
+            "pt_br" : ["Programação Dinâmica", "Problema da mochila"],
+            "es" : ["Programación dinámica", "Problema de la mochila"]
+        },
+        "comments" : "Esse é um problema que pode ser resolvido ao aplicar a programação dinâmica do problema da Mochila"
+    },
+    "author" : {
+        "name" : "Nome do autor",
+        "affiliation" : "Filiação do autor",
+        "country" : "Brazil",
+        "email" : "email@email.com"
+    },
+    "io_samples" : 3,
+    "boca_config" : {
+        "number_of_repetitions" :  1,
+        "maximum_memory_mb" : 512,
+        "maximum_ouput_size_kb" : 4096
+    }
 }

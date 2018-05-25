@@ -247,10 +247,11 @@ const char* latestFeatures[] = {
 #endif
 
 #ifndef POINTS_EXIT_CODE
-#ifndef BOCA_SUPPORT
-#   define POINTS_EXIT_CODE 3
-#else 
-#   define POINTS_EXIT_CODE 5
+#   ifndef BOCA_SUPPORT
+#       define POINTS_EXIT_CODE 3
+#   else 
+#       define POINTS_EXIT_CODE 5
+#   endif
 #endif
 
 #ifndef UNEXPECTED_EOF_EXIT_CODE

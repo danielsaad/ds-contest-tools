@@ -10,10 +10,22 @@ import glob
 import shutil
 import re
 import errno
-
+import json
 
 def custom_key(str):
     return +len(str), str.lower()
+
+
+def parse_json(json_file):
+    json_data = {}
+
+    if(not os.path.isfile(json_file)):
+        print(json_file,'does not exists.')
+        sys.exit(1)
+
+    with open(json_file) as f:
+        json_data = json.load(f)
+    return json_data
 
 class default_boca_limits:
     time_limit = 1 # time limit for all tests
@@ -84,9 +96,10 @@ def parse_yaml(f):
     smd =  statement_metadata(d['problem_id'],d['title'],int(d['timelimit']),d['author'])
     return smd
 
-def get_io(io_folder):
+def get_io(io_folder,problem_metadata):
     l = []
-    io_files = [os.path.join(io_folder,f) for f in ['1','2','3']]
+    io_samples = problem_metadata["io_samples"]
+    io_files = [os.path.join(io_folder,str(f)) for f in range(1,io_samples+1)]
     print(os.getcwd())
     for f in io_files:
         print(f)
@@ -106,12 +119,14 @@ def print_line(line,f_out):
 def print_to_latex(problem_folder, md_file):
     input_folder = os.path.join(problem_folder,'input')
     output_folder = os.path.join(problem_folder,'output')
-    with open(md_file) as f_in, open(md_file.replace('.md','.tex'),'w') as f_out:
-        metadata = parse_yaml(f_in)
+    problem_metadata = parse_json(os.path.join(problem_folder,'problem.json'))
+    with open(md_file) as f_in, open(os.path.join(os.path.dirname(md_file), problem_metadata["problem"]["label"]+'.tex'),'w') as f_out:
         print("\\documentclass{maratona}",file=f_out)
         print("\\begin{document}\n",file=f_out)
-        print("\\begin{Problema}{"+ metadata.problem_id +"}{" + metadata.title + "}{"+ str(metadata.timelimit) + 
-            "}{" + metadata.author + "}",file=f_out)
+        print("\\begin{Problema}{"+ problem_metadata["problem"]["label"] 
+            +"}{" + problem_metadata["problem"]["title"] + "}{"+ 
+            str(problem_metadata["problem"]["time_limit"]) + 
+            "}{" + problem_metadata["author"]["name"] + "}",file=f_out)
         for line in f_in:
             if(line.startswith('# Descrição')):
                 pass
@@ -121,8 +136,8 @@ def print_to_latex(problem_folder, md_file):
                 print("\\Saida\n",file=f_out)
             else:
                 print_line(line,f_out)
-        in_list = get_io(input_folder)
-        out_list = get_io(output_folder)
+        in_list = get_io(input_folder,problem_metadata)
+        out_list = get_io(output_folder,problem_metadata)
         print("\n\n\\ExemploEntrada",file=f_out)
         print("\\begin{Exemplo}",file=f_out)
         for tc in range(0,len(in_list)):
@@ -145,6 +160,7 @@ def print_to_latex(problem_folder, md_file):
 
 # Builds a pdf file from a markdown
 def build_pdf(problem_folder):
+    problem_metadata = parse_json(os.path.join(problem_folder,'problem.json'))
     md_list = glob.glob(os.path.join(problem_folder,'*.md'))
     filepath = md_list[0]
     print('fp = ' ,filepath)
@@ -154,7 +170,7 @@ def build_pdf(problem_folder):
     print_to_latex(problem_folder,filepath)
     cwd = os.getcwd()
     os.chdir(problem_folder)
-    subprocess.run(["pdflatex",os.path.basename(filepath.replace('.md','.tex'))])
+    subprocess.run(["pdflatex",problem_metadata["problem"]["label"]+".tex"])
     os.chdir(cwd)    
 
 def build_executables(problem_folder):
