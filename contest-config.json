@@ -1,0 +1,11 @@
+{
+    "name" : "Nome do contest",
+    "timelimit_multiplier": {
+        "c" : 1,
+        "cpp": 1,
+        "python2" : 1,
+        "python3" : 1,
+        "java" : 3
+    },
+    "include_author": false
+}

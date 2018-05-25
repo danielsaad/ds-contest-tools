@@ -1,0 +1,13 @@
+{
+    "title" : "Título do Problema",
+    "label" : "Rótulo do problema (A,B,C...)",
+    "author" : "Nome do autor",
+    "timelimit": 1,
+    "time_complexiy" : "\\Theta(nW)",
+    "tags" : [
+        "Programação Dinâmica",
+        "Problema da Mochila"
+    ],
+    "comments" : "Esse é um problema que pode ser resolvido ao aplicar a programação dinâmica do problema da Mochila",
+    "number_of_io_samples": 3
+}
