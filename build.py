@@ -186,9 +186,19 @@ def build_executables(problem_folder):
     os.chdir(build_debug_folder) 
 
     # run cmake and install executables
-    subprocess.run(['cmake','..','-DCMAKE_BUILD_TYPE=DEBUG'])
-    subprocess.run(['make','-j'])
-    subprocess.run(['make','install'])
+    p = subprocess.run(['cmake','..','-DCMAKE_BUILD_TYPE=DEBUG'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    if(p.returncode):
+        print("CMAKE failed.")
+        sys.exit(1)
+    p = subprocess.run(['make','-j'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    if(p.returncode):
+        print("Compilation failed.")
+        sys.exit(1)
+    p = subprocess.run(['make','install'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    if(p.returncode):
+        print("Binaries instalation failed.")
+        sys.exit(1)
+
     # run cmake and install executables
 
     # restore cwd
@@ -196,9 +206,18 @@ def build_executables(problem_folder):
     # change cwd to build folder
     os.chdir(build_folder)
     # run cmake and install executables
-    subprocess.run(['cmake','..','-DCMAKE_BUILD_TYPE=RELEASE'])
-    subprocess.run(['make','-j'])
-    subprocess.run(['make','install'])
+    p = subprocess.run(['cmake','..','-DCMAKE_BUILD_TYPE=RELEASE'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    if(p.returncode):
+        print("CMAKE failed.")
+        sys.exit(1)
+    p = subprocess.run(['make','-j'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    if(p.returncode):
+        print("Compilation failed.")
+        sys.exit(1)
+    p = subprocess.run(['make','install'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    if(p.returncode):
+        print("Binaries instalation failed.")
+        sys.exit(1)
     # restore cwd
     os.chdir(old_cwd) 
 
