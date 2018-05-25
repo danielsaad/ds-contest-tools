@@ -116,7 +116,7 @@ python3 build.py pack2boca <ID>
 ```
 Onde `<ID>` é o ID do problema (A,B,C,...) a ser convertido
 
-O arquivo BOCA zipado será criado na pasta boca que fica na raiz do projeto.
+O arquivo BOCA zipado será criado na pasta `boca` que fica na raiz do projeto.
 
 Para converter todos os problemas para o formato BOCA:
 
