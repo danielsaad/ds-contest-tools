@@ -1,5 +1,5 @@
 {
-    "name" : "Nome do contest",
+    "name" : "IV Maratona de Programação do IFB",
     "timelimit_multiplier": {
         "c" : 1,
         "cpp": 1,
@@ -7,5 +7,5 @@
         "python3" : 1,
         "java" : 3
     },
-    "include_author": false
+    "include_author": true
 }

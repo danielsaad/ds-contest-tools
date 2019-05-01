@@ -25,9 +25,9 @@
 \textheight 23cm
 
 \ifpdf
-  \RequirePackage[pdftex]{hyperref}
+\RequirePackage[pdftex]{hyperref}
 \else
-  \RequirePackage[hypertex]{hyperref}
+\RequirePackage[hypertex]{hyperref}
 \fi
 
 
@@ -35,55 +35,55 @@
 
 
 \hypersetup{
-  letterpaper,
-  colorlinks=true,
-  linkcolor=blue,
-  urlcolor=blue,
-  pdfpagemode=none,
-  pdftitle={II Maratona de Programação do IFB \today},
-  pdfauthor={},
-  pdfsubject={Caderno de questões da II Maratona de Programação do IFB }, 
-  pdfkeywords={maratona, programação, IFB}
+	letterpaper,
+	colorlinks=true,
+	linkcolor=blue,
+	urlcolor=blue,
+	pdfpagemode=none,
+	pdftitle={IV Maratona de Programação do IFB \today},
+	pdfauthor={},
+	pdfsubject={Caderno de problemas da IV Maratona de Programação do IFB }, 
+	pdfkeywords={maratona, programação, IFB}
 }
 
 
 
 \DeclareGraphicsExtensions{png}
 
-\lhead{II Maratona de Programação do IFB}
+\lhead{IV Maratona de Programação do IFB}
 \pagestyle{fancy}
 
 % Capa
 \newenvironment{Maratona}[3]
 {
 	\begin{titlepage}
-	    \begin{center}
-
-        \vspace{1cm}
-	      \Large{\textbf{#1}} \\
-	    \vspace{1cm}
-        {\textbf{Maratona}} \\
-	    \vspace{1cm}
-	    \begin{small}
-        \textsl{#2}
-        \end{small} \\
-        \begin{figure}[htp]
-              	\begin{center}
-              		\includegraphics[scale=0.35]{logos/logo-maratona.png}
-              	\end{center}
-        \end{figure}
-        {(Este caderno contém {#3} problemas)} \\
-	    \vspace{1cm}
-}
-{
-	\vfill
-        \begin{small}
-        {QNM 40, Área Especial nº 01,
-        	Taguatinga/DF, 72146-000 , 
-        	Brasil } \\
-		{Telefone (61) 2103-2200 \\http://www.ifb.edu.br/taguatinga} \\
-        \end{small}
-	    \end{center}
+		\begin{center}
+			
+			\vspace{1cm}
+			\Large{\textbf{#1}} \\
+			\vspace{1cm}
+			{\textbf{Caderno de Problemas}} \\
+			\vspace{1cm}
+			\begin{small}
+				\textsl{#2}
+			\end{small} \\
+			\begin{figure}[htp]
+				\begin{center}
+					\includegraphics[scale=1]{logos/logo-maratona.png}
+				\end{center}
+			\end{figure}
+			{(Este caderno contém {#3} problemas)} \\
+			\vspace{1cm}
+		}
+		{
+			\vfill
+			\begin{small}
+				{QNM 40, Área Especial nº 01,
+					Taguatinga/DF, 72146-000 , 
+					Brasil } \\
+				{Telefone (61) 2103-2200 \\http://www.ifb.edu.br/taguatinga} \\
+			\end{small}
+		\end{center}
 	\end{titlepage}
 }
 
@@ -104,9 +104,18 @@
 
 % Problema
 \newcounter{problem}
-\newenvironment{Problema}[4]{
-    \stepcounter{problem}
-    \newpage
+\newenvironment{Problema}[3]{
+	\stepcounter{problem}
+	\newpage
+	\begin{center}
+		\Large{\textbf{Problema {#1} \\ {#2} }}{\\[.2cm]\footnotesize \textbf{Limite de tempo: {#3}s\\}}
+	\end{center}
+}
+
+\newcounter{problem}
+\newenvironment{ProblemaAutor}[4]{
+	\stepcounter{problem}
+	\newpage
 	\begin{center}
 		\Large{\textbf{Problema {#1} \\ {#2} }}{\\[.2cm]\footnotesize \textbf{Limite de tempo: {#3}s\\}}{
 			\footnotesize Autor: {#4}
@@ -114,47 +123,62 @@
 	\end{center}
 }
 
+
 % Código-fonte
 \newcommand{\codigofonte}[1]{Nome do arquivo fonte: {#1}}
 
 % Entrada
 \newcommand{\Entrada}{
-    \bigskip
-    \begin{large}
-    \textbf{Entrada} \\
-    \end{large}
+	\bigskip
+	\begin{large}
+		\textbf{Entrada} \\
+	\end{large}
 }
 
 % Saida
 \newcommand{\Saida}{
-    \bigskip
-    \begin{large}
-    \textbf{Saída} \\
-    \end{large}
+	\bigskip
+	\begin{large}
+		\textbf{Saída} \\
+	\end{large}
+}
+
+\newcommand{\Interacao}{
+	\bigskip
+	\begin{large}
+		\textbf{Interação} \\
+	\end{large}
+}
+
+\newcommand{\Notas}{
+	\bigskip
+	\begin{large}
+		\textbf{Notas} \\
+	\end{large}
 }
 
 % Exemplo
 \newenvironment{Exemplo}
 {
 	
-    \tabularx{\textwidth}{XX}
-%    {@{\extracolsep{\fill}}|l|l|}
-%    {|l|l@{\extracolsep{\fill}|}}
+	\tabularx{\textwidth}{XX}
+	%    {@{\extracolsep{\fill}}|l|l|}
+	%    {|l|l@{\extracolsep{\fill}|}}
 	\hline
-    Entrada & Saída \\\hline 
+	Entrada & Saída \\\hline 
 }
 {
-    \hline
-    \endtabularx
+	\hline
+	\endtabularx
 }
 
 % Exemplo de Entrada
 \newenvironment{ExemploEntrada}
 {
-    \bigskip
-    \begin{large}
-    \textbf{Exemplo} \\
-    \end{large}
+	\bigskip
+	\begin{large}
+		\textbf{Exemplo} \\
+	\end{large}
 }
 {
 }
