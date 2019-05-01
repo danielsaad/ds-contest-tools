@@ -1,0 +1,12 @@
+.vscode
+/Problemas/*/bin*
+/Problemas/*/build*
+/Problemas/*/build_debug*
+/Problemas/*/input*
+/Problemas/*/output*
+/Problemas/*/*.aux
+/Problemas/*/*.log
+/Problemas/*/*.out
+/Problemas/*/*.pdf
+/Problemas/*/*.tex
+
