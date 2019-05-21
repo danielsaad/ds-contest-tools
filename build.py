@@ -522,16 +522,16 @@ def pack2boca(problem_id):
 
     # Compare
     shutil.copy2(os.path.join(
-        *[problem_folder, 'bin', 'checker']), os.path.join(boca_folder, 'compare'))
-    shutil.copy2(os.path.join(*[boca_folder, 'compare', 'checker']),
+        *[problem_folder, 'bin', 'checker-boca']), os.path.join(boca_folder, 'compare'))
+    shutil.copy2(os.path.join(*[boca_folder, 'compare', 'checker-boca']),
                  os.path.join(*[boca_folder, 'compare', 'c']))
-    shutil.copy2(os.path.join(*[boca_folder, 'compare', 'checker']),
+    shutil.copy2(os.path.join(*[boca_folder, 'compare', 'checker-boca']),
                  os.path.join(*[boca_folder, 'compare', 'cpp']))
-    shutil.copy2(os.path.join(*[boca_folder, 'compare', 'checker']),
+    shutil.copy2(os.path.join(*[boca_folder, 'compare', 'checker-boca']),
                  os.path.join(*[boca_folder, 'compare', 'java']))
-    shutil.copy2(os.path.join(*[boca_folder, 'compare', 'checker']),
+    shutil.copy2(os.path.join(*[boca_folder, 'compare', 'checker-boca']),
                  os.path.join(*[boca_folder, 'compare', 'py2']))
-    shutil.copy2(os.path.join(*[boca_folder, 'compare', 'checker']),
+    shutil.copy2(os.path.join(*[boca_folder, 'compare', 'checker-boca']),
                  os.path.join(*[boca_folder, 'compare', 'py3']))
     # Limits
 
@@ -551,6 +551,7 @@ def pack2boca(problem_id):
     # Input
     boca_input_folder = os.path.join(boca_folder, 'input')
     problem_input_folder = os.path.join(problem_folder, 'input')
+    os.makedirs(boca_input_folder,exist_ok=True)
     input_files = [os.path.join(problem_input_folder, f) for
                    f in os.listdir(problem_input_folder) if os.path.isfile(os.path.join(problem_input_folder, f))]
     print('input_files = ', ' '.join(input_files))
@@ -560,6 +561,7 @@ def pack2boca(problem_id):
     # Output
     boca_output_folder = os.path.join(boca_folder, 'output')
     problem_output_folder = os.path.join(problem_folder, 'output')
+    os.makedirs(boca_output_folder,exist_ok=True)
     output_files = [os.path.join(problem_output_folder, f) for
                     f in os.listdir(problem_output_folder) if os.path.isfile(os.path.join(problem_output_folder, f))]
     print('output_files = ', ' '.join(output_files))

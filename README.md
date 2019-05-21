@@ -72,7 +72,7 @@ O arquivo gabarito, responsável por gerar as saídas esperadas pelo juíz, deve
 
 É possível gerar os casos de teste utilizando a `testlib`. Para isso só é preciso codificar a geração de testes no arquivo `src/generator.cpp`.
 
-A `teslib` facilita a geração de casos de testes e sua documentação pode ser facilmente encontrada neste (link).[https://github.com/MikeMirzayanov/testlib]. Além da documentação básica, há uma série de exemplos explicando as facilidades da `testlib` para geração dos casos de teste.
+A `teslib` facilita a geração de casos de testes e sua documentação pode ser facilmente encontrada neste [link](https://github.com/MikeMirzayanov/testlib). Além da documentação básica, há uma série de exemplos explicando as facilidades da `testlib` para geração dos casos de teste.
 
 ### Elaboração do validador dos casos de teste
 
@@ -85,7 +85,7 @@ A `teslib` facilita a validação dos casos de testes e sua documentação pode 
 
 É possível gerar corretores especiais de problemas utilizando a `testlib`. Para isso só é preciso codificar a geração de testes no arquivo `src/checker.cpp`.
 
-A `teslib` facilita o processo de elaboração de corretores especiais e sua documentação pode ser facilmente encontrada neste (link)[https://github.com/MikeMirzayanov/testlib]. Além da documentação básica, há uma série de exemplos explicando as facilidades da `testlib` para elaboração dos corretores. Inclusive, para corretores mais simples, uma série de modelos já estão disponíveis no repositório da `testlib`.
+A `teslib` facilita o processo de elaboração de corretores especiais e sua documentação pode ser facilmente encontrada neste [link](https://github.com/MikeMirzayanov/testlib). Além da documentação básica, há uma série de exemplos explicando as facilidades da `testlib` para elaboração dos corretores. Inclusive, para corretores mais simples, uma série de modelos já estão disponíveis no repositório da `testlib`.
 
 ## Construção de um problema
 Para construir o PDF associado ao problema bem como criar as entradas e saídas dele execute:
