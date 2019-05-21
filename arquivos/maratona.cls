@@ -50,7 +50,7 @@
 
 \DeclareGraphicsExtensions{png}
 
-\lhead{IV Maratona de Programação do IFB}
+\lhead{DS Contest Tools}
 \pagestyle{fancy}
 
 % Capa
@@ -112,9 +112,9 @@
 	\end{center}
 }
 
-\newcounter{problem}
+\newcounter{problemAutor}
 \newenvironment{ProblemaAutor}[4]{
-	\stepcounter{problem}
+	\stepcounter{problemAutor}
 	\newpage
 	\begin{center}
 		\Large{\textbf{Problema {#1} \\ {#2} }}{\\[.2cm]\footnotesize \textbf{Limite de tempo: {#3}s\\}}{
