@@ -11,6 +11,7 @@ import shutil
 import re
 import errno
 import json
+import argparse
 
 
 def custom_key(str):
@@ -34,7 +35,7 @@ class default_boca_limits:
     time_limit = 1  # time limit for all tests
     number_of_repetitions = 1  # number of repetitions
     maximum_memory = 512  # Maximum memory size (MB)
-    maximum_ouput_size = 4096  # Maximum output size (KB)
+    maximum_output_size = 4096  # Maximum output size (KB)
 
 
 def boca_zip(boca_folder):
@@ -487,11 +488,21 @@ def build_all():
 # Create the structure for the folder of a problem
 
 
-def init(problem_folder):
+def init(problem_folder,interactive=False):
     folder = 'arquivos'
     new_folder = os.path.join('Problemas', problem_folder)
     shutil.copytree(folder, new_folder, ignore=shutil.ignore_patterns('boca'))
-    # Rename files and folders
+    # Rename files and folders if the problem is interactive
+    interactive_statement=os.path.join(new_folder,'statement-interactive.md')
+    interactor = os.path.join(new_folder,'interactor.cpp')
+    interactive_json = os.path.join(new_folder,'problem-interactive.json')
+    if(interactive):
+        shutil.move(interactive_statement,os.path.join(new_folder,'statement.md'))
+        shutil.move(interactive_json,os.path.join(new_folder,'problem.json'))
+    else:
+        os.remove(interactive_statement)
+        os.remove(interactive_json)
+
 
 
 def pack2boca(problem_id):
@@ -545,13 +556,13 @@ def pack2boca(problem_id):
             f.write('echo ' + str(tl) + '\n')
             f.write('echo ' + str(default_boca_limits.number_of_repetitions)+'\n')
             f.write('echo ' + str(default_boca_limits.maximum_memory)+'\n')
-            f.write('echo ' + str(default_boca_limits.maximum_ouput_size)+'\n')
+            f.write('echo ' + str(default_boca_limits.maximum_output_size)+'\n')
             f.write('exit 0\n')
 
     # Input
     boca_input_folder = os.path.join(boca_folder, 'input')
     problem_input_folder = os.path.join(problem_folder, 'input')
-    os.makedirs(boca_input_folder,exist_ok=True)
+    os.makedirs(boca_input_folder, exist_ok=True)
     input_files = [os.path.join(problem_input_folder, f) for
                    f in os.listdir(problem_input_folder) if os.path.isfile(os.path.join(problem_input_folder, f))]
     print('input_files = ', ' '.join(input_files))
@@ -561,7 +572,7 @@ def pack2boca(problem_id):
     # Output
     boca_output_folder = os.path.join(boca_folder, 'output')
     problem_output_folder = os.path.join(problem_folder, 'output')
-    os.makedirs(boca_output_folder,exist_ok=True)
+    os.makedirs(boca_output_folder, exist_ok=True)
     output_files = [os.path.join(problem_output_folder, f) for
                     f in os.listdir(problem_output_folder) if os.path.isfile(os.path.join(problem_output_folder, f))]
     print('output_files = ', ' '.join(output_files))
@@ -588,22 +599,29 @@ def packall2uri():
 
 
 if __name__ == "__main__":
-    op = sys.argv[1]
-    if(len(sys.argv) > 2):
-        problem_id = sys.argv[2]
-    if(op == 'init'):
-        print("Initializing problem", problem_id)
-        init(problem_id)
-    elif(op == 'build'):
-        print("Bulding problem", problem_id)
-        build(problem_id)
-    elif(op == 'buildall'):
-        build_all()
-    elif(op == 'pack2boca'):
-        pack2boca(problem_id)
-    elif(op == 'packall2boca'):
-        packall2boca()
-    elif(op == 'pack2uri'):
-        pack2uri(problem_id)
-    elif(op == 'packall2uri'):
-        packall2uri()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-a', '--all', action='store_true',
+                        default=False, help='apply action on all problems')
+    parser.add_argument('-i', '--interactive', action='store_true',
+                        default=False, help='set problem do interative on init')
+    parser.add_argument(
+        'mode', choices=['init', 'build', 'buildall', 'pack2boca', 'packall2boca'], help='\ninit: init a problem\nbuild: build  a problem.\npack2boca: pack a problem to BOCA format.\n')
+    parser.add_argument('problem_id', nargs='?')
+    args = parser.parse_args()
+    if(not args.all and not args.problem_id):
+        parser.error(args.mode + ' mode requires a problem id. Usage:' + sys.argv[0] + ' ' +args.mode+ ' <problem ID>')
+    if(args.mode == 'init'):
+        print('Initializing problem', args.problem_id)
+        init(args.problem_id,args.interactive)
+        print('Problem',args.problem_id,'initialized')
+    elif(args.mode == 'build'):
+        if(not args.all):
+            print("Building problem", args.problem_id)
+            build(args.problem_id)
+        else:
+            build_all()
+    elif(args.mode == 'pack2boca'):
+        if(not args.all):
+            pack2boca(args.problem_id)
+        else:
+            packall2boca()

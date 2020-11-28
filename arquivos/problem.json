@@ -27,6 +27,6 @@
     "boca_config" : {
         "number_of_repetitions" :  1,
         "maximum_memory_mb" : 512,
-        "maximum_ouput_size_kb" : 4096
+        "maximum_output_size_kb" : 4096
     }
 }
