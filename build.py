@@ -128,7 +128,7 @@ def get_io(io_folder, problem_metadata):
         tc_io = []
         with open(f) as inf:
             for line in inf.readlines():
-                tc_io.append(line.strip())
+                tc_io.append(line.rstrip('\n'))
         l.append(tc_io)
     return l
 
@@ -166,7 +166,8 @@ def print_to_latex(problem_folder, md_file):
     output_folder = os.path.join(problem_folder, 'output')
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
 
-    contest_metadata = parse_json('contest.json')
+    # TODO: verify
+    contest_metadata =  parse_json(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'contest.json'))
     interactive = problem_metadata['problem']['interactive']
 
     with open(md_file) as f_in, open(os.path.join(os.path.dirname(md_file), problem_metadata["problem"]["label"]+'.tex'), 'w') as f_out:
@@ -262,11 +263,15 @@ def print_to_latex(problem_folder, md_file):
                     print('\\rowcolor{gray!20}', end='', file=f_out)
                 if(i < len(tc_input)):
                     tc_input[i] = tc_input[i].replace('#', '\\#')
+                    tc_input[i] = tc_input[i].replace('_', '\_')
+                    tc_input[i] = tc_input[i].replace(' ', '~')
                     print('\\texttt{'+tc_input[i]+'}', end='', file=f_out)
                 print(' & ', end='', file=f_out)
                 if(i < len(tc_output)):
                     # Escape #
                     tc_output[i] = tc_output[i].replace('#', '\\#')
+                    tc_output[i] = tc_output[i].replace('_', '\_')
+                    tc_output[i] = tc_output[i].replace(' ', '~')
                     print('\\texttt{' + tc_output[i] + '}', end='', file=f_out)
                 print('\\\\', file=f_out)
         print("\\end{Exemplo}\n", file=f_out)
@@ -435,15 +440,10 @@ def run_programs(problem_folder):
     os.chdir(old_cwd)
 
 
-def build(problem_id):
-    problem_folder = os.path.join('Problemas', problem_id)
+def build(problem_folder):
     build_executables(problem_folder)
     run_programs(problem_folder)
     build_pdf(problem_folder)
-    shutil.copy2(os.path.join(problem_folder, problem_id+'.pdf'), 'Maratona')
-    if(os.path.isfile(os.path.join(problem_folder, 'tutorial.pdf'))):
-        shutil.copy2(os.path.join(problem_folder, 'tutorial.pdf'),
-                     'Maratona/tutorial-' + problem_id+'.pdf')
 
 
 def merge_pdfs():
@@ -488,29 +488,32 @@ def build_all():
 # Create the structure for the folder of a problem
 
 
-def init(problem_folder,interactive=False):
-    folder = 'arquivos'
-    new_folder = os.path.join('Problemas', problem_folder)
-    shutil.copytree(folder, new_folder, ignore=shutil.ignore_patterns('boca'))
+def init(problem_folder, interactive=False):
+    folder = os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), 'arquivos')
+    shutil.copytree(folder, problem_folder, ignore=shutil.ignore_patterns('boca'))
     # Rename files and folders if the problem is interactive
-    interactive_statement=os.path.join(new_folder,'statement-interactive.md')
-    interactor = os.path.join(new_folder,'interactor.cpp')
-    interactive_json = os.path.join(new_folder,'problem-interactive.json')
+    interactive_statement = os.path.join(
+        problem_folder, 'statement-interactive.md')
+    interactor = os.path.join(*[problem_folder, 'src','interactor.cpp'])
+    interactive_json = os.path.join(problem_folder, 'problem-interactive.json')
     if(interactive):
-        shutil.move(interactive_statement,os.path.join(new_folder,'statement.md'))
-        shutil.move(interactive_json,os.path.join(new_folder,'problem.json'))
+        shutil.move(interactive_statement, os.path.join(
+            problem_folder, 'statement.md'))
+        shutil.move(interactive_json, os.path.join(
+            problem_folder, 'problem.json'))
     else:
         os.remove(interactive_statement)
         os.remove(interactive_json)
+        os.remove(interactor)
 
 
-
-def pack2boca(problem_id):
-    build(problem_id)
+def pack2boca(problem_folder):
+    build(problem_folder)
     # Create Boca folder
-    boca_template_folder = os.path.join(*['arquivos', 'boca'])
-    boca_folder = os.path.join(*['boca', problem_id])
-    problem_folder = os.path.join(*['Problemas', problem_id])
+    boca_template_folder = os.path.join(
+        *[os.path.dirname(os.path.abspath(__file__)), 'arquivos', 'boca'])
+    boca_folder = os.path.join(*[problem_folder,'boca'])
     # Copy template files
     recursive_overwrite(boca_template_folder, boca_folder)
     # Get problem metadata
@@ -609,11 +612,12 @@ if __name__ == "__main__":
     parser.add_argument('problem_id', nargs='?')
     args = parser.parse_args()
     if(not args.all and not args.problem_id):
-        parser.error(args.mode + ' mode requires a problem id. Usage:' + sys.argv[0] + ' ' +args.mode+ ' <problem ID>')
+        parser.error(args.mode + ' mode requires a problem id. Usage:' +
+                     sys.argv[0] + ' ' + args.mode + ' <problem ID>')
     if(args.mode == 'init'):
         print('Initializing problem', args.problem_id)
-        init(args.problem_id,args.interactive)
-        print('Problem',args.problem_id,'initialized')
+        init(args.problem_id, args.interactive)
+        print('Problem', args.problem_id, 'initialized')
     elif(args.mode == 'build'):
         if(not args.all):
             print("Building problem", args.problem_id)
