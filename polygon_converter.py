@@ -1,7 +1,5 @@
 # Converts a Linux Package from Polygon to ds-contest-tool format
 
-from ast import main
-from curses.ascii import isdigit
 import os
 import shutil
 import argparse
@@ -11,7 +9,7 @@ DEFAULT_LANGUAGE = 'english'
 
 def get_text(package_folder, filename, language=DEFAULT_LANGUAGE):
     filename = os.path.join(
-        *[package_folder, 'statement-section', language, filename])
+        *[package_folder, 'statement-sections', language, filename])
     with open(filename, 'r') as fh:
         text = fh.readlines()
     return text
@@ -55,35 +53,32 @@ def get_output_list(package_folder):
     return file_list
 
 
+def copy_input_files(package_folder, problem_folder):
+    file_list = get_input_list(package_folder)
+    destination = os.path.join(problem_folder, 'input')
+    for filepath in file_list:
+        new_filename = os.path.basename(filepath).lstrip('0')
+        shutil.copy(filepath, os.path.join(destination,new_filename))
+
+
 def copy_output_files(package_folder, problem_folder):
     file_list = get_output_list(package_folder)
     destination = os.path.join(problem_folder, 'output')
     for filepath in file_list:
-        shutil.copy(filepath, destination)
-
-
-def copy_input_files(package_folder, problem_folder):
-    file_list = get_input_list(package_folder)
-    destination = os.path.join(problem_folder, 'output')
-    for filepath in file_list:
-        new_filepath = os.path.join(destination, os.path.splitext(filepath)[0])
+        new_filename = os.path.splitext(os.path.basename(filepath))[0].lstrip('0')
+        new_filepath = os.path.join(destination, new_filename)
         shutil.copy(filepath, new_filepath)
 
 
-def copy_output_files(package_folder, problem_folder):
-    file_list = get_output_list(package_folder)
-    destination = os.path.join(problem_folder, 'output')
-    for filepath in file_list:
-        shutil.copy(filepath, destination)
-
-
-def copy_validator(package_folder,problem_folder):
+def copy_validator(package_folder, problem_folder):
     checker = os.path.join(*[package_folder, 'files', 'validator.cpp'])
     destination = os.path.join(*[problem_folder, 'src', 'validator.cpp'])
     shutil.copy(checker, destination)
 
 # TODO: implement
-def copy_generator(package_folder,problem_folder):
+
+
+def copy_generator(package_folder, problem_folder):
     pass
 
 
@@ -112,7 +107,7 @@ def check(package_folder, problem_folder):
     if not os.path.isdir(package_folder):
         print(package_folder, 'not a valid Polygon package folder')
         exit(1)
-    if not os.path.istdir(problem_folder):
+    if not os.path.isdir(problem_folder):
         print(package_folder, 'not a valid problem folder')
         exit(1)
     check_package(package_folder)
@@ -133,15 +128,15 @@ def write_statement(package_data, problem_folder):
     statement_file = os.path.join(problem_folder, 'statement.md')
     with open(statement_file, 'w') as statement_fh:
         print('# Descrição \n', file=statement_fh)
-        print(package_data['statement'].join('\n'), file=statement_fh)
+        print(''.join(package_data['statement']), file=statement_fh)
         print('# Entrada \n', file=statement_fh)
-        print(package_data['input_description'].join('\n'), file=statement_fh)
+        print(''.join(package_data['input_description']), file=statement_fh)
         print('# Saída \n', file=statement_fh)
-        print(package_data['output_description'].join('\n'), file=statement_fh)
+        print(''.join(package_data['output_description']), file=statement_fh)
         print('# Notas \n', file=statement_fh)
-        print(package_data['notes'].join('\n'), file=statement_fh)
+        print(''.join(package_data['notes']), file=statement_fh)
         print('# Tutorial \n', file=statement_fh)
-        print(package_data['tutorial'].join('\n'), file=statement_fh)
+        print(''.join(package_data['tutorial']), file=statement_fh)
 
 
 def get_package_data(package_folder):
@@ -157,16 +152,16 @@ def get_package_data(package_folder):
 
 def convert(package_folder, problem_folder):
     check(package_folder, problem_folder)
-    package_data = get_package_data()
+    package_data = get_package_data(package_folder)
     write_statement(package_data, problem_folder)
-    copy_checker(package_folder,problem_folder)
-    copy_input_files(package_folder,problem_folder)
-    copy_output_files(package_folder,problem_folder)
-    copy_testlib(package_folder,problem_folder)
-    copy_solutions(package_folder,problem_folder)
-    copy_checker(package_folder,problem_folder)
-    copy_validator(package_folder,problem_folder)
-    copy_generator(package_folder,problem_folder)
+    copy_checker(package_folder, problem_folder)
+    copy_input_files(package_folder, problem_folder)
+    copy_output_files(package_folder, problem_folder)
+    copy_testlib(package_folder, problem_folder)
+    copy_solutions(package_folder, problem_folder)
+    copy_checker(package_folder, problem_folder)
+    copy_validator(package_folder, problem_folder)
+    copy_generator(package_folder, problem_folder)
 
 
 if __name__ == '__main__':
