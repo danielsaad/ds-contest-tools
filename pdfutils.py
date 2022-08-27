@@ -1,20 +1,27 @@
+from json import parse_json
+from latexutils import print_to_latex
+import glob
 import subprocess
+import os
+import sys
 
 MERGE_TOOL = 'pdfjam'
 
 
-def build_merge_command(pdf_list,output_file):
+def build_merge_command(pdf_list, output_file):
     command = [MERGE_TOOL]
     for f in pdf_list:
         command += [f]
     command += ['-o', output_file]
     return command
 
+
 def merge_pdfs(pdf_list, output_file):
     print('Merging', pdf_list)
-    command = build_merge_command(pdf_list,output_file)
+    command = build_merge_command(pdf_list, output_file)
     subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     print("PDFs Merged")
+
 
 def build_pdf(problem_folder):
     print('-Building PDF')

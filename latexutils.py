@@ -3,8 +3,6 @@ from jsonutils import parse_json
 
 
 def print_line(line, f_out):
-    # line = re.sub(r'\*\*(.+)\*\*', r'\\textbf{\1}', line)
-    # line = re.sub(r'\*(.+)\*', r'\\textit{\1}', line)
     print(line, file=f_out, end='')
 
 
@@ -169,7 +167,6 @@ def print_to_latex(problem_folder, md_file):
 
 def print_tutorial_to_latex(problem_folder, problem_metadata, tutorial_lines):
     with open(os.path.join(problem_folder, 'tutorial.tex'), 'w') as f_out:
-        # TODO: use tutorial specific class
         print("\\documentclass[10pt]{article}", file=f_out)
         print("\\usepackage[utf8]{inputenc}", file=f_out)
         print("\\usepackage{amsmath,amsthm,amssymb}", file=f_out)
@@ -185,4 +182,3 @@ def print_tutorial_to_latex(problem_folder, problem_metadata, tutorial_lines):
         for line in tutorial_lines:
             print_line(line, f_out)
         print("\\end{document}", file=f_out)
-# Parse the markdown file to a .tex file
