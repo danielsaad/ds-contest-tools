@@ -1,4 +1,4 @@
-from json import parse_json
+from jsonutils import parse_json
 from latexutils import print_to_latex
 import glob
 import subprocess

@@ -14,8 +14,6 @@ from boca import boca_pack
 from toolchain import build_executables, run_programs
 
 
-def custom_key(str):
-    return +len(str), str.lower()
 
 
 class statement_metadata:

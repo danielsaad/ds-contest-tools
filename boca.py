@@ -3,7 +3,7 @@ import subprocess
 import glob
 import shutil
 from fileutils import recursive_overwrite
-from json import parse_json
+from jsonutils import parse_json
 
 
 class default_boca_limits:

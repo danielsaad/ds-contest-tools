@@ -1,4 +1,4 @@
-\ProvidesPackage{maratona}
+maratona.cls\ProvidesPackage{maratona}
 \LoadClass[12pt]{article}
 
 % remove page numbers
@@ -18,6 +18,7 @@
 \RequirePackage{amssymb, wrapfig}
 \RequirePackage{xcolor,colortbl}
 \RequirePackage{xcolor}
+\RequirePackage{ifthen}
 \oddsidemargin 0cm
 \evensidemargin -2cm
 \topmargin -1cm
@@ -108,7 +109,7 @@
 	\stepcounter{problem}
 	\newpage
 	\begin{center}
-		\Large{\textbf{Problema {#1} \\ {#2} }}{\\[.2cm]\footnotesize \textbf{Limite de tempo: {#3}s\\}}
+		\Large{\ifthenelse{\equal{#1}{}}{\textbf{{#2}}}{\textbf{Problema {#1} \\ {#2} }}}{\\[.2cm]\footnotesize \textbf{Limite de tempo: {#3}s\\}}
 	\end{center}
 }
 
@@ -117,7 +118,7 @@
 	\stepcounter{problemAutor}
 	\newpage
 	\begin{center}
-		\Large{\textbf{Problema {#1} \\ {#2} }}{\\[.2cm]\footnotesize \textbf{Limite de tempo: {#3}s\\}}{
+		\Large{\ifthenelse{\equal{#1}{}}{\textbf{{#2}}}{\textbf{Problema {#1} \\ {#2} }}}{\\[.2cm]\footnotesize \textbf{Limite de tempo: {#3}s\\}}{
 			\footnotesize Autor: {#4}
 		}
 	\end{center}

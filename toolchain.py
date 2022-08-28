@@ -3,9 +3,9 @@ import subprocess
 import sys
 from jsonutils import parse_json
 
+
 def custom_key(str):
     return +len(str), str.lower()
-
 
 
 def build_executables(problem_folder):
@@ -68,21 +68,22 @@ def build_executables(problem_folder):
 def run_programs(problem_folder):
     input_folder = os.path.join(problem_folder, 'input')
     output_folder = os.path.join(problem_folder, 'output')
-    # Generate input and output folders
+    # Create input and output folders
     os.makedirs(input_folder, exist_ok=True)
     os.makedirs(output_folder, exist_ok=True)
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
     # store old cwd
     old_cwd = os.getcwd()
-
-    # change cwd to input folder
     os.chdir(input_folder)
-    # run generator
-    generator_path = os.path.join('../bin', 'generator')
-    print('-Generating inputs')
-    subprocess.run(generator_path)
+    generate_inputs()
+    validate_inputs()
+    os.chdir(old_cwd)
+    os.chdir(output_folder)
+    produce_outputs(problem_metadata)
+    os.chdir(old_cwd)
 
-    # Run validator on generated inputs, exclude interactive IO
+
+def validate_inputs():
     input_files = [f for f in os.listdir() if os.path.isfile(f)
                    and not f.endswith('.interactive')]
     input_files.sort(key=custom_key)
@@ -95,11 +96,18 @@ def run_programs(problem_folder):
                 print("Failed validation on input", fname)
                 exit(1)
 
+
+def generate_inputs():
+    generator_command = os.path.join('../bin', 'generator')
+    print('-Generating inputs')
+    subprocess.run(generator_command)
+
+
+def produce_outputs(problem_metadata):
     print("-Producing outputs")
     # change cwd to output folder
-    os.chdir(old_cwd)
-    os.chdir(output_folder)
     # Run ac solution on inputs to produce outputs
+    input_files = os.listdir('../input')
     for fname in input_files:
         inf_path = os.path.join('../input', fname)
         ouf_path = fname
@@ -123,4 +131,3 @@ def run_programs(problem_folder):
             if(p.returncode):
                 print("Generation of output for input", fname, 'failed')
                 sys.exit(1)
-    os.chdir(old_cwd)
