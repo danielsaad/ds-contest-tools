@@ -10,6 +10,8 @@ DEFAULT_LANGUAGE = 'english'
 def get_text(package_folder, filename, language=DEFAULT_LANGUAGE):
     filename = os.path.join(
         *[package_folder, 'statement-sections', language, filename])
+    if not os.path.isfile(filename):
+        return ''
     with open(filename, 'r') as fh:
         text = fh.readlines()
     return text
@@ -107,6 +109,7 @@ def check(package_folder, problem_folder):
     if not os.path.isdir(package_folder):
         print(package_folder, 'not a valid Polygon package folder')
         exit(1)
+    os.makedirs(problem_folder,exist_ok=True)
     if not os.path.isdir(problem_folder):
         print(package_folder, 'not a valid problem folder')
         exit(1)
@@ -121,6 +124,10 @@ def check_package(package_folder):
 
 # TODO: implement
 def check_problem(problem_folder):
+    os.makedirs(os.path.join(problem_folder,'input'),exist_ok=True)
+    os.makedirs(os.path.join(problem_folder,'output'),exist_ok=True)
+    os.makedirs(os.path.join(problem_folder,'src'),exist_ok=True)
+    os.makedirs(os.path.join(problem_folder,'include'),exist_ok=True)
     pass
 
 

@@ -1,4 +1,4 @@
-maratona.cls\ProvidesPackage{maratona}
+\ProvidesPackage{maratona}
 \LoadClass[12pt]{article}
 
 % remove page numbers
