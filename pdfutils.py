@@ -25,7 +25,6 @@ def merge_pdfs(pdf_list, output_file):
 
 def build_pdf(problem_folder):
     print('-Building PDF')
-    problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
     md_list = glob.glob(os.path.join(problem_folder, '*.md'))
     filepath = md_list[0]
     if(not os.path.exists(filepath)):
@@ -34,15 +33,18 @@ def build_pdf(problem_folder):
     print_to_latex(problem_folder, filepath)
     cwd = os.getcwd()
     os.chdir(problem_folder)
-    p = subprocess.run(["pdflatex", problem_metadata["problem"]["label"]+".tex"],
-                       stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    tex_filename = os.path.basename(os.path.abspath(problem_folder)) + '.tex'
+    tex_filepath = os.path.join(problem_folder, tex_filename)
+    p = subprocess.run(["pdflatex", tex_filepath], stdin=subprocess.PIPE,
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if(p.returncode):
         print("Generation of Problem file failed")
         sys.exit(1)
 
-    tutorial_file = ('tutorial.tex')
-    if(os.path.isfile(tutorial_file)):
-        p = subprocess.run(["pdflatex", tutorial_file], stdin=subprocess.PIPE,
+    tutorial_filepath = os.path.join(
+        problem_folder, tex_filename + '-tutorial.tex')
+    if(os.path.isfile(tutorial_filepath)):
+        p = subprocess.run(["pdflatex", tutorial_filepath], stdin=subprocess.PIPE,
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if(p.returncode):
             print("Generation of Tutorial file failed")

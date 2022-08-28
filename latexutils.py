@@ -43,7 +43,10 @@ def print_to_latex(problem_folder, md_file):
         os.path.dirname(os.path.abspath(__file__)), 'contest.json'))
     interactive = problem_metadata['problem']['interactive']
 
-    with open(md_file) as f_in, open(os.path.join(os.path.dirname(md_file), problem_metadata["problem"]["label"]+'.tex'), 'w') as f_out:
+    tex_filename = os.path.basename(os.path.abspath(problem_folder))+'.tex'
+    tex_filepath = os.path.join(problem_folder,tex_filename)
+    print('-Creating',tex_filepath)
+    with open(md_file) as f_in, open(tex_filepath, 'w') as f_out:
         print("\\documentclass{maratona}", file=f_out)
         print("\\begin{document}\n", file=f_out)
         if(contest_metadata['include_author'] == True):
@@ -166,7 +169,9 @@ def print_to_latex(problem_folder, md_file):
 
 
 def print_tutorial_to_latex(problem_folder, problem_metadata, tutorial_lines):
-    with open(os.path.join(problem_folder, 'tutorial.tex'), 'w') as f_out:
+    tex_filepath= os.path.join(problem_folder,os.path.basename(os.path.abspath(problem_folder)) + '-tutorial.tex')
+    print('-Creating',tex_filepath)
+    with open(os.path.join(problem_folder, tex_filepath), 'w') as f_out:
         print("\\documentclass[10pt]{article}", file=f_out)
         print("\\usepackage[utf8]{inputenc}", file=f_out)
         print("\\usepackage{amsmath,amsthm,amssymb}", file=f_out)

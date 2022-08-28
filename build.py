@@ -14,14 +14,17 @@ from boca import boca_pack
 from toolchain import build_executables, run_programs
 
 
-
-
 class statement_metadata:
     def __init__(self, problem_id='', title='', timelimit=0, author=''):
         self.problem_id = problem_id
         self.title = title
         self.timelimit = timelimit
         self.author = author
+
+
+def genio(problem_folder):
+    build_executables(problem_folder)
+    run_programs(problem_folder)
 
 
 def genpdf(problem_folder):
@@ -91,7 +94,7 @@ if __name__ == "__main__":
     parser.add_argument('-i', '--interactive', action='store_true',
                         default=False, help='set problem do interative on init')
     parser.add_argument(
-        'mode', choices=['init', 'build', 'buildall', 'genpdf', 'pack2boca', 'packall2boca'], help='\ninit: init a problem\nbuild: build  a problem.\npack2boca: pack a problem to BOCA format.\n')
+        'mode', choices=['init', 'build', 'buildall', 'genio', 'genpdf', 'pack2boca', 'packall2boca'], help='\ninit: init a problem\nbuild: build  a problem.\ngenio: generates problem input/output while validating inputs\ngenpdf: generates problem and tutorial PDFs.\npack2boca: pack a problem to BOCA format.\n')
     parser.add_argument('problem_id', nargs='?')
     args = parser.parse_args()
     if(not args.all and not args.problem_id):
@@ -114,3 +117,5 @@ if __name__ == "__main__":
             packall2boca()
     elif(args.mode == 'genpdf'):
         genpdf(args.problem_id)
+    elif(args.mode == 'genio'):
+        genio(args.problem_id)
