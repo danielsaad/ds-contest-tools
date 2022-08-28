@@ -1,11 +1,8 @@
 import os
 import subprocess
 import sys
+from config import custom_key
 from jsonutils import parse_json
-
-
-def custom_key(str):
-    return +len(str), str.lower()
 
 
 def build_executables(problem_folder):

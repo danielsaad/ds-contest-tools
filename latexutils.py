@@ -1,4 +1,5 @@
 import os
+import config
 from jsonutils import parse_json
 
 
@@ -32,7 +33,7 @@ def get_io(io_folder, problem_metadata):
     return l
 
 
-def print_to_latex(problem_folder, md_file):
+def print_to_latex(problem_folder, md_file, options=config.DEFAULT_PDF_OPTIONS):
 
     input_folder = os.path.join(problem_folder, 'input')
     output_folder = os.path.join(problem_folder, 'output')
@@ -44,18 +45,18 @@ def print_to_latex(problem_folder, md_file):
     interactive = problem_metadata['problem']['interactive']
 
     tex_filename = os.path.basename(os.path.abspath(problem_folder))+'.tex'
-    tex_filepath = os.path.join(problem_folder,tex_filename)
-    print('-Creating',tex_filepath)
+    tex_filepath = os.path.join(problem_folder, tex_filename)
+    print('-Creating', tex_filepath)
     with open(md_file) as f_in, open(tex_filepath, 'w') as f_out:
         print("\\documentclass{maratona}", file=f_out)
         print("\\begin{document}\n", file=f_out)
-        if(contest_metadata['include_author'] == True):
-            print("\\begin{ProblemaAutor}{" + problem_metadata["problem"]["label"]
+        if(options['display_author']):
+            print("\\begin{ProblemaAutor}{" + options['problem_label']
                   + "}{" + problem_metadata["problem"]["title"] + "}{" +
                   str(problem_metadata["problem"]["time_limit"]) +
                   "}{" + problem_metadata["author"]["name"] + "}", file=f_out)
         else:
-            print("\\begin{Problema}{" + problem_metadata["problem"]["label"]
+            print("\\begin{Problema}{" + options['problem_label']
                   + "}{" + problem_metadata["problem"]["title"] + "}{" +
                   str(problem_metadata["problem"]["time_limit"]) +
                   "}", file=f_out)
@@ -157,7 +158,7 @@ def print_to_latex(problem_folder, md_file):
             for line in note_lines:
                 print_line(line, f_out)
 
-        if(contest_metadata['include_author']):
+        if(options['display_author']):
             print("\\end{ProblemaAutor}", file=f_out)
         else:
             print("\\end{Problema}", file=f_out)
@@ -169,8 +170,9 @@ def print_to_latex(problem_folder, md_file):
 
 
 def print_tutorial_to_latex(problem_folder, problem_metadata, tutorial_lines):
-    tex_filepath= os.path.join(problem_folder,os.path.basename(os.path.abspath(problem_folder)) + '-tutorial.tex')
-    print('-Creating',tex_filepath)
+    tex_filepath = os.path.join(problem_folder, os.path.basename(
+        os.path.abspath(problem_folder)) + '-tutorial.tex')
+    print('-Creating', tex_filepath)
     with open(os.path.join(problem_folder, tex_filepath), 'w') as f_out:
         print("\\documentclass[10pt]{article}", file=f_out)
         print("\\usepackage[utf8]{inputenc}", file=f_out)
@@ -187,3 +189,11 @@ def print_tutorial_to_latex(problem_folder, problem_metadata, tutorial_lines):
         for line in tutorial_lines:
             print_line(line, f_out)
         print("\\end{document}", file=f_out)
+
+
+def clean_auxiliary_files(folder):
+    files = [os.path.join(folder, x) for x in os.listdir(folder) if x.endswith(
+        '.aux') or x.endswith('.log') or x.endswith('.out')]
+    for f in files:
+        print('Removing ',f);
+        os.remove(f)
