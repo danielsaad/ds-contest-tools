@@ -66,7 +66,6 @@ def init(problem_folder, interactive=False):
 
 
 def pack2boca(problem_folder):
-    build(problem_folder)
     boca_pack(problem_folder)
 
 

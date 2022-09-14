@@ -32,18 +32,15 @@ def boca_pack(problem_folder):
     problem_md = glob.glob(os.path.join(problem_folder, '*.md'))[0]
     tl = 0
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
-    # with open(problem_md) as f:
-    #     # Compile, Run and Tests Remains the Same
-
-    #     # Description
+    basename = os.path.basename(os.path.abspath(problem_folder))
+    filename = os.path.join(problem_folder, basename)
     boca_description_folder = os.path.join(boca_folder, 'description')
     with open(os.path.join(boca_description_folder, 'problem.info'), 'w+') as f:
-        f.write('basename='+problem_metadata['problem']['label']+'\n')
-        f.write('fullname='+problem_metadata['problem']['label']+'\n')
-        f.write('descfile='+problem_metadata['problem']['label']+'.pdf\n')
+        f.write('basename='+basename+'\n')
+        f.write('fullname='+basename+'\n')
+        f.write('descfile='+basename+'.pdf\n')
 
-    pdf_file = os.path.join(
-        problem_folder, problem_metadata['problem']['label']+'.pdf')
+    pdf_file = filename+'.pdf'
     shutil.copy2(pdf_file, boca_description_folder)
 
     # Compare

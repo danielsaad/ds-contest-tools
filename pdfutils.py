@@ -37,8 +37,7 @@ def build_pdf(problem_folder, output_directory='', options=config.DEFAULT_PDF_OP
     tex_filename = os.path.basename(os.path.abspath(problem_folder)) + '.tex'
     folder = problem_folder if output_directory == '' else output_directory
     tex_filepath = os.path.join(problem_folder, tex_filename)
-    command = ["pdflatex", '--output-directory', folder, tex_filepath] if options['problem_label'] == '' else [
-        "pdflatex", '--output-directory', folder, '-jobname', options['problem_label'], tex_filepath]
+    command = ["pdflatex", '--output-directory', folder, tex_filepath]
     print('Command = ', ' '.join(command))
     p = subprocess.run(command, stdin=subprocess.PIPE,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -51,8 +50,7 @@ def build_pdf(problem_folder, output_directory='', options=config.DEFAULT_PDF_OP
     tutorial_filepath = os.path.join(
         problem_folder, tutorial_filename)
     if(os.path.isfile(tutorial_filepath)):
-        command = ['pdflatex', '--output-directory', folder, tutorial_filepath] if options['problem_label'] == '' else [
-            'pdflatex', '--output-directory', folder, '-jobname', options['problem_label']+'-tutorial', tutorial_filepath]
+        command = ['pdflatex', '--output-directory', folder, tutorial_filepath]
         print('Command = ', ' '.join(command))
         p = subprocess.run(command, stdin=subprocess.PIPE,
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
