@@ -99,6 +99,9 @@ if __name__ == "__main__":
     if(not args.all and not args.problem_id):
         parser.error(args.mode + ' mode requires a problem id. Usage:' +
                      sys.argv[0] + ' ' + args.mode + ' <problem ID>')
+    new_path = os.path.dirname(sys.argv[0])
+    if (new_path != ''):
+        os.chdir(new_path)
     if(args.mode == 'init'):
         print('Initializing problem', args.problem_id)
         init(args.problem_id, args.interactive)
