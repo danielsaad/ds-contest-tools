@@ -173,7 +173,7 @@ def print_tutorial_to_latex(problem_folder, problem_metadata, tutorial_lines):
     tex_filepath = os.path.join(problem_folder, os.path.basename(
         os.path.abspath(problem_folder)) + '-tutorial.tex')
     print('-Creating', tex_filepath)
-    with open(os.path.join(problem_folder, tex_filepath), 'w') as f_out:
+    with open(tex_filepath, 'w') as f_out:
         print("\\documentclass[10pt]{article}", file=f_out)
         print("\\usepackage[utf8]{inputenc}", file=f_out)
         print("\\usepackage{amsmath,amsthm,amssymb}", file=f_out)
