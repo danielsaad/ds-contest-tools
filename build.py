@@ -45,6 +45,9 @@ def build_all():
 
 
 def init(problem_folder, interactive=False):
+    if (os.path.exists(problem_folder)):
+        print("Problem ID already exists in the directory")
+        sys.exit(1)
     folder = os.path.join(os.path.dirname(
         os.path.abspath(__file__)), 'arquivos')
     shutil.copytree(folder, problem_folder,
@@ -99,9 +102,6 @@ if __name__ == "__main__":
     if(not args.all and not args.problem_id):
         parser.error(args.mode + ' mode requires a problem id. Usage:' +
                      sys.argv[0] + ' ' + args.mode + ' <problem ID>')
-    new_path = os.path.dirname(sys.argv[0])
-    if (new_path != ''):
-        os.chdir(new_path)
     if(args.mode == 'init'):
         print('Initializing problem', args.problem_id)
         init(args.problem_id, args.interactive)
