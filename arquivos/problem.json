@@ -1,9 +1,7 @@
 {
     "problem" : {
-        "id" : 1100,
-        "title" : "Título do Problema",
-        "label" : "A",
-        "event" : "IV Maratona de Programação do IFB",
+        "title" : "Problem Title",
+        "event" : "Event Name",
         "time_limit" : 1,
         "interactive" : false,
         "time_complexity" : "\\Theta(nW)",
@@ -18,8 +16,8 @@
         "comments" : "Esse é um problema que pode ser resolvido ao aplicar a programação dinâmica do problema da Mochila"
     },
     "author" : {
-        "name" : "Nome do autor",
-        "affiliation" : "Filiação do autor",
+        "name" : "Author name",
+        "affiliation" : "Author Affiliation",
         "country" : "Brazil",
         "email" : "email@email.com"
     },
