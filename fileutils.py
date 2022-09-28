@@ -2,6 +2,13 @@ import os
 import shutil
 
 
+def rename_io(io_folder, zeros=4):
+    for filename in os.listdir(io_folder):
+        src = os.path.join(io_folder, filename)
+        dst = os.path.join(io_folder, filename.zfill(zeros))
+        os.rename(src, dst)
+
+
 def recursive_overwrite(src, dest, ignore=None):
     if os.path.isdir(src):
         if not os.path.isdir(dest):

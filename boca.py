@@ -2,7 +2,7 @@ import os
 import subprocess
 import glob
 import shutil
-from fileutils import recursive_overwrite
+from fileutils import recursive_overwrite, rename_io
 from jsonutils import parse_json
 
 
@@ -80,6 +80,7 @@ def boca_pack(problem_folder):
     print('input_files = ', ' '.join(input_files))
     for filename in input_files:
         shutil.copy2(filename, boca_input_folder)
+    rename_io(boca_input_folder)
 
     # Output
     boca_output_folder = os.path.join(boca_folder, 'output')
@@ -90,4 +91,5 @@ def boca_pack(problem_folder):
     print('output_files = ', ' '.join(output_files))
     for filename in output_files:
         shutil.copy2(filename, boca_output_folder)
+    rename_io(boca_output_folder)
     boca_zip(boca_folder)
