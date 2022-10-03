@@ -32,13 +32,10 @@ def build_pdf(problem_folder, output_directory='', options=config.DEFAULT_PDF_OP
         print("Statement file does not exists")
         sys.exit(1)
     print_to_latex(problem_folder, filepath, options)
-    cwd = os.getcwd()
-    os.chdir(problem_folder)
     tex_filename = os.path.basename(os.path.abspath(problem_folder)) + '.tex'
     folder = problem_folder if output_directory == '' else output_directory
     tex_filepath = os.path.join(problem_folder, tex_filename)
     command = ["pdflatex", '--output-directory', folder, tex_filepath]
-    print('Command = ', ' '.join(command))
     p = subprocess.run(command, stdin=subprocess.PIPE,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if(p.returncode):
@@ -51,11 +48,9 @@ def build_pdf(problem_folder, output_directory='', options=config.DEFAULT_PDF_OP
         problem_folder, tutorial_filename)
     if(os.path.isfile(tutorial_filepath)):
         command = ['pdflatex', '--output-directory', folder, tutorial_filepath]
-        print('Command = ', ' '.join(command))
         p = subprocess.run(command, stdin=subprocess.PIPE,
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if(p.returncode):
             print("Generation of Tutorial file failed")
             print(p.stdout, p.stderr)
             sys.exit(1)
-    os.chdir(cwd)

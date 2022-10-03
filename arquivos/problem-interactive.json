@@ -3,7 +3,7 @@
         "title" : "Problem Title",
         "event" : "Event Name",
         "time_limit" : 1,
-        "interactive" : false,
+        "interactive" : true,
         "time_complexity" : "\\Theta(nW)",
         "category" : "Beginner",
         "level" : 1,
