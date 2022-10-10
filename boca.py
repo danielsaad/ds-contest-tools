@@ -77,7 +77,6 @@ def boca_pack(problem_folder):
     os.makedirs(boca_input_folder, exist_ok=True)
     input_files = [os.path.join(problem_input_folder, f) for
                    f in os.listdir(problem_input_folder) if os.path.isfile(os.path.join(problem_input_folder, f))]
-    print('input_files = ', ' '.join(input_files))
     for filename in input_files:
         shutil.copy2(filename, boca_input_folder)
     rename_io(boca_input_folder)
@@ -88,7 +87,6 @@ def boca_pack(problem_folder):
     os.makedirs(boca_output_folder, exist_ok=True)
     output_files = [os.path.join(problem_output_folder, f) for
                     f in os.listdir(problem_output_folder) if os.path.isfile(os.path.join(problem_output_folder, f))]
-    print('output_files = ', ' '.join(output_files))
     for filename in output_files:
         shutil.copy2(filename, boca_output_folder)
     rename_io(boca_output_folder)
