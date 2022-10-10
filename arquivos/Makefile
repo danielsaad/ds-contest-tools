@@ -14,14 +14,16 @@ DEBUG_FLAGS :=
 
 .PHONY: all debug
 
-all: $(BIN)
+all: $(BIN) $(BIN_DIR)/checker-boca
 
 $(BIN): $(BIN_DIR)/% : $(SRC_DIR)/%.cpp | $(BIN_DIR)
-	$(CXX) $(CXX_FLAGS) $(DEBUG_FLAGS) $^ -o $@ $(BOCA_FLAGS)
-
-debug: DEBUG_FLAGS+=-g -O0 -DDEBUG
-debug: all
+	$(CXX) $(CXX_FLAGS) $(DEBUG_FLAGS) $^ -o $@
 
 $(BIN_DIR):
 	mkdir -p $@
 
+$(BIN_DIR)/checker-boca: $(SRC_DIR)/checker.cpp
+	$(CXX) $(CXX_FLAGS) $(DEBUG_FLAGS) $^ -o $@ $(BOCA_FLAGS)
+
+debug: DEBUG_FLAGS += -g -O0 -DDEBUG
+debug: all
