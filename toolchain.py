@@ -46,9 +46,8 @@ def build_executables(problem_folder):
     p = subprocess.run(['make'],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if(p.returncode):
-        print("Makefaile failed.")
+        print("Makefile failed.")
         sys.exit(1)
-    
     os.chdir(old_cwd)
 
 def run_programs(problem_folder):
