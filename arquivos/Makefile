@@ -1,5 +1,3 @@
-.SILENT:
-
 SRC_DIR := src
 BIN_DIR := bin
 
@@ -24,5 +22,5 @@ $(BIN_DIR):
 $(BIN_DIR)/checker-boca: $(SRC_DIR)/checker.cpp
 	$(CXX) $(CXX_FLAGS) $(DEBUG_FLAGS) $(BOCA_FLAGS) $^ -o $@ 
 
-debug: DEBUG_FLAGS += -g -O0 -DDEBUG
+debug: DEBUG_FLAGS += -g
 debug: all
