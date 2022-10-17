@@ -67,7 +67,6 @@ def build_boca_packages(problem_folder_l, output_folder):
         options = {'display_author': False,
                    'problem_label': label}
         build_pdf(folder, folder, options)
-        # build_checker(folder)
         boca_pack(folder)
         boca_file_path = os.path.join(folder, 'boca.zip')
         boca_file = os.path.join(output_folder, os.path.basename(folder) + '-boca.zip')

@@ -7,29 +7,6 @@ from jsonutils import parse_json
 from polygon_converter import check
 
 
-'''
-TODO: only accepts checker.cpp name
-'''
-
-
-def build_checker(problem_folder):
-    os.makedirs(os.path.join(problem_folder,'bin'),exist_ok=True)
-    checker_file = os.path.abspath(os.path.join(
-        *[problem_folder, 'src', 'checker.cpp']))
-    bin_file = os.path.abspath(os.path.join(
-        *[problem_folder, 'bin', 'checker']))
-    boca_file = os.path.abspath(os.path.join(
-        *[problem_folder, 'bin', 'checker-boca']))
-    include_dir = os.path.abspath(os.path.join(problem_folder, 'include'))
-    command = ['g++', checker_file, '-I'+include_dir, '-o', bin_file]
-    boca_command = ['g++', '-static','-DBOCA_SUPPORT', '-I' +
-                    include_dir, checker_file, '-o', boca_file]
-    print(command)
-    print(boca_command)
-    subprocess.run(command)
-    subprocess.run(boca_command)
-
-
 def build_executables(problem_folder):
     build_folder = os.path.join(problem_folder, 'build')
     build_debug_folder = os.path.join(problem_folder, 'build_debug')
