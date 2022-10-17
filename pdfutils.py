@@ -39,7 +39,8 @@ def build_pdf(problem_folder, output_directory='', options=config.DEFAULT_PDF_OP
     p = subprocess.run(command, stdin=subprocess.PIPE,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if(p.returncode):
-        print("Generation of Problem file failed")
+        print("Generation of problem file failed")
+        print(p.stdout, p.stderr)
         sys.exit(1)
     clean_auxiliary_files(folder)
 
