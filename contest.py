@@ -15,7 +15,8 @@ def create_parser():
     parser.add_argument('mode', choices=['build', 'genpdf'], 
         help='build: create a contest.\n' +
         'genpdf: generates problem and tutorial PDFs.\n')
-    parser.add_argument('problems_folder', help='problems directory.')
+    parser.add_argument('problem_path', help='path to the problem.',
+                        nargs='+')
     parser.add_argument('contest_folder', help='directory which the contest will be saved.')
     return parser
 
@@ -77,21 +78,24 @@ if __name__ == '__main__':
     parser = create_parser()
     args = parser.parse_args()
 
-    if not os.path.isdir(args.problems_folder):
-        print(args.problems_folder + ' is not a valid directory')
-        sys.exit(1)
-
-    problems = []
-    for f in os.listdir(args.problems_folder):
-        problems.append(os.path.join(args.problems_folder, f))
+    for problems in args.problem_path:
+        if (not os.path.exists(problems)):
+            print(problems, "path doesn't exist.")
+            sys.exit(1)
+        if (not os.path.exists(os.path.join(problems, 'statement.md'))):
+            print(problems, "path doesn't have an initialized problem.")
+            sys.exit(1)
+        if (not os.path.exists(os.path.join(problems, 'bin'))):
+            print(problems, "path doesn't have a built problem.")
+            sys.exit(1)
     
     os.makedirs(args.contest_folder, exist_ok=True)
 
     if (args.mode == 'build' and args.boca):
-        build_boca_packages(problems, args.contest_folder)
-        build_contest_pdf(problems, args.contest_folder)
+        build_boca_packages(args.problem_path, args.contest_folder)
+        build_contest_pdf(args.problem_path, args.contest_folder)
     elif (args.mode == 'build'):
-        build_contest_pdf(problems, args.contest_folder)
+        build_contest_pdf(args.problem_path, args.contest_folder)
     elif (args.mode == 'genpdf'):
-        build_contest_pdf(problems, args.contest_folder)
+        build_contest_pdf(args.problem_path, args.contest_folder)
 
