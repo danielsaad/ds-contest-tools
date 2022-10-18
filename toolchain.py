@@ -33,16 +33,9 @@ def build_checker(problem_folder):
 def build_executables(problem_folder):
     old_cwd = os.getcwd()
     os.chdir(problem_folder)
-    # run makefile for debug
-    print("-Compiling debug executables")
-    p = subprocess.run(['make', 'debug', 'BIN_DIR=bin/debug'],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if(p.returncode):
-        print("Makefile failed.")
-        sys.exit(1)
 
     # run makefile for release
-    print("-Compiling release executables")
+    print("-Compiling executables")
     p = subprocess.run(['make'],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if(p.returncode):
