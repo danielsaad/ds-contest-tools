@@ -5,9 +5,10 @@ import sys
 from config import custom_key
 from jsonutils import parse_json
 from polygon_converter import check
+from paths import Paths
 
-
-def build_executables(problem_folder):
+def build_executables():
+    problem_folder = Paths.instance().dirs["problem_dir"]
     build_folder = os.path.join(problem_folder, 'build')
     build_debug_folder = os.path.join(problem_folder, 'build_debug')
     os.makedirs(build_folder, exist_ok=True)
@@ -64,7 +65,8 @@ def build_executables(problem_folder):
     os.chdir(old_cwd)
 
 
-def run_programs(problem_folder):
+def run_programs():
+    problem_folder = Paths.instance().dirs["problem_dir"]
     input_folder = os.path.join(problem_folder, 'input')
     output_folder = os.path.join(problem_folder, 'output')
     # Create input and output folders

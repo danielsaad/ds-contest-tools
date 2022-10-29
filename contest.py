@@ -2,6 +2,7 @@ from latexutils import clean_auxiliary_files
 from pdfutils import build_pdf, merge_pdfs
 from boca import boca_pack
 from utils import convert_idx_to_string
+from paths import Paths
 import subprocess
 import sys
 import os
@@ -27,7 +28,9 @@ Builds a contest pdf from the PDFs from the list of problems
 """
 
 
-def build_contest_pdf(problem_folder_l, output_folder):
+def build_contest_pdf():
+    problem_folder_l = Paths.instance().dirs["problem_dir"]
+    output_folder = Paths.intance().dirs["output_dir"]
     print('-Creating contest PDF')
     problem_pdf_l = []
     tutorial_pdf_l = []
@@ -63,7 +66,9 @@ Builds BOCA packages from the list of problems
 """
 
 
-def build_boca_packages(problem_folder_l, output_folder):
+def build_boca_packages():
+    problem_folder_l = Paths.instance().dirs["problem_dir"]
+    output_folder = Paths.intance().dirs["output_dir"]
     print('-Creating BOCA Files')
     for i, folder in enumerate(problem_folder_l):
         label = convert_idx_to_string(i)
@@ -95,7 +100,7 @@ if __name__ == '__main__':
                 print(problem, "path doesn't have an output folder.")
                 sys.exit(1)
         elif (args.mode == 'build' and not os.path.exists(os.path.join(problem, 'bin'))):
-            command = ['python3', os.path.join(os.path.dirname(os.path.relpath(__file__)), 
+            command = ['python3', os.path.join(Paths.instance().dirs["tool_dir"], 
                     'build.py'), 'build', problem]
             p = subprocess.run(command, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             if (p.stderr):
@@ -104,11 +109,13 @@ if __name__ == '__main__':
 
     os.makedirs(args.contest_folder, exist_ok=True)
 
+    Paths.instance(args.problem_path, args.contest_folder)
+
     if (args.mode == 'build' and args.boca):
-        build_boca_packages(args.problem_path, args.contest_folder)
-        build_contest_pdf(args.problem_path, args.contest_folder)
+        build_boca_packages()
+        build_contest_pdf()
     elif (args.mode == 'build'):
-        build_contest_pdf(args.problem_path, args.contest_folder)
+        build_contest_pdf()
     elif (args.mode == 'genpdf'):
-        build_contest_pdf(args.problem_path, args.contest_folder)
+        build_contest_pdf()
 
