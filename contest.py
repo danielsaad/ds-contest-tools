@@ -30,7 +30,7 @@ Builds a contest pdf from the PDFs from the list of problems
 
 def build_contest_pdf():
     problem_folder_l = Paths.instance().dirs["problem_dir"]
-    output_folder = Paths.intance().dirs["output_dir"]
+    output_folder = Paths.instance().dirs["output_dir"]
     print('-Creating contest PDF')
     problem_pdf_l = []
     tutorial_pdf_l = []
@@ -68,7 +68,7 @@ Builds BOCA packages from the list of problems
 
 def build_boca_packages():
     problem_folder_l = Paths.instance().dirs["problem_dir"]
-    output_folder = Paths.intance().dirs["output_dir"]
+    output_folder = Paths.instance().dirs["output_dir"]
     print('-Creating BOCA Files')
     for i, folder in enumerate(problem_folder_l):
         label = convert_idx_to_string(i)
