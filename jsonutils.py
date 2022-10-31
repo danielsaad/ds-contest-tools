@@ -3,7 +3,8 @@ import sys
 import os
 
 
-def parse_json(json_file):
+def parse_json(json_file: str) -> str:
+    """Receives a path to a '.json' file and converts it to a dict."""
     json_data = {}
 
     if(not os.path.isfile(json_file)):

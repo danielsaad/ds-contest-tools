@@ -1,9 +1,12 @@
+import logging
 import os
 import subprocess
 import glob
 import shutil
+import sys
 from fileutils import recursive_overwrite, rename_io
 from jsonutils import parse_json
+from utils import verify_command
 
 
 class default_boca_limits:
@@ -13,16 +16,20 @@ class default_boca_limits:
     maximum_output_size = 4096  # Maximum output size (KB)
 
 
-def boca_zip(boca_folder):
+def boca_zip(boca_folder: str) -> None:
+    """ Zips a problem of BOCA format."""
     old_cwd = os.getcwd()
     os.chdir(boca_folder)
     zip_filename = os.path.basename(boca_folder)+'.zip'
-    subprocess.run('zip'+' -r ' + zip_filename + ' . ', shell=True)
+    p = subprocess.run('zip'+' -r ' + zip_filename + ' . ', shell=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    verify_command(p, "Error ziping boca file.")
     os.rename(zip_filename, os.path.join('..', zip_filename))
     os.chdir(old_cwd)
 
 
-def boca_pack(problem_folder):
+def boca_pack(problem_folder: str) -> None:
+    """Converts a DS problem to a BOCA problem."""
     boca_template_folder = os.path.join(
         *[os.path.dirname(os.path.abspath(__file__)), 'arquivos', 'boca'])
     boca_folder = os.path.join(*[problem_folder, 'boca'])
@@ -41,6 +48,9 @@ def boca_pack(problem_folder):
         f.write('descfile='+basename+'.pdf\n')
 
     pdf_file = filename+'.pdf'
+    if (not os.path.exists(pdf_file)):
+        print("PDF file of BOCA problem does not exist.")
+        sys.exit(1)
     shutil.copy2(pdf_file, boca_description_folder)
 
     # Compare
@@ -56,8 +66,8 @@ def boca_pack(problem_folder):
                  os.path.join(*[boca_folder, 'compare', 'py2']))
     shutil.copy2(os.path.join(*[boca_folder, 'compare', 'checker-boca']),
                  os.path.join(*[boca_folder, 'compare', 'py3']))
+    
     # Limits
-
     java_python_time_factor = 3
     for filename in os.listdir(os.path.join(boca_template_folder, 'limits')):
         with open(os.path.join(*[boca_folder, 'limits', filename]), 'w+') as f:

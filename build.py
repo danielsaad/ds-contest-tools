@@ -1,4 +1,13 @@
 #!/usr/bin/python3
+"""Tool to initialize, build and convert a competitive problem.
+
+Usage:
+    ./build.py [mode] [ID]
+
+Author:
+    Daniel Saad Nogueira Nunes
+"""
+
 
 # TODO: clean temporary files
 
@@ -7,6 +16,8 @@ import sys
 import os
 import shutil
 import argparse
+import logging
+from utils import start_log
 from jsonutils import parse_json
 from pdfutils import build_pdf
 from fileutils import recursive_overwrite
@@ -21,7 +32,8 @@ class statement_metadata:
         self.timelimit = timelimit
         self.author = author
 
-def create_parser():
+def create_parser() -> argparse.ArgumentParser:
+    """Initialize the argparser of the tool."""
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-a', '--all', action='store_true',
                         default=False, help='apply action on all problems')
@@ -33,22 +45,26 @@ def create_parser():
     return parser
 
 
-def genio(problem_folder):
+def genio(problem_folder) -> None:
+    """Call functions to generate the input/output of the problem."""
     build_executables(problem_folder)
     run_programs(problem_folder)
 
 
-def genpdf(problem_folder):
+def genpdf(problem_folder) -> None:
+    """Call functions to generate the pdf document of the problem."""
     build_pdf(problem_folder)
 
 
-def build(problem_folder):
+def build(problem_folder) -> None:
+    """Call functions to build a problem."""
     build_executables(problem_folder)
     run_programs(problem_folder)
     genpdf(problem_folder)
 
 
-def init(problem_folder, interactive=False):
+def init(problem_folder, interactive=False) -> None:
+    """Initialize a competitive problem."""
     if (os.path.exists(problem_folder)):
         print("Problem ID already exists in the directory")
         sys.exit(1)
@@ -72,7 +88,8 @@ def init(problem_folder, interactive=False):
         os.remove(interactor)
 
 
-def pack2boca(problem_folder):
+def pack2boca(problem_folder) -> None:
+    """Call funtions to convert the format of the problem to BOCA."""
     boca_pack(problem_folder)
 
 
@@ -92,12 +109,13 @@ if __name__ == "__main__":
     if(not args.all and not args.problem_id):
         parser.error(args.mode + ' mode requires a problem id. Usage:' +
                      sys.argv[0] + ' ' + args.mode + ' <problem ID>')
+    start_log()
     if(args.mode == 'init'):
-        print('Initializing problem', args.problem_id)
+        logging.info('Initializing problem ' + args.problem_id)
         init(args.problem_id, args.interactive)
         print('Problem', args.problem_id, 'initialized')
     elif(args.mode == 'build'):
-        print("Building problem", args.problem_id)
+        logging.info("Building problem " + args.problem_id)
         build(args.problem_id)
     elif(args.mode == 'pack2boca'):
         pack2boca(args.problem_id)

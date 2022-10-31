@@ -1,15 +1,27 @@
-from latexutils import clean_auxiliary_files
-from pdfutils import build_pdf, merge_pdfs
-from boca import boca_pack
-from utils import convert_idx_to_string
+"""Tool to create a contest by merging competitive problems.
+
+Usage:
+    ./contest.py [flags] [mode] [problem_list] [output_folder]
+
+Author:
+    Daniel Saad Nogueira Nunes
+"""
+
+
 import subprocess
 import sys
 import os
 import argparse
 import shutil
+import logging
+from latexutils import clean_auxiliary_files
+from pdfutils import build_pdf, merge_pdfs
+from boca import boca_pack
+from utils import convert_idx_to_string, start_log, verify_command
 
 
-def create_parser():
+def create_parser() -> argparse.ArgumentParser:
+    """Initialize the argparser of the tool."""
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-b', '--boca', action='store_true',
                         default=False, help='build problems in BOCA format.')
@@ -22,13 +34,9 @@ def create_parser():
     return parser
 
 
-"""
-Builds a contest pdf from the PDFs from the list of problems
-"""
-
-
-def build_contest_pdf(problem_folder_l, output_folder):
-    print('-Creating contest PDF')
+def build_contest_pdf(problem_folder_l: str, output_folder:str) -> None:
+    """Builds a contest pdf from the PDFs of the list of problems"""
+    logging.debug('-Creating contest PDF')
     problem_pdf_l = []
     tutorial_pdf_l = []
 
@@ -58,13 +66,9 @@ def build_contest_pdf(problem_folder_l, output_folder):
         os.remove(os.path.join(output_folder, 'maratona.cls'))
 
 
-"""
-Builds BOCA packages from the list of problems
-"""
-
-
-def build_boca_packages(problem_folder_l, output_folder):
-    print('-Creating BOCA Files')
+def build_boca_packages(problem_folder_l: str, output_folder: str) -> None:
+    """Builds BOCA packages from the list of problems"""
+    logging.info('-Creating BOCA Files')
     for i, folder in enumerate(problem_folder_l):
         label = convert_idx_to_string(i)
         options = {'display_author': False,
@@ -79,6 +83,8 @@ def build_boca_packages(problem_folder_l, output_folder):
 if __name__ == '__main__':
     parser = create_parser()
     args = parser.parse_args()
+
+    start_log()
 
     for problem in args.problem_path:
         if (not os.path.exists(problem)):
@@ -97,10 +103,9 @@ if __name__ == '__main__':
         elif (args.mode == 'build' and not os.path.exists(os.path.join(problem, 'bin'))):
             command = ['python3', os.path.join(os.path.dirname(os.path.relpath(__file__)), 
                     'build.py'), 'build', problem]
-            p = subprocess.run(command, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            if (p.stderr):
-                print("Error building problem.")
-                sys.exit(1)
+            p = subprocess.run(command, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE, text=True)
+            verify_command(p, "Error building problem.")
 
     os.makedirs(args.contest_folder, exist_ok=True)
 
@@ -111,4 +116,3 @@ if __name__ == '__main__':
         build_contest_pdf(args.problem_path, args.contest_folder)
     elif (args.mode == 'genpdf'):
         build_contest_pdf(args.problem_path, args.contest_folder)
-
