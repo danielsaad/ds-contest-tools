@@ -23,7 +23,7 @@ def boca_zip(boca_folder):
 
 
 def boca_pack(problem_folder=''):
-    if problem_folder == '':
+    if (problem_folder == ''):
         problem_folder = Paths.instance().dirs["problem_dir"]
     boca_template_folder = os.path.join(
         *[os.path.dirname(os.path.abspath(__file__)), 'arquivos', 'boca'])

@@ -43,8 +43,6 @@ def build_pdf(problem_folder='', output_directory='', options=config.DEFAULT_PDF
     p = subprocess.run(command, stdin=subprocess.PIPE,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if(p.returncode):
-        print(p.stderr, p.stdout)
-        print(command)
         print("Generation of Problem file failed")
         sys.exit(1)
 

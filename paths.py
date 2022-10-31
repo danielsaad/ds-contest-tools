@@ -1,5 +1,6 @@
 import os
 
+
 class Paths:
 
     _instance = None
@@ -7,12 +8,11 @@ class Paths:
     def __init__(self, problem_dir, output_dir):
         self.dirs = {
             "tool_dir": os.path.dirname(os.path.relpath(__file__)),
-            "current_dir": os.getcwd(),
             "problem_dir": problem_dir,
             "output_dir": output_dir
         }
 
-    @classmethod 
+    @classmethod
     def instance(cls, problem_dir='', output_dir=''):
         if cls._instance is None:
             cls._instance = cls(problem_dir, output_dir)
