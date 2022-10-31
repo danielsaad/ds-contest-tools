@@ -32,9 +32,11 @@ class statement_metadata:
         self.timelimit = timelimit
         self.author = author
 
+
 def create_parser() -> argparse.ArgumentParser:
     """Initialize the argparser of the tool."""
-    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-a', '--all', action='store_true',
                         default=False, help='apply action on all problems')
     parser.add_argument('-i', '--interactive', action='store_true',
@@ -77,7 +79,7 @@ def init(problem_folder, interactive=False) -> None:
         problem_folder, 'statement-interactive.md')
     interactor = os.path.join(*[problem_folder, 'src', 'interactor.cpp'])
     interactive_json = os.path.join(problem_folder, 'problem-interactive.json')
-    if(interactive):
+    if (interactive):
         shutil.move(interactive_statement, os.path.join(
             problem_folder, 'statement.md'))
         shutil.move(interactive_json, os.path.join(
@@ -106,20 +108,20 @@ def packall2uri():
 if __name__ == "__main__":
     parser = create_parser()
     args = parser.parse_args()
-    if(not args.all and not args.problem_id):
+    if (not args.all and not args.problem_id):
         parser.error(args.mode + ' mode requires a problem id. Usage:' +
                      sys.argv[0] + ' ' + args.mode + ' <problem ID>')
     start_log()
-    if(args.mode == 'init'):
+    if (args.mode == 'init'):
         logging.info('Initializing problem ' + args.problem_id)
         init(args.problem_id, args.interactive)
         print('Problem', args.problem_id, 'initialized')
-    elif(args.mode == 'build'):
+    elif (args.mode == 'build'):
         logging.info("Building problem " + args.problem_id)
         build(args.problem_id)
-    elif(args.mode == 'pack2boca'):
+    elif (args.mode == 'pack2boca'):
         pack2boca(args.problem_id)
-    elif(args.mode == 'genpdf'):
+    elif (args.mode == 'genpdf'):
         genpdf(args.problem_id)
-    elif(args.mode == 'genio'):
+    elif (args.mode == 'genio'):
         genio(args.problem_id)

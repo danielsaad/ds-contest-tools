@@ -22,19 +22,21 @@ from utils import convert_idx_to_string, start_log, verify_command
 
 def create_parser() -> argparse.ArgumentParser:
     """Initialize the argparser of the tool."""
-    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-b', '--boca', action='store_true',
                         default=False, help='build problems in BOCA format.')
-    parser.add_argument('mode', choices=['build', 'genpdf'], 
-        help='build: create a contest.\n' +
-        'genpdf: generates problem and tutorial PDFs.\n')
+    parser.add_argument('mode', choices=['build', 'genpdf'],
+                        help='build: create a contest.\n' +
+                        'genpdf: generates problem and tutorial PDFs.\n')
     parser.add_argument('problem_path', help='path to the problem.',
                         nargs='+')
-    parser.add_argument('contest_folder', help='directory which the contest will be saved.')
+    parser.add_argument(
+        'contest_folder', help='directory which the contest will be saved.')
     return parser
 
 
-def build_contest_pdf(problem_folder_l: str, output_folder:str) -> None:
+def build_contest_pdf(problem_folder_l: str, output_folder: str) -> None:
     """Builds a contest pdf from the PDFs of the list of problems"""
     logging.debug('-Creating contest PDF')
     problem_pdf_l = []
@@ -76,7 +78,8 @@ def build_boca_packages(problem_folder_l: str, output_folder: str) -> None:
         build_pdf(folder, folder, options)
         boca_pack(folder)
         boca_file_path = os.path.join(folder, 'boca.zip')
-        boca_file = os.path.join(output_folder, os.path.basename(folder) + '-boca.zip')
+        boca_file = os.path.join(
+            output_folder, os.path.basename(folder) + '-boca.zip')
         shutil.copy(boca_file_path, boca_file)
 
 
@@ -101,10 +104,10 @@ if __name__ == '__main__':
                 print(problem, "path doesn't have an output folder.")
                 sys.exit(1)
         elif (args.mode == 'build' and not os.path.exists(os.path.join(problem, 'bin'))):
-            command = ['python3', os.path.join(os.path.dirname(os.path.relpath(__file__)), 
-                    'build.py'), 'build', problem]
+            command = ['python3', os.path.join(os.path.dirname(os.path.relpath(__file__)),
+                                               'build.py'), 'build', problem]
             p = subprocess.run(command, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE, text=True)
+                               stderr=subprocess.PIPE, text=True)
             verify_command(p, "Error building problem.")
 
     os.makedirs(args.contest_folder, exist_ok=True)

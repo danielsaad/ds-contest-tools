@@ -25,17 +25,17 @@ def build_executables(problem_folder):
     print("-Compiling debug executables")
     p = subprocess.run(['cmake', '..', '-DCMAKE_BUILD_TYPE=DEBUG'],
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if(p.returncode):
+    if (p.returncode):
         print("CMAKE failed.")
         sys.exit(1)
     p = subprocess.run(
         ['make', '-j'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if(p.returncode):
+    if (p.returncode):
         print("Compilation failed.")
         sys.exit(1)
     p = subprocess.run(['make', 'install'],
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if(p.returncode):
+    if (p.returncode):
         print("Binaries instalation failed.")
         sys.exit(1)
 
@@ -49,17 +49,17 @@ def build_executables(problem_folder):
     print("-Compiling release executables")
     p = subprocess.run(['cmake', '..', '-DCMAKE_BUILD_TYPE=RELEASE'],
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if(p.returncode):
+    if (p.returncode):
         print("CMAKE failed.")
         sys.exit(1)
     p = subprocess.run(
         ['make', '-j'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if(p.returncode):
+    if (p.returncode):
         print("Compilation failed.")
         sys.exit(1)
     p = subprocess.run(['make', 'install'],
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if(p.returncode):
+    if (p.returncode):
         print("Binaries instalation failed.")
         sys.exit(1)
     # restore cwd
@@ -97,7 +97,7 @@ def validate_inputs() -> None:
             p = subprocess.Popen([os.path.join('../bin', 'validator')], stdin=f, stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE, text=True)
             out, err = p.communicate()
-            if(out or err):
+            if (out or err):
                 logging.error(out)
                 logging.error(err)
                 print("Failed validation on input.", fname)
@@ -108,8 +108,8 @@ def generate_inputs() -> None:
     """Generates input files from the generator file."""
     generator_command = os.path.join('../bin', 'generator')
     logging.info('-Generating inputs')
-    p = subprocess.run(generator_command, stdout=subprocess.PIPE, 
-                    stderr=subprocess.PIPE, text=True)
+    p = subprocess.run(generator_command, stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE, text=True)
     verify_command(p, "Error generating inputs.")
 
 
@@ -123,23 +123,23 @@ def produce_outputs(problem_metadata):
         ouf_path = fname
         with open(os.path.join('../input', fname), 'r') as inf, open(fname, 'w') as ouf:
             ac_solution = os.path.join('../bin', 'ac')
-            if(problem_metadata["problem"]["interactive"]):
+            if (problem_metadata["problem"]["interactive"]):
                 interactor = os.path.join('../bin/interactor')
                 # TODO: do this in a more pythonic way
-                if(os.path.isfile('tmpfifo')):
+                if (os.path.isfile('tmpfifo')):
                     print("Removing existant FIFO")
                     subprocess.run(['rm', 'tmpfifo'])
                 subprocess.run(['mkfifo', 'tmpfifo'])
                 command = interactor + ' ' + inf_path + ' ' + ouf_path + \
                     ' < tmpfifo | ' + ac_solution + ' > tmpfifo'
-                p = subprocess.run(command, stdout=subprocess.PIPE, 
-                                stderr=subprocess.PIPE, shell=True, text=True)
-                p1 = subprocess.run(['rm', 'tmpfifo'], stdout=subprocess.PIPE, 
-                                stderr=subprocess.PIPE, text=True)
+                p = subprocess.run(command, stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE, shell=True, text=True)
+                p1 = subprocess.run(['rm', 'tmpfifo'], stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE, text=True)
                 verify_command(p1, "Error removing temporary files.")
             else:
-                p = subprocess.Popen([ac_solution], stdin=inf, stdout=ouf, 
-                                    stderr=subprocess.PIPE, text=True, encoding='utf-8')
+                p = subprocess.Popen([ac_solution], stdin=inf, stdout=ouf,
+                                     stderr=subprocess.PIPE, text=True, encoding='utf-8')
                 _, err = p.communicate()
             if (p.returncode):
                 print("Generation of output for input", fname, "failed")

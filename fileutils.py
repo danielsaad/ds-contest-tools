@@ -44,6 +44,6 @@ def copy_directory(source: str, dest: str) -> None:
 
             if not os.path.isdir(dest_path):
                 os.makedirs(dest_path)
-            if(dirs and files):
+            if (dirs and files):
                 shutil.copyfile(os.path.join(root, file),
                                 os.path.join(dest_path, file))

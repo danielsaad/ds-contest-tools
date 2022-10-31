@@ -22,7 +22,7 @@ def boca_zip(boca_folder: str) -> None:
     os.chdir(boca_folder)
     zip_filename = os.path.basename(boca_folder)+'.zip'
     p = subprocess.run('zip'+' -r ' + zip_filename + ' . ', shell=True,
-                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     verify_command(p, "Error ziping boca file.")
     os.rename(zip_filename, os.path.join('..', zip_filename))
     os.chdir(old_cwd)
@@ -66,13 +66,13 @@ def boca_pack(problem_folder: str) -> None:
                  os.path.join(*[boca_folder, 'compare', 'py2']))
     shutil.copy2(os.path.join(*[boca_folder, 'compare', 'checker-boca']),
                  os.path.join(*[boca_folder, 'compare', 'py3']))
-    
+
     # Limits
     java_python_time_factor = 3
     for filename in os.listdir(os.path.join(boca_template_folder, 'limits')):
         with open(os.path.join(*[boca_folder, 'limits', filename]), 'w+') as f:
             tl = problem_metadata['problem']['time_limit']
-            if(filename in ['java', 'py2', 'py3']):
+            if (filename in ['java', 'py2', 'py3']):
                 tl = problem_metadata['problem']['time_limit'] * \
                     java_python_time_factor
             f.write('echo ' + str(tl) + '\n')

@@ -23,7 +23,8 @@ def build_merge_command(pdf_list: list, output_file: str) -> list:
 def merge_pdfs(pdf_list: list, output_file: str) -> None:
     logging.info(["Merging ", pdf_list])
     command = build_merge_command(pdf_list, output_file)
-    p = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    p = subprocess.run(command, stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE, text=True)
     verify_command(p, "Error merging PDFs.")
     logging.info("PDFs Merged")
 
@@ -32,7 +33,7 @@ def build_pdf(problem_folder, output_directory='', options=config.DEFAULT_PDF_OP
     logging.info('-Building PDF')
     md_list = glob.glob(os.path.join(problem_folder, '*.md'))
     filepath = md_list[0]
-    if(not os.path.exists(filepath)):
+    if (not os.path.exists(filepath)):
         print("Statement file does not exists")
         sys.exit(1)
     print_to_latex(problem_folder, filepath, options)
@@ -48,7 +49,7 @@ def build_pdf(problem_folder, output_directory='', options=config.DEFAULT_PDF_OP
         os.path.abspath(problem_folder))+'-tutorial.tex'
     tutorial_filepath = os.path.join(
         problem_folder, tutorial_filename)
-    if(os.path.isfile(tutorial_filepath)):
+    if (os.path.isfile(tutorial_filepath)):
         command = ['pdflatex', '--output-directory', folder, tutorial_filepath]
         p = subprocess.run(command, stdin=subprocess.PIPE,
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)

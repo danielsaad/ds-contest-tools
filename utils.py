@@ -25,11 +25,11 @@ def start_log() -> None:
     tool_path = os.path.dirname(os.path.relpath(__file__))
     if (tool_path != ''):
         os.chdir(tool_path)
-    logging.basicConfig(filename="tool.log", 
-                    format='%(levelname)s - %(message)s',
-                    filemode='a',
-                    encoding='utf-8', 
-                    level=logging.DEBUG)
+    logging.basicConfig(filename="tool.log",
+                        format='%(levelname)s - %(message)s',
+                        filemode='w',
+                        encoding='utf-8',
+                        level=logging.DEBUG)
     os.chdir(old_cwd)
 
 
