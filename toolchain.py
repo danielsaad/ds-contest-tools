@@ -31,61 +31,17 @@ def build_checker(problem_folder):
 
 
 def build_executables(problem_folder):
-    build_folder = os.path.join(problem_folder, 'build')
-    build_debug_folder = os.path.join(problem_folder, 'build_debug')
-    os.makedirs(build_folder, exist_ok=True)
-    os.makedirs(build_debug_folder, exist_ok=True)
-
-    # store cwd
     old_cwd = os.getcwd()
+    os.chdir(problem_folder)
 
-    # change cwd to build folder
-    os.chdir(build_debug_folder)
-
-    # run cmake and install executables
-    print("-Compiling debug executables")
-    p = subprocess.run(['cmake', '..', '-DCMAKE_BUILD_TYPE=DEBUG'],
-                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    # run makefile for release
+    print("-Compiling executables")
+    p = subprocess.run(['make'],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if(p.returncode):
-        print("CMAKE failed.")
+        print("Makefile failed.")
         sys.exit(1)
-    p = subprocess.run(
-        ['make', '-j'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if(p.returncode):
-        print("Compilation failed.")
-        sys.exit(1)
-    p = subprocess.run(['make', 'install'],
-                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if(p.returncode):
-        print("Binaries instalation failed.")
-        sys.exit(1)
-
-    # run cmake and install executables
-
-    # restore cwd
     os.chdir(old_cwd)
-    # change cwd to build folder
-    os.chdir(build_folder)
-    # run cmake and install executables
-    print("-Compiling release executables")
-    p = subprocess.run(['cmake', '..', '-DCMAKE_BUILD_TYPE=RELEASE'],
-                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if(p.returncode):
-        print("CMAKE failed.")
-        sys.exit(1)
-    p = subprocess.run(
-        ['make', '-j'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if(p.returncode):
-        print("Compilation failed.")
-        sys.exit(1)
-    p = subprocess.run(['make', 'install'],
-                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if(p.returncode):
-        print("Binaries instalation failed.")
-        sys.exit(1)
-    # restore cwd
-    os.chdir(old_cwd)
-
 
 def run_programs(problem_folder):
     input_folder = os.path.join(problem_folder, 'input')
