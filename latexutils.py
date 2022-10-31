@@ -196,5 +196,4 @@ def clean_auxiliary_files(folder):
     files = [os.path.join(folder, x) for x in os.listdir(folder) if x.endswith(
         '.aux') or x.endswith('.log') or x.endswith('.out')]
     for f in files:
-        print('Removing ',f);
         os.remove(f)
