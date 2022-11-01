@@ -5,7 +5,7 @@ import sys
 from config import custom_key
 from jsonutils import parse_json
 from polygon_converter import check
-from paths import Paths
+from metadata import Paths
 
 
 def build_executables():

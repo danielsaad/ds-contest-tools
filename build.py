@@ -8,7 +8,7 @@ import argparse
 from pdfutils import build_pdf
 from boca import boca_pack
 from toolchain import build_executables, run_programs
-from paths import Paths
+from metadata import Paths
 
 def create_parser():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
@@ -41,11 +41,10 @@ def build():
 
 def init(interactive=False):
     problem_folder = Paths.instance().dirs["problem_dir"]
-    tool_folder = Paths.instance().dirs["tool_dir"]
     if (os.path.exists(problem_folder)):
         print("Problem ID already exists in the directory")
         sys.exit(1)
-    folder = os.path.join(tool_folder, 'arquivos')
+    folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'arquivos')
     shutil.copytree(folder, problem_folder,
                     ignore=shutil.ignore_patterns('boca'))
     # Rename files and folders if the problem is interactive

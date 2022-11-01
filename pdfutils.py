@@ -1,4 +1,4 @@
-from paths import Paths
+from metadata import Paths
 from latexutils import clean_auxiliary_files, print_to_latex
 import config
 import glob

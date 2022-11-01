@@ -2,7 +2,7 @@ from latexutils import clean_auxiliary_files
 from pdfutils import build_pdf, merge_pdfs
 from boca import boca_pack
 from utils import convert_idx_to_string
-from paths import Paths
+from metadata import Paths
 import subprocess
 import sys
 import os
@@ -100,7 +100,7 @@ if __name__ == '__main__':
                 print(problem, "path doesn't have an output folder.")
                 sys.exit(1)
         elif (args.mode == 'build' and not os.path.exists(os.path.join(problem, 'bin'))):
-            command = ['python3', os.path.join(Paths.instance().dirs["tool_dir"], 
+            command = ['python3', os.path.join(os.path.dirname(os.path.abspath(__file__)), 
                     'build.py'), 'build', problem]
             p = subprocess.run(command, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             if (p.stderr):

@@ -4,7 +4,7 @@ import glob
 import shutil
 from fileutils import recursive_overwrite, rename_io
 from jsonutils import parse_json
-from paths import Paths
+from metadata import Paths
 
 class default_boca_limits:
     time_limit = 1  # time limit for all tests
