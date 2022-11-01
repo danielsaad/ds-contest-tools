@@ -1,15 +1,22 @@
 import os
 import shutil
+from math import log10, floor
 
 
-def rename_io(io_folder, zeros=4):
+def rename_io(io_folder: str) -> None:
     """Receives a list of files and adds leading zeros 
     to the name of each one.
     """
-    for filename in os.listdir(io_folder):
-        src = os.path.join(io_folder, filename)
-        dst = os.path.join(io_folder, filename.zfill(zeros))
-        os.rename(src, dst)
+    if os.path.isdir(io_folder):
+        files = os.listdir(io_folder)
+        fcount = len(files)
+        if (fcount == 0):
+            return
+        zeros = floor(log10(fcount)) + 1
+        for f in files:
+            src = os.path.join(io_folder, f)
+            dst = os.path.join(io_folder, f.zfill(zeros))
+            os.rename(src, dst)
 
 
 def recursive_overwrite(src: str, dest: str, ignore=None) -> None:

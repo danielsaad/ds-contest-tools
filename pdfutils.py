@@ -4,8 +4,7 @@ import glob
 import subprocess
 import os
 import sys
-from jsonutils import parse_json
-from latexutils import print_to_latex
+from latexutils import clean_auxiliary_files, print_to_latex
 from utils import verify_command
 
 
@@ -44,7 +43,8 @@ def build_pdf(problem_folder, output_directory='', options=config.DEFAULT_PDF_OP
     p = subprocess.run(command, stdin=subprocess.PIPE,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     verify_command(p, "Generation of problem file failed.")
-
+    clean_auxiliary_files(folder)
+    
     tutorial_filename = os.path.basename(
         os.path.abspath(problem_folder))+'-tutorial.tex'
     tutorial_filepath = os.path.join(
@@ -54,3 +54,4 @@ def build_pdf(problem_folder, output_directory='', options=config.DEFAULT_PDF_OP
         p = subprocess.run(command, stdin=subprocess.PIPE,
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         verify_command(p, "Generation of tutorial file failed.")
+        clean_auxiliary_files(folder)
