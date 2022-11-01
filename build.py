@@ -1,34 +1,25 @@
 #!/usr/bin/python3
 
-# TODO: clean temporary files
-
 
 import sys
 import os
 import shutil
 import argparse
-from jsonutils import parse_json
 from pdfutils import build_pdf
-from fileutils import recursive_overwrite
 from boca import boca_pack
 from toolchain import build_executables, run_programs
 from paths import Paths
 
-class statement_metadata:
-    def __init__(self, problem_id='', title='', timelimit=0, author=''):
-        self.problem_id = problem_id
-        self.title = title
-        self.timelimit = timelimit
-        self.author = author
-
 def create_parser():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('-a', '--all', action='store_true',
-                        default=False, help='apply action on all problems')
     parser.add_argument('-i', '--interactive', action='store_true',
                         default=False, help='set problem to interative on init')
     parser.add_argument(
-        'mode', choices=['init', 'build', 'genio', 'genpdf', 'pack2boca'], help='init: init a problem.\nbuild: build a problem.\ngenio: gen problem input/output while validating inputs.\ngenpdf: generates problem and tutorial PDFs.\npack2boca: pack a problem to BOCA format.\n')
+        'mode', choices=['init', 'build', 'genio', 'genpdf', 'pack2boca'], 
+                help='init: init a problem.\nbuild: build a problem.\n' +
+                'genio: gen problem input/output while validating inputs.\n' +
+                'genpdf: generates problem and tutorial PDFs.\n' +
+                'pack2boca: pack a problem to BOCA format.\n')
     parser.add_argument('problem_id', nargs='?')
     return parser
 
@@ -77,21 +68,11 @@ def pack2boca():
     boca_pack()
 
 
-def pack2uri(problem_id):
-    print('Not implemented')
-    pass
-
-
-def packall2uri():
-    print('Not implemented')
-    pass
-
-
 if __name__ == "__main__":
     parser = create_parser()
     args = parser.parse_args()
-    if(not args.all and not args.problem_id):
-        parser.error(args.mode + ' mode requires a problem id. Usage:' +
+    if(not args.problem_id):
+        parser.error(args.mode + ' mode requires a problem id. Usage: ' +
                      sys.argv[0] + ' ' + args.mode + ' <problem ID>')
     Paths.instance(args.problem_id)
     if(args.mode == 'init'):

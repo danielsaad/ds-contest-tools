@@ -1,12 +1,19 @@
 import os
 import shutil
+from math import log10, floor
 
 
-def rename_io(io_folder, zeros=4):
-    for filename in os.listdir(io_folder):
-        src = os.path.join(io_folder, filename)
-        dst = os.path.join(io_folder, filename.zfill(zeros))
-        os.rename(src, dst)
+def rename_io(io_folder):
+    if os.path.isdir(io_folder):
+        files = os.listdir(io_folder)
+        fcount = len(files)
+        if (fcount == 0):
+            return
+        zeros = floor(log10(fcount)) + 1
+        for f in files:
+            src = os.path.join(io_folder, f)
+            dst = os.path.join(io_folder, f.zfill(zeros))
+            os.rename(src, dst)
 
 
 def recursive_overwrite(src, dest, ignore=None):
