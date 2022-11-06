@@ -118,4 +118,3 @@ if __name__ == '__main__':
         build_contest_pdf()
     elif (args.mode == 'genpdf'):
         build_contest_pdf()
-
