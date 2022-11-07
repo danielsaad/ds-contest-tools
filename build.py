@@ -95,13 +95,17 @@ if __name__ == "__main__":
     if (args.mode == 'init'):
         logging.info('Initializing problem ' + args.problem_id)
         init(args.problem_id, args.interactive)
-        print('Problem', args.problem_id, 'initialized')
+        print('Problem', args.problem_id, 'initialized.')
     elif (args.mode == 'build'):
         logging.info("Building problem " + args.problem_id)
         build(args.problem_id)
+        print("Problem " + args.problem_id + " built.")
     elif (args.mode == 'pack2boca'):
         pack2boca(args.problem_id)
+        print("Problem " + args.problem_id + " to BOCA successfully.")
     elif (args.mode == 'genpdf'):
         genpdf(args.problem_id)
+        print("PDFs generated.")
     elif (args.mode == 'genio'):
         genio(args.problem_id)
+        print("Input and Output generated.")

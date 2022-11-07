@@ -29,7 +29,7 @@ def merge_pdfs(pdf_list: list, output_file: str) -> None:
 
 
 def build_pdf(problem_folder, output_directory='', options=config.DEFAULT_PDF_OPTIONS):
-    logging.info('-Building PDF')
+    logging.info('Building PDF')
     md_list = glob.glob(os.path.join(problem_folder, '*.md'))
     filepath = md_list[0]
     if (not os.path.exists(filepath)):

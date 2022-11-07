@@ -38,7 +38,7 @@ def create_parser() -> argparse.ArgumentParser:
 
 def build_contest_pdf(problem_folder_l: str, output_folder: str) -> None:
     """Builds a contest pdf from the PDFs of the list of problems"""
-    logging.debug('-Creating contest PDF')
+    logging.debug('Creating contest PDF')
     problem_pdf_l = []
     tutorial_pdf_l = []
 
@@ -70,7 +70,7 @@ def build_contest_pdf(problem_folder_l: str, output_folder: str) -> None:
 
 def build_boca_packages(problem_folder_l: str, output_folder: str) -> None:
     """Builds BOCA packages from the list of problems"""
-    logging.info('-Creating BOCA Files')
+    logging.info('Creating BOCA Files')
     for i, folder in enumerate(problem_folder_l):
         label = convert_idx_to_string(i)
         options = {'display_author': False,

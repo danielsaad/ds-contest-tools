@@ -14,7 +14,7 @@ def build_executables(problem_folder):
     os.chdir(problem_folder)
 
     # run makefile for release
-    logging.info("-Compiling executables")
+    logging.info("Compiling executables")
     p = subprocess.run(['make'],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     verify_command(p, "Makefile failed.")
@@ -61,7 +61,7 @@ def validate_inputs() -> None:
 def generate_inputs() -> None:
     """Generates input files from the generator file."""
     generator_command = os.path.join('../bin', 'generator')
-    logging.info('-Generating inputs')
+    logging.info('Generating inputs')
     p = subprocess.run(generator_command, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE, text=True)
     verify_command(p, "Error generating inputs.")
@@ -69,7 +69,7 @@ def generate_inputs() -> None:
 
 def produce_outputs(problem_metadata):
     """Run AC solution on inputs to produce the outputs."""
-    logging.info("-Producing outputs")
+    logging.info("Producing outputs")
     # change cwd to output folder
     input_files = os.listdir('../input')
     for fname in input_files:
