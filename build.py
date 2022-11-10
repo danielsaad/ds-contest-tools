@@ -14,9 +14,7 @@ import sys
 import os
 import shutil
 import argparse
-import logging
-from utils import start_log
-from jsonutils import parse_json
+from logger import info_log
 from pdfutils import build_pdf
 from boca import boca_pack
 from toolchain import build_executables, run_programs
@@ -91,13 +89,12 @@ if __name__ == "__main__":
     if(not args.problem_id):
         parser.error(args.mode + ' mode requires a problem id. Usage: ' +
                      sys.argv[0] + ' ' + args.mode + ' <problem ID>')
-    start_log()
     if (args.mode == 'init'):
-        logging.info('Initializing problem ' + args.problem_id)
+        info_log('Initializing problem ' + args.problem_id)
         init(args.problem_id, args.interactive)
         print('Problem', args.problem_id, 'initialized.')
     elif (args.mode == 'build'):
-        logging.info("Building problem " + args.problem_id)
+        info_log("Building problem " + args.problem_id)
         build(args.problem_id)
         print("Problem " + args.problem_id + " built.")
     elif (args.mode == 'pack2boca'):

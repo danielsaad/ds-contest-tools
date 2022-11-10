@@ -1,9 +1,9 @@
-import logging
 import config
 import glob
 import subprocess
 import os
 import sys
+from logger import info_log
 from latexutils import clean_auxiliary_files, print_to_latex
 from utils import verify_command
 
@@ -20,16 +20,16 @@ def build_merge_command(pdf_list: list, output_file: str) -> list:
 
 
 def merge_pdfs(pdf_list: list, output_file: str) -> None:
-    logging.info(["Merging ", pdf_list])
+    info_log(["Merging ", pdf_list])
     command = build_merge_command(pdf_list, output_file)
     p = subprocess.run(command, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE, text=True)
     verify_command(p, "Error merging PDFs.")
-    logging.info("PDFs Merged")
+    info_log("PDFs Merged")
 
 
 def build_pdf(problem_folder, output_directory='', options=config.DEFAULT_PDF_OPTIONS):
-    logging.info('Building PDF')
+    info_log('Building PDF')
     md_list = glob.glob(os.path.join(problem_folder, '*.md'))
     filepath = md_list[0]
     if (not os.path.exists(filepath)):

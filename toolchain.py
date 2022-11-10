@@ -2,7 +2,7 @@ from asyncio import SubprocessProtocol
 import os
 import subprocess
 import sys
-import logging
+from logger import info_log, error_log
 from config import custom_key
 from jsonutils import parse_json
 from polygon_converter import check
@@ -14,7 +14,7 @@ def build_executables(problem_folder):
     os.chdir(problem_folder)
 
     # run makefile for release
-    logging.info("Compiling executables")
+    info_log("Compiling executables")
     p = subprocess.run(['make'],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     verify_command(p, "Makefile failed.")
@@ -52,8 +52,8 @@ def validate_inputs() -> None:
                                  stderr=subprocess.PIPE, text=True)
             out, err = p.communicate()
             if (out or err):
-                logging.error(out)
-                logging.error(err)
+                error_log(out)
+                error_log(err)
                 print("Failed validation on input.", fname)
                 exit(1)
 
@@ -61,7 +61,7 @@ def validate_inputs() -> None:
 def generate_inputs() -> None:
     """Generates input files from the generator file."""
     generator_command = os.path.join('../bin', 'generator')
-    logging.info('Generating inputs')
+    info_log('Generating inputs')
     p = subprocess.run(generator_command, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE, text=True)
     verify_command(p, "Error generating inputs.")
@@ -69,7 +69,7 @@ def generate_inputs() -> None:
 
 def produce_outputs(problem_metadata):
     """Run AC solution on inputs to produce the outputs."""
-    logging.info("Producing outputs")
+    info_log("Producing outputs")
     # change cwd to output folder
     input_files = os.listdir('../input')
     for fname in input_files:

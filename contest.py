@@ -13,11 +13,11 @@ import sys
 import os
 import argparse
 import shutil
-import logging
+from logger import info_log, debug_log
 from latexutils import clean_auxiliary_files
 from pdfutils import build_pdf, merge_pdfs
 from boca import boca_pack
-from utils import convert_idx_to_string, start_log, verify_command
+from utils import convert_idx_to_string, verify_command
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -38,7 +38,7 @@ def create_parser() -> argparse.ArgumentParser:
 
 def build_contest_pdf(problem_folder_l: str, output_folder: str) -> None:
     """Builds a contest pdf from the PDFs of the list of problems"""
-    logging.debug('Creating contest PDF')
+    debug_log('Creating contest PDF')
     problem_pdf_l = []
     tutorial_pdf_l = []
 
@@ -70,7 +70,7 @@ def build_contest_pdf(problem_folder_l: str, output_folder: str) -> None:
 
 def build_boca_packages(problem_folder_l: str, output_folder: str) -> None:
     """Builds BOCA packages from the list of problems"""
-    logging.info('Creating BOCA Files')
+    info_log('Creating BOCA Files')
     for i, folder in enumerate(problem_folder_l):
         label = convert_idx_to_string(i)
         options = {'display_author': False,
@@ -86,8 +86,6 @@ def build_boca_packages(problem_folder_l: str, output_folder: str) -> None:
 if __name__ == '__main__':
     parser = create_parser()
     args = parser.parse_args()
-
-    start_log()
 
     for problem in args.problem_path:
         if (not os.path.exists(problem)):
