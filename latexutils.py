@@ -1,14 +1,17 @@
 import os
 import config
 import sys
+from logger import info_log
 from jsonutils import parse_json
 
 
-def print_line(line, f_out):
+def print_line(line: str, f_out: str) -> None:
+    """Prints 'line' on a file."""
     print(line, file=f_out, end='')
 
 
-def get_io(io_folder, problem_metadata):
+def get_io(io_folder: str, problem_metadata: dict) -> list:
+    """Returns the input/output file lines of the examples in the pdf."""
     interactive = False
     if(problem_metadata['problem']['interactive']):
         interactive = True
@@ -35,7 +38,7 @@ def get_io(io_folder, problem_metadata):
 
 
 def print_to_latex(problem_folder, md_file, options=config.DEFAULT_PDF_OPTIONS):
-
+    """Generates '.tex' file of a problem."""
     input_folder = os.path.join(problem_folder, 'input')
     output_folder = os.path.join(problem_folder, 'output')
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
@@ -47,7 +50,7 @@ def print_to_latex(problem_folder, md_file, options=config.DEFAULT_PDF_OPTIONS):
 
     tex_filename = os.path.basename(os.path.abspath(problem_folder))+'.tex'
     tex_filepath = os.path.join(problem_folder, tex_filename)
-    print('-Creating', tex_filepath)
+    info_log(f"Creating {tex_filepath}")
     with open(md_file) as f_in, open(tex_filepath, 'w') as f_out:
         print("\\documentclass{maratona}", file=f_out)
         print("\\begin{document}\n", file=f_out)
@@ -165,15 +168,17 @@ def print_to_latex(problem_folder, md_file, options=config.DEFAULT_PDF_OPTIONS):
             print("\\end{Problema}", file=f_out)
         print("\\end{document}", file=f_out)
     if(tutorial_lines):
-        print("-Producing Tutorial")
+        info_log("Producing Tutorial")
         print_tutorial_to_latex(
             problem_folder, problem_metadata, tutorial_lines)
 
 
-def print_tutorial_to_latex(problem_folder, problem_metadata, tutorial_lines):
+def print_tutorial_to_latex(problem_folder: str, problem_metadata: dict, 
+                            tutorial_lines: list) -> None:
+    """Generates '-tutorial.tex' file of a problem."""
     tex_filepath = os.path.join(problem_folder, os.path.basename(
         os.path.abspath(problem_folder)) + '-tutorial.tex')
-    print('-Creating', tex_filepath)
+    info_log(f"Creating {tex_filepath}")
     with open(tex_filepath, 'w') as f_out:
         print("\\documentclass[10pt]{article}", file=f_out)
         print("\\usepackage[utf8]{inputenc}", file=f_out)
@@ -192,7 +197,8 @@ def print_tutorial_to_latex(problem_folder, problem_metadata, tutorial_lines):
         print("\\end{document}", file=f_out)
 
 
-def clean_auxiliary_files(folder):
+def clean_auxiliary_files(folder: str) -> None:
+    """Remove files created after running the command 'pdflatex'."""
     files = [os.path.join(folder, x) for x in os.listdir(folder) if x.endswith(
         '.aux') or x.endswith('.log') or x.endswith('.out')]
     for f in files:

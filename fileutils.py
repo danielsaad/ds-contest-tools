@@ -3,7 +3,10 @@ import shutil
 from math import log10, floor
 
 
-def rename_io(io_folder):
+def rename_io(io_folder: str) -> None:
+    """Receives a list of files and adds leading zeros 
+    to the name of each one.
+    """
     if os.path.isdir(io_folder):
         files = os.listdir(io_folder)
         fcount = len(files)
@@ -16,7 +19,9 @@ def rename_io(io_folder):
             os.rename(src, dst)
 
 
-def recursive_overwrite(src, dest, ignore=None):
+def recursive_overwrite(src: str, dest: str, ignore=None) -> None:
+    """Recursively creates folders to 'dest' path and
+    copy files of 'src' to it."""
     if os.path.isdir(src):
         if not os.path.isdir(dest):
             os.makedirs(dest)
@@ -34,7 +39,7 @@ def recursive_overwrite(src, dest, ignore=None):
         shutil.copyfile(src, dest)
 
 
-def copy_directory(source, dest):
+def copy_directory(source: str, dest: str) -> None:
     """Copy a directory structure overwriting existing files"""
     for root, dirs, files in os.walk(source):
         if not os.path.isdir(root):
@@ -46,6 +51,6 @@ def copy_directory(source, dest):
 
             if not os.path.isdir(dest_path):
                 os.makedirs(dest_path)
-            if(dirs and files):
+            if (dirs and files):
                 shutil.copyfile(os.path.join(root, file),
                                 os.path.join(dest_path, file))

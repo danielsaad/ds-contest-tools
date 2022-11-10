@@ -1,16 +1,18 @@
-from metadata import Paths
-from latexutils import clean_auxiliary_files, print_to_latex
 import config
 import glob
 import subprocess
 import os
 import sys
+from logger import info_log
+from latexutils import clean_auxiliary_files, print_to_latex
+from utils import verify_command
+
 
 
 MERGE_TOOL = 'pdfjam'
 
 
-def build_merge_command(pdf_list, output_file):
+def build_merge_command(pdf_list: list, output_file: str) -> list:
     command = [MERGE_TOOL]
     for f in pdf_list:
         command += [f]
@@ -18,20 +20,20 @@ def build_merge_command(pdf_list, output_file):
     return command
 
 
-def merge_pdfs(pdf_list, output_file):
-    print('Merging', pdf_list)
+def merge_pdfs(pdf_list: list, output_file: str) -> None:
+    info_log(["Merging ", pdf_list])
     command = build_merge_command(pdf_list, output_file)
-    subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    print("PDFs Merged")
+    p = subprocess.run(command, stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE, text=True)
+    verify_command(p, "Error merging PDFs.")
+    info_log("PDFs Merged")
 
 
-def build_pdf(problem_folder='', output_directory='', options=config.DEFAULT_PDF_OPTIONS):
-    if problem_folder == '':
-        problem_folder = Paths.instance().dirs["problem_dir"]
-    print('-Building PDF')
+def build_pdf(problem_folder, output_directory='', options=config.DEFAULT_PDF_OPTIONS):
+    info_log('Building PDF')
     md_list = glob.glob(os.path.join(problem_folder, '*.md'))
     filepath = md_list[0]
-    if(not os.path.exists(filepath)):
+    if (not os.path.exists(filepath)):
         print("Statement file does not exists")
         sys.exit(1)
     print_to_latex(problem_folder, filepath, options)
@@ -40,23 +42,17 @@ def build_pdf(problem_folder='', output_directory='', options=config.DEFAULT_PDF
     tex_filepath = os.path.join(problem_folder, tex_filename)
     command = ["pdflatex", '--output-directory', folder, tex_filepath]
     p = subprocess.run(command, stdin=subprocess.PIPE,
-                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if(p.returncode):
-        print("Generation of problem file failed")
-        print(p.stdout, p.stderr)
-        sys.exit(1)
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    verify_command(p, "Generation of problem file failed.")
     clean_auxiliary_files(folder)
-
+    
     tutorial_filename = os.path.basename(
         os.path.abspath(problem_folder))+'-tutorial.tex'
     tutorial_filepath = os.path.join(
         problem_folder, tutorial_filename)
-    if(os.path.isfile(tutorial_filepath)):
+    if (os.path.isfile(tutorial_filepath)):
         command = ['pdflatex', '--output-directory', folder, tutorial_filepath]
         p = subprocess.run(command, stdin=subprocess.PIPE,
-                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if(p.returncode):
-            print("Generation of Tutorial file failed")
-            print(p.stdout, p.stderr)
-            sys.exit(1)
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        verify_command(p, "Generation of tutorial file failed.")
         clean_auxiliary_files(folder)
