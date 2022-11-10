@@ -7,7 +7,6 @@ Author:
     Daniel Saad Nogueira Nunes
 """
 
-
 import subprocess
 import sys
 import os
@@ -110,6 +109,8 @@ if __name__ == '__main__':
 
     os.makedirs(args.contest_folder, exist_ok=True)
 
+    Paths.instance(args.problem_path, args.contest_folder)
+
     if (args.mode == 'build' and args.boca):
         build_boca_packages(args.problem_path, args.contest_folder)
         build_contest_pdf(args.problem_path, args.contest_folder)
@@ -120,3 +121,4 @@ if __name__ == '__main__':
     elif (args.mode == 'genpdf'):
         build_contest_pdf(args.problem_path, args.contest_folder)
         print("PDFs generated successfully.")
+

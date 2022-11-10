@@ -8,6 +8,7 @@ from latexutils import clean_auxiliary_files, print_to_latex
 from utils import verify_command
 
 
+
 MERGE_TOOL = 'pdfjam'
 
 

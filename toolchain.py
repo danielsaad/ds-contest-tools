@@ -9,10 +9,10 @@ from polygon_converter import check
 from utils import verify_command
 
 
-def build_executables(problem_folder):
+def build_executables():
     old_cwd = os.getcwd()
-    os.chdir(problem_folder)
-
+    os.chdir(Paths.instance().dirs["problem_dir"])
+    
     # run makefile for release
     info_log("Compiling executables")
     p = subprocess.run(['make'],

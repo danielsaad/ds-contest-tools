@@ -7,7 +7,6 @@ from fileutils import recursive_overwrite, rename_io
 from jsonutils import parse_json
 from utils import verify_command
 
-
 class default_boca_limits:
     time_limit = 1  # time limit for all tests
     number_of_repetitions = 1  # number of repetitions
@@ -29,6 +28,7 @@ def boca_zip(boca_folder: str) -> None:
 
 def boca_pack(problem_folder: str) -> None:
     """Converts a DS problem to a BOCA problem."""
+    
     boca_template_folder = os.path.join(
         *[os.path.dirname(os.path.abspath(__file__)), 'arquivos', 'boca'])
     boca_folder = os.path.join(*[problem_folder, 'boca'])

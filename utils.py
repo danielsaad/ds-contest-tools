@@ -15,8 +15,7 @@ def convert_idx_to_string(idx: int) -> str:
         if idx == 0:
             break
     return ans
-
-
+    
 def verify_command(p: CompletedProcess, message: str) -> None:
     """Checks if the output of the function 'subprocess.run' is ok."""
     if (p.returncode):
