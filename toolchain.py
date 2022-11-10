@@ -1,27 +1,28 @@
-from asyncio import SubprocessProtocol
 import os
 import subprocess
 import sys
+from metadata import Paths
 from logger import info_log, error_log
 from config import custom_key
 from jsonutils import parse_json
-from polygon_converter import check
 from utils import verify_command
 
 
 def build_executables():
     old_cwd = os.getcwd()
     os.chdir(Paths.instance().dirs["problem_dir"])
-    
+
     # run makefile for release
     info_log("Compiling executables")
     p = subprocess.run(['make'],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     verify_command(p, "Makefile failed.")
     os.chdir(old_cwd)
 
-def run_programs(problem_folder):
+
+def run_programs():
     """Run the executables to create the problem."""
+    problem_folder = Paths.instance().dirs["problem_dir"]
     input_folder = os.path.join(problem_folder, 'input')
     output_folder = os.path.join(problem_folder, 'output')
     # Create input and output folders

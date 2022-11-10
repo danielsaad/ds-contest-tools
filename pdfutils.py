@@ -3,10 +3,10 @@ import glob
 import subprocess
 import os
 import sys
+from metadata import Paths
 from logger import info_log
 from latexutils import clean_auxiliary_files, print_to_latex
 from utils import verify_command
-
 
 
 MERGE_TOOL = 'pdfjam'
@@ -29,8 +29,11 @@ def merge_pdfs(pdf_list: list, output_file: str) -> None:
     info_log("PDFs Merged")
 
 
-def build_pdf(problem_folder, output_directory='', options=config.DEFAULT_PDF_OPTIONS):
+def build_pdf(problem_folder='', output_directory='', options=config.DEFAULT_PDF_OPTIONS):
     info_log('Building PDF')
+    if problem_folder == '':
+        problem_folder = Paths.instance().dirs["problem_dir"]
+    
     md_list = glob.glob(os.path.join(problem_folder, '*.md'))
     filepath = md_list[0]
     if (not os.path.exists(filepath)):
