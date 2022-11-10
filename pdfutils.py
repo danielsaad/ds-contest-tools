@@ -1,10 +1,11 @@
-from jsonutils import parse_json
+from metadata import Paths
 from latexutils import clean_auxiliary_files, print_to_latex
 import config
 import glob
 import subprocess
 import os
 import sys
+
 
 MERGE_TOOL = 'pdfjam'
 
@@ -24,7 +25,9 @@ def merge_pdfs(pdf_list, output_file):
     print("PDFs Merged")
 
 
-def build_pdf(problem_folder, output_directory='', options=config.DEFAULT_PDF_OPTIONS):
+def build_pdf(problem_folder='', output_directory='', options=config.DEFAULT_PDF_OPTIONS):
+    if problem_folder == '':
+        problem_folder = Paths.instance().dirs["problem_dir"]
     print('-Building PDF')
     md_list = glob.glob(os.path.join(problem_folder, '*.md'))
     filepath = md_list[0]

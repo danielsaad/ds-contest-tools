@@ -5,12 +5,13 @@ import sys
 from config import custom_key
 from jsonutils import parse_json
 from polygon_converter import check
+from metadata import Paths
 
 
-def build_executables(problem_folder):
+def build_executables():
     old_cwd = os.getcwd()
-    os.chdir(problem_folder)
-
+    os.chdir(Paths.instance().dirs["problem_dir"])
+    
     # run makefile for release
     print("-Compiling executables")
     p = subprocess.run(['make'],
@@ -20,7 +21,8 @@ def build_executables(problem_folder):
         sys.exit(1)
     os.chdir(old_cwd)
 
-def run_programs(problem_folder):
+def run_programs():
+    problem_folder = Paths.instance().dirs["problem_dir"]
     input_folder = os.path.join(problem_folder, 'input')
     output_folder = os.path.join(problem_folder, 'output')
     # Create input and output folders

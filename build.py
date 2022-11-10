@@ -8,7 +8,7 @@ import argparse
 from pdfutils import build_pdf
 from boca import boca_pack
 from toolchain import build_executables, run_programs
-
+from metadata import Paths
 
 def create_parser():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
@@ -24,27 +24,27 @@ def create_parser():
     return parser
 
 
-def genio(problem_folder):
-    build_executables(problem_folder)
-    run_programs(problem_folder)
+def genio():
+    build_executables()
+    run_programs()
 
 
-def genpdf(problem_folder):
-    build_pdf(problem_folder)
+def genpdf():
+    build_pdf()
 
 
-def build(problem_folder):
-    build_executables(problem_folder)
-    run_programs(problem_folder)
-    genpdf(problem_folder)
+def build():
+    build_executables()
+    run_programs()
+    genpdf()
 
 
-def init(problem_folder, interactive=False):
+def init(interactive=False):
+    problem_folder = Paths.instance().dirs["problem_dir"]
     if (os.path.exists(problem_folder)):
         print("Problem ID already exists in the directory")
         sys.exit(1)
-    folder = os.path.join(os.path.dirname(
-        os.path.abspath(__file__)), 'arquivos')
+    folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'arquivos')
     shutil.copytree(folder, problem_folder,
                     ignore=shutil.ignore_patterns('boca'))
     # Rename files and folders if the problem is interactive
@@ -63,8 +63,8 @@ def init(problem_folder, interactive=False):
         os.remove(interactor)
 
 
-def pack2boca(problem_folder):
-    boca_pack(problem_folder)
+def pack2boca():
+    boca_pack()
 
 
 if __name__ == "__main__":
@@ -73,16 +73,17 @@ if __name__ == "__main__":
     if(not args.problem_id):
         parser.error(args.mode + ' mode requires a problem id. Usage: ' +
                      sys.argv[0] + ' ' + args.mode + ' <problem ID>')
+    Paths.instance(args.problem_id)
     if(args.mode == 'init'):
         print('Initializing problem', args.problem_id)
-        init(args.problem_id, args.interactive)
+        init(args.interactive)
         print('Problem', args.problem_id, 'initialized')
     elif(args.mode == 'build'):
         print("Building problem", args.problem_id)
-        build(args.problem_id)
+        build()
     elif(args.mode == 'pack2boca'):
-        pack2boca(args.problem_id)
+        pack2boca()
     elif(args.mode == 'genpdf'):
-        genpdf(args.problem_id)
+        genpdf()
     elif(args.mode == 'genio'):
-        genio(args.problem_id)
+        genio()
