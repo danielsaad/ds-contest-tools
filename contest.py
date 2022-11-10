@@ -13,7 +13,7 @@ import sys
 import os
 import argparse
 import shutil
-from logger import info_log, debug_log
+from logger import info_log
 from latexutils import clean_auxiliary_files
 from pdfutils import build_pdf, merge_pdfs
 from boca import boca_pack
@@ -38,7 +38,7 @@ def create_parser() -> argparse.ArgumentParser:
 
 def build_contest_pdf(problem_folder_l: str, output_folder: str) -> None:
     """Builds a contest pdf from the PDFs of the list of problems"""
-    debug_log('Creating contest PDF')
+    info_log('Creating contest PDF')
     problem_pdf_l = []
     tutorial_pdf_l = []
 
@@ -113,7 +113,10 @@ if __name__ == '__main__':
     if (args.mode == 'build' and args.boca):
         build_boca_packages(args.problem_path, args.contest_folder)
         build_contest_pdf(args.problem_path, args.contest_folder)
+        print("Contest build successfully.")
     elif (args.mode == 'build'):
         build_contest_pdf(args.problem_path, args.contest_folder)
+        print("Contest build successfully.")
     elif (args.mode == 'genpdf'):
         build_contest_pdf(args.problem_path, args.contest_folder)
+        print("PDFs generated successfully.")
