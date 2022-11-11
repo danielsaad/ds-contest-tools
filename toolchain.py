@@ -99,3 +99,16 @@ def produce_outputs(problem_metadata):
             if (p.returncode):
                 print("Generation of output for input", fname, "failed")
                 sys.exit(1)
+
+
+def clean_files() -> None:
+    """Call Makefile in order to remove executables"""
+    old_cwd = os.getcwd()
+    os.chdir(Paths.instance().dirs["problem_dir"])
+
+    command = ['make', 'clean']
+    p = subprocess.run(command, stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE, text=True)
+    verify_command(p, "Error cleaning executables.")
+
+    os.chdir(old_cwd)

@@ -11,7 +11,7 @@ CXX_FLAGS := -Wall -O2
 BOCA_FLAGS := -static -DBOCA_SUPPORT
 DEBUG_FLAGS := -Wall -g
 
-.PHONY: all debug release
+.PHONY: all debug release clean
 
 all: debug release
 
@@ -36,3 +36,7 @@ $(BIN_DIR)/checker-boca: $(SRC_DIR)/checker.cpp
 
 $(DBG_DIR)/checker-boca: $(SRC_DIR)/checker.cpp
 	$(CXX) $(DEBUG_FLAGS) $(BOCA_FLAGS) $^ -o $@ 
+
+clean:
+	@echo Cleaning problem files
+	rm -rf bin

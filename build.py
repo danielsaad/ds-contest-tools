@@ -16,7 +16,7 @@ import argparse
 from logger import info_log
 from pdfutils import build_pdf
 from boca import boca_pack
-from toolchain import build_executables, run_programs
+from toolchain import build_executables, run_programs, clean_files
 from metadata import Paths
 
 
@@ -26,11 +26,12 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument('-i', '--interactive', action='store_true',
                         default=False, help='set problem to interative on init')
     parser.add_argument(
-        'mode', choices=['init', 'build', 'genio', 'genpdf', 'pack2boca'], 
+        'mode', choices=['init', 'build', 'genio', 'genpdf', 'pack2boca', 'clean'], 
                 help='init: init a problem.\nbuild: build a problem.\n' +
                 'genio: gen problem input/output while validating inputs.\n' +
                 'genpdf: generates problem and tutorial PDFs.\n' +
-                'pack2boca: pack a problem to BOCA format.\n')
+                'pack2boca: pack a problem to BOCA format.\n' + 
+                'clean: remove executables of a DS problem.\n')
     parser.add_argument('problem_id', nargs='?')
     return parser
 
@@ -84,6 +85,14 @@ def pack2boca() -> None:
     boca_pack()
 
 
+def clean() -> None:
+    """Call functions to clean executables"""
+    if (not os.path.exists(Paths.instance().dirs["problem_dir"])):
+        print("Path to problem does not exists.")
+        sys.exit(1)
+    clean_files()
+
+
 if __name__ == "__main__":
     parser = create_parser()
     args = parser.parse_args()
@@ -108,3 +117,6 @@ if __name__ == "__main__":
     elif (args.mode == 'genio'):
         genio()
         print("Input and Output generated.")
+    elif (args.mode == 'clean'):
+        clean()
+        print('Files removed successfully.')
