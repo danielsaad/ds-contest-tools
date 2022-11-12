@@ -6,9 +6,10 @@ from logger import info_log, error_log
 from config import custom_key
 from jsonutils import parse_json
 from utils import verify_command
+from checker import run_checker
 
 
-def build_executables():
+def build_executables() -> None:
     old_cwd = os.getcwd()
     os.chdir(Paths.instance().dirs["problem_dir"])
 
@@ -20,7 +21,7 @@ def build_executables():
     os.chdir(old_cwd)
 
 
-def run_programs():
+def run_programs() -> None:
     """Run the executables to create the problem."""
     problem_folder = Paths.instance().dirs["problem_dir"]
     input_folder = os.path.join(problem_folder, 'input')
@@ -38,6 +39,9 @@ def run_programs():
     os.chdir(output_folder)
     produce_outputs(problem_metadata)
     os.chdir(old_cwd)
+    info_log("Running checker")
+    run_checker(input_folder, output_folder, output_folder,
+                os.path.join(problem_folder, 'bin/checker'))
 
 
 def validate_inputs() -> None:
@@ -68,7 +72,7 @@ def generate_inputs() -> None:
     verify_command(p, "Error generating inputs.")
 
 
-def produce_outputs(problem_metadata):
+def produce_outputs(problem_metadata: dict) -> None:
     """Run AC solution on inputs to produce the outputs."""
     info_log("Producing outputs")
     # change cwd to output folder
