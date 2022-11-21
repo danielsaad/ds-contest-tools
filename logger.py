@@ -32,12 +32,15 @@ debug = setup_logger('debug', 'debug.log')
 
 
 def info_log(text: str) -> None:
+    """Print informations of the tool to a log."""
     tool.info(str(text))
 
 
 def debug_log(text: str) -> None:
+    """Print informations of subprocesses of the tool to a log."""
     debug.debug(str(text))
 
 
 def error_log(text: str) -> None:
+    """Print errors to a log."""
     tool.error(str(text))
