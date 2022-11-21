@@ -18,7 +18,7 @@ from logger import info_log
 from latexutils import clean_auxiliary_files
 from pdfutils import build_pdf, merge_pdfs
 from boca import boca_pack
-from utils import convert_idx_to_string, verify_command
+from utils import convert_idx_to_string, verify_command, instance_paths
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -117,7 +117,7 @@ if __name__ == '__main__':
 
     os.makedirs(args.contest_folder, exist_ok=True)
 
-    Paths.instance(args.problem_path, args.contest_folder)
+    instance_paths(args.problem_path, args.contest_folder)
 
     if (args.mode == 'build' and args.boca):
         build_boca_packages()

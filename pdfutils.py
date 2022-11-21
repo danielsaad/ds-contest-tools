@@ -23,7 +23,10 @@ def build_merge_command(pdf_list: list, output_file: str) -> list:
 
 def merge_pdfs(pdf_list: list, output_file: str) -> None:
     """Creates contest PDF by merging all PDFs."""
-    info_log(["Merging ", pdf_list])
+    pdfs = ''
+    for pdf in pdf_list:
+        pdfs += os.path.basename(pdf) + ' '
+    info_log(f"Merging {pdfs}")
     command = build_merge_command(pdf_list, output_file)
     p = subprocess.run(command, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE, text=True)

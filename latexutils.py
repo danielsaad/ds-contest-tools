@@ -201,6 +201,7 @@ def print_tutorial_to_latex(problem_folder: str, problem_metadata: dict,
 def clean_auxiliary_files(folder: str) -> None:
     """Remove files created after running the command 'pdflatex'."""
     files = [os.path.join(folder, x) for x in os.listdir(folder) if x.endswith(
-        '.aux') or x.endswith('.log') or x.endswith('.out')]
+        '.aux') or (x.endswith('.log') and not x.endswith('tool.log') and not
+                    x.endswith('debug.log')) or x.endswith('.out')]
     for f in files:
         os.remove(f)

@@ -1,5 +1,6 @@
 import logging
 import os
+from metadata import Paths
 
 
 formatter = logging.Formatter('%(levelname)s - %(message)s')
@@ -8,9 +9,13 @@ formatter = logging.Formatter('%(levelname)s - %(message)s')
 def setup_logger(name: str, log_file: str, level=logging.DEBUG) -> logging.Logger:
     """To setup as many loggers as you want"""
     old_cwd = os.getcwd()
-    tool_path = os.path.dirname(os.path.abspath(__file__))
-    if (tool_path != ''):
-        os.chdir(tool_path)
+
+    if (type(Paths.instance().dirs['problem_dir']) is list):
+        os.makedirs(Paths.instance().dirs['output_dir'], exist_ok=True)
+        os.chdir(Paths.instance().dirs['output_dir'])
+    else:
+        os.makedirs(Paths.instance().dirs['problem_dir'], exist_ok=True)
+        os.chdir(Paths.instance().dirs['problem_dir'])
 
     handler = logging.FileHandler(log_file, mode='w')
     handler.setFormatter(formatter)
@@ -23,24 +28,19 @@ def setup_logger(name: str, log_file: str, level=logging.DEBUG) -> logging.Logge
     return logger
 
 
-# first file logger
-tool = setup_logger('tool', 'tool.log')
-
-
-# second file logger
-debug = setup_logger('debug', 'debug.log')
-
-
 def info_log(text: str) -> None:
     """Print informations of the tool to a log."""
-    tool.info(str(text))
+    tool = logging.getLogger('tool')
+    tool.info(text)
 
 
 def debug_log(text: str) -> None:
     """Print informations of subprocesses of the tool to a log."""
-    debug.debug(str(text))
+    debug = logging.getLogger('debug')
+    debug.debug(text)
 
 
 def error_log(text: str) -> None:
     """Print errors to a log."""
-    tool.error(str(text))
+    tool = logging.getLogger('tool')
+    tool.error(text)

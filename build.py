@@ -18,19 +18,21 @@ from pdfutils import build_pdf
 from boca import boca_pack
 from toolchain import build_executables, run_programs
 from metadata import Paths
+from utils import instance_paths
 
 
 def create_parser() -> argparse.ArgumentParser:
     """Initialize the argparser of the tool."""
-    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-i', '--interactive', action='store_true',
                         default=False, help='set problem to interative on init')
     parser.add_argument(
-        'mode', choices=['init', 'build', 'genio', 'genpdf', 'pack2boca'], 
-                help='init: init a problem.\nbuild: build a problem.\n' +
-                'genio: gen problem input/output while validating inputs.\n' +
-                'genpdf: generates problem and tutorial PDFs.\n' +
-                'pack2boca: pack a problem to BOCA format.\n')
+        'mode', choices=['init', 'build', 'genio', 'genpdf', 'pack2boca'],
+        help='init: init a problem.\nbuild: build a problem.\n' +
+        'genio: gen problem input/output while validating inputs.\n' +
+        'genpdf: generates problem and tutorial PDFs.\n' +
+        'pack2boca: pack a problem to BOCA format.\n')
     parser.add_argument('problem_id', nargs='?')
     return parser
 
@@ -56,13 +58,14 @@ def build() -> None:
 def init(interactive=False) -> None:
     """Initialize a competitive problem."""
     problem_folder = Paths.instance().dirs["problem_dir"]
-    if (os.path.exists(problem_folder)):
+    if (os.path.exists(os.path.join(problem_folder, 'src'))):
         print("Problem ID already exists in the directory")
         sys.exit(1)
 
-    folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'arquivos')
+    folder = os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), 'arquivos')
     shutil.copytree(folder, problem_folder,
-                    ignore=shutil.ignore_patterns('boca'))
+                    ignore=shutil.ignore_patterns('boca'), dirs_exist_ok=True)
     # Rename files and folders if the problem is interactive
     interactive_statement = os.path.join(
         problem_folder, 'statement-interactive.md')
@@ -87,10 +90,10 @@ def pack2boca() -> None:
 if __name__ == "__main__":
     parser = create_parser()
     args = parser.parse_args()
-    if(not args.problem_id):
+    if (not args.problem_id):
         parser.error(args.mode + ' mode requires a problem id. Usage: ' +
                      sys.argv[0] + ' ' + args.mode + ' <problem ID>')
-    Paths.instance(args.problem_id)
+    instance_paths(args.problem_id)
     if (args.mode == 'init'):
         info_log('Initializing problem ' + args.problem_id)
         init(args.interactive)
