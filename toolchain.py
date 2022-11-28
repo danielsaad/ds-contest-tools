@@ -15,7 +15,7 @@ def build_executables() -> None:
 
     # run makefile for release
     info_log("Compiling executables")
-    p = subprocess.run(['make'],
+    p = subprocess.run(['make', '-j'],
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     verify_command(p, "Makefile failed.")
     os.chdir(old_cwd)

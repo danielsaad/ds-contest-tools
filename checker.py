@@ -8,21 +8,10 @@ import subprocess
 import sys
 import time
 import shutil
+from multiprocessing import Process, cpu_count, Manager
 from metadata import Paths
 from logger import info_log, debug_log, error_log
-from time import sleep  # TODO - Delete before commit
 
-""" Global definitions """
-
-""" C definitions """
-C_COMPILER = ['gcc']
-C_FLAGS = ['-O2', '-DNDEBUG']
-C_LFLAGS = ['-lm']
-
-""" CPP definitions """
-CPP_COMPILER = ['g++']
-CPP_FLAGS = ['-O2', '-DNDEBUG', '-std=c++11']
-CPP_LFLAGS = ['-lm']
 
 """ Java definitions """
 JAVA_COMPILER = ['javac']
@@ -35,33 +24,6 @@ PYTHON3_INTERPRETER = ['python3']
 
 def custom_key(str):
     return +len(str), str.lower()
-
-
-def compile_c(submission_file, binary_file):
-    """ Compile a source code 'submission_file' into its 
-        corresponding 'binary_file' """
-    command = C_COMPILER + C_FLAGS + \
-        [submission_file] + ['-o', binary_file] + C_LFLAGS
-    print('Compiling: ', ' '.join(command))
-    p = subprocess.run(command)
-    if (p.returncode):
-        print('CE: C Compilation of', submission_file, 'Failed')
-        sys.exit(1)
-    else:
-        print(binary_file, 'generated')
-
-
-def compile_cpp(submission_file, binary_file):
-    # submission_folder = os.path.basename(submission_file)
-    command = CPP_COMPILER + CPP_FLAGS + \
-        [submission_file] + ['-o', binary_file] + CPP_LFLAGS
-    p = subprocess.run(command)
-    print('Compiling: ', ' '.join(command))
-    if (p.returncode):
-        print('CE: C++ Compilation of', submission_file, 'Failed')
-        sys.exit(1)
-    else:
-        print(binary_file, 'generated')
 
 
 def compile_java(submission_file, problem_id):
@@ -79,27 +41,20 @@ def compile_java(submission_file, problem_id):
         print(renamed_file, 'class file', 'generated')
 
 
-def run_binary(binary_file, input_folder, output_folder):
-    test = os.path.basename(binary_file)
-    debug_log('Run binary ' + test.upper())
-    input_files = [f for f in os.listdir(
-        input_folder) if os.path.isfile(os.path.join(input_folder, f))]
-
-    input_files.sort(key=custom_key)
-    for fname_in in input_files:
+def run_binary(binary_file, input_folder, output_folder, input_files, output_dict, begin=0, pace=1):
+    for i in range(begin, len(input_files), pace):
+        fname_in = input_files[i]
         fname_in = os.path.join(input_folder, fname_in)
         fname_out = os.path.join(output_folder, os.path.basename(fname_in))
-        debug_log(f'Running test {os.path.basename(fname_in)}')
         local_time_start = time.perf_counter()
         with open(fname_in, 'r') as inf, open(fname_out, 'w') as ouf:
             p = subprocess.run([binary_file],
                                stdin=inf, stdout=ouf)
         local_time_end = time.perf_counter()
+        run_time_error = False
         if (p.returncode):
-            debug_log('RE: Runtime error')
-            # exit(0)
-        debug_log('Time elapsed: {0:.2f}'.format(
-            local_time_end-local_time_start) + ' seconds')
+            run_time_error = True
+        output_dict[i] = [run_time_error, local_time_end-local_time_start]
 
 
 def run_java(class_name, input_folder, output_folder):
@@ -151,18 +106,19 @@ def run_python3(submission_file: str, input_folder: str, output_folder):
 
 def run(submission_file: str, input_folder: str, output_folder: str) -> None:
     binary_file, ext = os.path.splitext(submission_file)
+    debug_log('Run binary ' + binary_file)
     problem_folder = os.path.join(
         os.getcwd(), Paths.instance().dirs['problem_dir'])
     binary_file = os.path.join(problem_folder, 'bin', binary_file)
     start_time = 0.0
     end_time = 0.0
-    if (ext == '.cpp'):
+    input_files = [f for f in os.listdir(
+        input_folder) if os.path.isfile(os.path.join(input_folder, f))]
+    input_files.sort(key=custom_key)
+    if (ext == '.cpp' or ext == '.c'):
         start_time = time.perf_counter()
-        run_binary(binary_file, input_folder, output_folder)
-        end_time = time.perf_counter()
-    elif (ext == '.c'):
-        start_time = time.perf_counter()
-        run_binary(binary_file, input_folder, output_folder)
+        create_thread(binary_file, input_folder,
+                      output_folder, input_files, run_binary)
         end_time = time.perf_counter()
     elif (ext == '.java'):
         problem_id = os.path.basename(os.path.dirname(input_folder))
@@ -233,7 +189,6 @@ def run_solutions(input_folder, output_folder, problem_metadata) -> None:
     problem_folder = Paths.instance().dirs["problem_dir"]
     tmp_folder = os.path.join(os.getcwd(), problem_folder, 'tmp_output')
     os.makedirs(tmp_folder, exist_ok=True)
-
     for expected_result, files in solutions.items():
         if isinstance(files, list):
             for submission_file in files:
@@ -248,3 +203,23 @@ def run_solutions(input_folder, output_folder, problem_metadata) -> None:
             run_checker(input_folder, output_folder,
                         tmp_folder, os.path.join(problem_folder, 'bin/checker'))
     shutil.rmtree(tmp_folder)
+
+
+def create_thread(binary_file, input_folder, output_folder, input_files, routine):
+    n_threads = cpu_count()
+    with Manager() as manager:
+        output_dict = manager.dict()
+        threads = [Process(target=routine, args=(
+            binary_file, input_folder, output_folder, input_files, output_dict, idx, n_threads)) for idx in range(n_threads)]
+        [thread.start() for thread in threads]
+        [thread.join() for thread in threads]
+        write_to_log(output_dict)
+
+
+def write_to_log(output_dict):
+    for i in range(len(output_dict)):
+        debug_log(f'Running test {i + 1}')
+        if output_dict[i][0]:
+            debug_log('RE: Runtime error')
+        debug_log('Time elapsed: {0:.2f}'.format(
+            output_dict[i][1]) + ' seconds')
