@@ -6,21 +6,22 @@ from logger import info_log, error_log
 from config import custom_key
 from jsonutils import parse_json
 from utils import verify_command
+from checker import run_checker, run_solutions
 
 
-def build_executables():
+def build_executables() -> None:
     old_cwd = os.getcwd()
     os.chdir(Paths.instance().dirs["problem_dir"])
 
     # run makefile for release
     info_log("Compiling executables")
-    p = subprocess.run(['make'],
+    p = subprocess.run(['make', '-j'],
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     verify_command(p, "Makefile failed.")
     os.chdir(old_cwd)
 
 
-def run_programs():
+def run_programs() -> None:
     """Run the executables to create the problem."""
     problem_folder = Paths.instance().dirs["problem_dir"]
     input_folder = os.path.join(problem_folder, 'input')
@@ -38,6 +39,8 @@ def run_programs():
     os.chdir(output_folder)
     produce_outputs(problem_metadata)
     os.chdir(old_cwd)
+    info_log("Running solutions")
+    run_solutions(input_folder, output_folder, problem_metadata)
 
 
 def validate_inputs() -> None:
@@ -68,7 +71,7 @@ def generate_inputs() -> None:
     verify_command(p, "Error generating inputs.")
 
 
-def produce_outputs(problem_metadata):
+def produce_outputs(problem_metadata) -> None:
     """Run AC solution on inputs to produce the outputs."""
     info_log("Producing outputs")
     # change cwd to output folder
@@ -99,3 +102,16 @@ def produce_outputs(problem_metadata):
             if (p.returncode):
                 print("Generation of output for input", fname, "failed")
                 sys.exit(1)
+
+
+def clean_files() -> None:
+    """Call Makefile in order to remove executables"""
+    old_cwd = os.getcwd()
+    os.chdir(Paths.instance().dirs["problem_dir"])
+
+    command = ['make', 'clean']
+    p = subprocess.run(command, stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE, text=True)
+    verify_command(p, "Error cleaning executables.")
+
+    os.chdir(old_cwd)

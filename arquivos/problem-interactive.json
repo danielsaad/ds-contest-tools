@@ -26,5 +26,13 @@
         "number_of_repetitions" :  1,
         "maximum_memory_mb" : 512,
         "maximum_output_size_kb" : 4096
+    },
+    "solutions" : {
+        "main-ac" : "ac.cpp",
+        "alternative-ac" : [""],
+        "wrong-anwser" : [""],
+        "time-limit" : [""],
+        "runtime-error" : [""],
+        "memory-limit" : [""]
     }
 }
