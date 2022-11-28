@@ -7,11 +7,13 @@ Author:
     Daniel Saad Nogueira Nunes
 """
 
+
 import subprocess
 import sys
 import os
 import argparse
 import shutil
+from metadata import Paths
 from logger import info_log
 from latexutils import clean_auxiliary_files
 from pdfutils import build_pdf, merge_pdfs
@@ -35,11 +37,14 @@ def create_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def build_contest_pdf(problem_folder_l: str, output_folder: str) -> None:
+def build_contest_pdf() -> None:
     """Builds a contest pdf from the PDFs of the list of problems"""
     info_log('Creating contest PDF')
+
     problem_pdf_l = []
     tutorial_pdf_l = []
+    problem_folder_l = Paths.instance().dirs["problem_dir"]
+    output_folder = Paths.instance().dirs["output_dir"]
 
     cls_file = os.path.join(os.path.join(os.path.dirname(
         os.path.abspath(__file__)), 'arquivos'), 'maratona.cls')
@@ -67,9 +72,12 @@ def build_contest_pdf(problem_folder_l: str, output_folder: str) -> None:
         os.remove(os.path.join(output_folder, 'maratona.cls'))
 
 
-def build_boca_packages(problem_folder_l: str, output_folder: str) -> None:
+def build_boca_packages() -> None:
     """Builds BOCA packages from the list of problems"""
     info_log('Creating BOCA Files')
+
+    problem_folder_l = Paths.instance().dirs["problem_dir"]
+    output_folder = Paths.instance().dirs["output_dir"]
     for i, folder in enumerate(problem_folder_l):
         label = convert_idx_to_string(i)
         options = {'display_author': False,
@@ -112,13 +120,12 @@ if __name__ == '__main__':
     Paths.instance(args.problem_path, args.contest_folder)
 
     if (args.mode == 'build' and args.boca):
-        build_boca_packages(args.problem_path, args.contest_folder)
-        build_contest_pdf(args.problem_path, args.contest_folder)
+        build_boca_packages()
+        build_contest_pdf()
         print("Contest build successfully.")
     elif (args.mode == 'build'):
-        build_contest_pdf(args.problem_path, args.contest_folder)
+        build_contest_pdf()
         print("Contest build successfully.")
     elif (args.mode == 'genpdf'):
-        build_contest_pdf(args.problem_path, args.contest_folder)
+        build_contest_pdf()
         print("PDFs generated successfully.")
-
