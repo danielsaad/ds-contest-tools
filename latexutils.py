@@ -1,11 +1,12 @@
 import os
 import config
 import sys
+import io
 from logger import info_log
 from jsonutils import parse_json
 
 
-def print_line(line: str, f_out: str) -> None:
+def print_line(line: str, f_out: io.TextIOWrapper) -> None:
     """Prints 'line' on a file."""
     print(line, file=f_out, end='')
 
@@ -37,7 +38,7 @@ def get_io(io_folder: str, problem_metadata: dict) -> list:
     return l
 
 
-def print_to_latex(problem_folder, md_file, options=config.DEFAULT_PDF_OPTIONS):
+def print_to_latex(problem_folder: str, md_file: str, options=config.DEFAULT_PDF_OPTIONS):
     """Generates '.tex' file of a problem."""
     input_folder = os.path.join(problem_folder, 'input')
     output_folder = os.path.join(problem_folder, 'output')
@@ -200,6 +201,7 @@ def print_tutorial_to_latex(problem_folder: str, problem_metadata: dict,
 def clean_auxiliary_files(folder: str) -> None:
     """Remove files created after running the command 'pdflatex'."""
     files = [os.path.join(folder, x) for x in os.listdir(folder) if x.endswith(
-        '.aux') or x.endswith('.log') or x.endswith('.out')]
+        '.aux') or (x.endswith('.log') and not x.endswith('tool.log') and not
+                    x.endswith('debug.log')) or x.endswith('.out')]
     for f in files:
         os.remove(f)

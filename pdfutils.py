@@ -13,6 +13,7 @@ MERGE_TOOL = 'pdfjam'
 
 
 def build_merge_command(pdf_list: list, output_file: str) -> list:
+    """Returns the command to merge the PDFs."""
     command = [MERGE_TOOL]
     for f in pdf_list:
         command += [f]
@@ -21,7 +22,11 @@ def build_merge_command(pdf_list: list, output_file: str) -> list:
 
 
 def merge_pdfs(pdf_list: list, output_file: str) -> None:
-    info_log(["Merging ", pdf_list])
+    """Creates contest PDF by merging all PDFs."""
+    pdfs = ''
+    for pdf in pdf_list:
+        pdfs += os.path.basename(pdf) + ' '
+    info_log(f"Merging {pdfs}")
     command = build_merge_command(pdf_list, output_file)
     p = subprocess.run(command, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE, text=True)
@@ -30,6 +35,7 @@ def merge_pdfs(pdf_list: list, output_file: str) -> None:
 
 
 def build_pdf(problem_folder='', output_directory='', options=config.DEFAULT_PDF_OPTIONS):
+    """Build problem and tutorial PDFs."""
     info_log('Building PDF')
     if problem_folder == '':
         problem_folder = Paths.instance().dirs["problem_dir"]

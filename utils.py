@@ -1,7 +1,10 @@
 import sys
+import os
 from operator import mod
 from subprocess import CompletedProcess
 from logger import error_log, debug_log
+from metadata import Paths
+from logger import setup_logger
 
 
 def convert_idx_to_string(idx: int) -> str:
@@ -30,3 +33,15 @@ def verify_command(p: CompletedProcess, message: str) -> None:
         debug_log(p.stdout)
     if (p.stderr):
         debug_log(p.stderr)
+
+
+def instance_paths(problem_dir, output_dir='') -> None:
+    """Initialize metadata dictionary and logs."""
+    if (type(problem_dir) is list):
+        [os.path.abspath(s) for s in problem_dir]
+    else:
+        problem_dir = os.path.abspath(problem_dir)
+    output_dir = os.path.abspath(output_dir)
+    Paths.instance(problem_dir, output_dir)
+    setup_logger('tool', 'tool.log')
+    setup_logger('debug', 'debug.log')

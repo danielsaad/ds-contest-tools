@@ -4,7 +4,7 @@ DEFAULT_PDF_OPTIONS = {
 }
 
 
-def custom_key(str: str) -> str:
+def custom_key(str: str) -> tuple:
     """Sorting function. Firstly sort by lenght and 
     secondly by lexicographical order.
     """
