@@ -2,6 +2,7 @@ import os
 import config
 import sys
 import io
+import re
 from logger import info_log
 from jsonutils import parse_json
 
@@ -9,6 +10,22 @@ from jsonutils import parse_json
 def print_line(line: str, f_out: io.TextIOWrapper) -> None:
     """Prints 'line' on a file."""
     print(line, file=f_out, end='')
+
+
+def convert_string(obj: re.Match) -> str:
+    """Escape characters present in pattern."""
+    if obj.group() == '<' or obj.group() == '>':    
+        return obj.group().replace(obj.group(), '$' + obj.group() + '$')
+    return obj.group().replace(obj.group(), '\\' + obj.group())
+
+
+def escape_latex_char(text: str) -> str:
+    """Escape characters for LaTex."""
+    text = text.replace('\\', '\\textbackslash ')\
+               .replace('^', '\\textasciicircum ')\
+               .replace('~', '\\textasciitilde ')
+    text = re.sub(r'[#$%&_{}<>]', convert_string, text)
+    return text
 
 
 def get_io(io_folder: str, problem_metadata: dict) -> list:
@@ -144,17 +161,13 @@ def print_to_latex(problem_folder: str, md_file: str, options=config.DEFAULT_PDF
                 if(tc % 2):
                     print('\\rowcolor{gray!20}', end='', file=f_out)
                 if(i < len(tc_input)):
-                    tc_input[i] = tc_input[i].replace('#', '\\#')
-                    tc_input[i] = tc_input[i].replace('_', '\_')
                     tc_input[i] = tc_input[i].replace(' ', '~')
-                    print('\\texttt{'+tc_input[i]+'}', end='', file=f_out)
+                    print('\\texttt{'+escape_latex_char(tc_input[i])+'}', end='', file=f_out)
                 print(' & ', end='', file=f_out)
                 if(i < len(tc_output)):
                     # Escape #
-                    tc_output[i] = tc_output[i].replace('#', '\\#')
-                    tc_output[i] = tc_output[i].replace('_', '\_')
                     tc_output[i] = tc_output[i].replace(' ', '~')
-                    print('\\texttt{' + tc_output[i] + '}', end='', file=f_out)
+                    print('\\texttt{' + escape_latex_char(tc_output[i]) + '}', end='', file=f_out)
                 print('\\\\', file=f_out)
         print("\\end{Exemplo}\n", file=f_out)
 
