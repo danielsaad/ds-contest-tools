@@ -68,17 +68,14 @@ def init(interactive=False) -> None:
     shutil.copytree(folder, problem_folder,
                     ignore=shutil.ignore_patterns('boca'), dirs_exist_ok=True)
     # Rename files and folders if the problem is interactive
-    interactive_statement = os.path.join(
-        problem_folder, 'statement-interactive.md')
     interactor = os.path.join(*[problem_folder, 'src', 'interactor.cpp'])
     interactive_json = os.path.join(problem_folder, 'problem-interactive.json')
+    interactor_tex = os.path.join(*[problem_folder, 'statement', 'interacao.tex'])
     if (interactive):
-        shutil.move(interactive_statement, os.path.join(
-            problem_folder, 'statement.md'))
         shutil.move(interactive_json, os.path.join(
             problem_folder, 'problem.json'))
     else:
-        os.remove(interactive_statement)
+        os.remove(interactor_tex)
         os.remove(interactive_json)
         os.remove(interactor)
 

@@ -40,13 +40,8 @@ def build_pdf(problem_folder='', output_directory='', options=config.DEFAULT_PDF
     if problem_folder == '':
         problem_folder = Paths.instance().dirs["problem_dir"]
     
-    md_list = glob.glob(os.path.join(problem_folder, '*.md'))
-    filepath = md_list[0]
-    if (not os.path.exists(filepath)):
-        print("Statement file does not exists")
-        sys.exit(1)
-    print_to_latex(problem_folder, filepath, options)
-    tex_filename = os.path.basename(os.path.abspath(problem_folder)) + '.tex'
+    print_to_latex(problem_folder, options)
+    tex_filename = os.path.basename(problem_folder) + '.tex'
     folder = problem_folder if output_directory == '' else output_directory
     tex_filepath = os.path.join(problem_folder, tex_filename)
     command = ["pdflatex", '--output-directory', folder, tex_filepath]
@@ -55,10 +50,8 @@ def build_pdf(problem_folder='', output_directory='', options=config.DEFAULT_PDF
     verify_command(p, "Generation of problem file failed.")
     clean_auxiliary_files(folder)
     
-    tutorial_filename = os.path.basename(
-        os.path.abspath(problem_folder))+'-tutorial.tex'
-    tutorial_filepath = os.path.join(
-        problem_folder, tutorial_filename)
+    tutorial_filename = os.path.basename(problem_folder)+'-tutorial.tex'
+    tutorial_filepath = os.path.join(problem_folder, tutorial_filename)
     if (os.path.isfile(tutorial_filepath)):
         command = ['pdflatex', '--output-directory', folder, tutorial_filepath]
         p = subprocess.run(command, stdin=subprocess.PIPE,

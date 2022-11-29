@@ -98,7 +98,7 @@ if __name__ == '__main__':
         if (not os.path.exists(problem)):
             print(problem, "path doesn't exist.")
             sys.exit(1)
-        if (not os.path.exists(os.path.join(problem, 'statement.md'))):
+        if (not os.path.exists(os.path.join(problem, 'statement'))):
             print(problem, "path doesn't have an initialized problem.")
             sys.exit(1)
         if (args.mode == 'genpdf'):
