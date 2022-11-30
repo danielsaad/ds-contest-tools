@@ -21,6 +21,13 @@ def convert_idx_to_string(idx: int) -> str:
     return ans
 
 
+def convert_to_bytes(x) -> bytes:
+    """Converts a string to bytes."""
+    if isinstance(x, bytes):
+        return x
+    return bytes(str(x), 'utf8')
+
+
 def verify_command(p: CompletedProcess, message: str) -> None:
     """Checks if the output of the function 'subprocess.run' is ok."""
     if (p.returncode):
