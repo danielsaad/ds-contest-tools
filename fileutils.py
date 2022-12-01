@@ -1,5 +1,6 @@
 import os
 import shutil
+from json import dumps
 from math import log10, floor
 
 
@@ -54,3 +55,17 @@ def copy_directory(source: str, dest: str) -> None:
             if (dirs and files):
                 shutil.copyfile(os.path.join(root, file),
                                 os.path.join(dest_path, file))
+
+
+def write_secrets() -> None:
+    """Write file to store sensitive information used by the tools."""
+    tool_path = os.path.dirname(os.path.abspath(__file__))
+    secrets = {
+        "polygon": {
+            "apikey": "",
+            "secret": "",
+            "problem-id": ""
+        }
+    }
+    with open(os.path.join(tool_path, 'secrets.json'), 'w') as f:
+        f.write(dumps(secrets))
