@@ -64,17 +64,21 @@ def validate_inputs() -> None:
                 exit(1)
 
     tests = dict()
-    equal_tests = 0
     for fname in input_files:
         with open(fname, 'rb') as f:
             encoded = (hashlib.sha1(f.read())).digest()
         if encoded in tests:
-            info_log(f"Testcases {fname} and {tests[encoded]} are equal.")
-            equal_tests += 1
-        tests[encoded] = fname
-    if (equal_tests != 0):
-        print(
-            "All test cases must be different, however there are " +
+            tests[encoded].append(fname)
+        else:
+            tests[encoded] = [fname]
+    equal_tests = 0
+    for key in tests:
+        if len(tests[key]) > 1:
+            equal_tests += len(tests[key])
+            info_log("Testcases " + ', '.join(tests[key]) + " are equal.")
+
+    if (equal_tests):
+        print("All test cases must be different, however there are " +
             f"{equal_tests} equal tests.")
         sys.exit(0)
 
