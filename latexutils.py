@@ -5,7 +5,6 @@ import io
 import re
 from logger import info_log
 from jsonutils import parse_json
-from statement_converter import convert_statement
 
 
 def print_line(line: str, f_out: io.TextIOWrapper) -> None:
@@ -13,20 +12,10 @@ def print_line(line: str, f_out: io.TextIOWrapper) -> None:
     print(line, file=f_out, end='')
 
 
-def convert_string(obj: re.Match) -> str:
-    """Escape characters present in pattern."""
-    if obj.group() == '<' or obj.group() == '>':
-        return obj.group().replace(obj.group(), '$' + obj.group() + '$')
-    return obj.group().replace(obj.group(), '\\' + obj.group())
-
-
-def escape_latex_char(text: str) -> str:
-    """Escape characters for LaTex."""
-    text = text.replace('\\', '\\textbackslash ')\
-               .replace('^', '\\textasciicircum ')\
-               .replace('~', '\\textasciitilde ')
-    text = re.sub(r'[#$%&_{}<>]', convert_string, text)
-    return text
+def multiple_replace(patterns: dict, text: str) -> str:
+    """Replace key characters in patterns with their values."""
+    regex = re.compile("(%s)" % "|".join(map(re.escape, patterns.keys())))
+    return regex.sub(lambda mo: patterns[mo.string[mo.start():mo.end()]], text)
 
 
 def get_io(io_folder: str, problem_metadata: dict) -> list:
@@ -64,13 +53,8 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
 
     statement_folder = os.path.join(problem_folder, 'statement')
     if (not os.path.exists(statement_folder)):
-        # Verify legacy statement
-        if (os.path.exists(os.path.join(problem_folder, 'statement.md'))):
-            info_log('Converting statement.md to separate files.')
-            convert_statement(statement_folder)
-        else:
-            print("Statement directory does not exist.")
-            sys.exit(0)
+        print("Statement directory does not exist.")
+        sys.exit(0)
 
     interactive = problem_metadata['problem']['interactive']
     tex_filename = os.path.basename(os.path.abspath(problem_folder))+'.tex'
@@ -90,14 +74,15 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
                   str(problem_metadata["problem"]["time_limit"]) +
                   "}\n", file=f_out)
 
-        statement_files = ['descricao.tex', 'entrada.tex',
-                           'saida.tex', 'notas.tex', 'tutorial.tex']
+        statement_files = ['description.tex', 'input.tex',
+                           'output.tex', 'notes.tex', 'tutorial.tex']
         statement_files = [os.path.join(statement_folder, file)
                            for file in statement_files]
         for file in statement_files:
             if not os.path.exists(file):
                 print(f'{file} does not exist.')
                 sys.exit(0)
+
         with open(statement_files[0], 'r') as f:
             statement_lines = f.readlines()
         with open(statement_files[1], 'r') as f:
@@ -108,14 +93,14 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
             note_lines = f.readlines()
         with open(statement_files[4], 'r') as f:
             tutorial_lines = f.readlines()
-        
+
         interactor_lines = []
         if interactive:
-            interactive_file = os.path.join(statement_folder, 'interacao.tex')
+            interactive_file = os.path.join(statement_folder, 'interactor.tex')
             if not os.path.exists(interactive_file):
                 print(f'{interactive_file} does not exist.')
                 sys.exit(0)
-            with open(os.path.join(statement_folder, 'interacao.tex'), 'r') as f:
+            with open(os.path.join(statement_folder, 'interactor.tex'), 'r') as f:
                 interactor_lines = f.readlines()
 
         if (statement_lines):
@@ -136,6 +121,18 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
 
         in_list = get_io(input_folder, problem_metadata)
         out_list = get_io(output_folder, problem_metadata)
+        patterns = {"#": "\\#",
+                    "$": "\\$",
+                    "%": "\\%",
+                    "&": "\\&",
+                    "_": "\\_",
+                    "{": "\\{",
+                    "}": "\\}",
+                    ">": "\\texttt{>}",
+                    "<": "\\texttt{<}",
+                    "^": "\\textasciicircum ",
+                    "\\": "\\textbackslash ",
+                    " ": "~"}
         print("\n\n\\ExemploEntrada", file=f_out)
         print("\\begin{Exemplo}", file=f_out)
         for tc in range(0, len(in_list)):
@@ -146,15 +143,11 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
                 if (tc % 2):
                     print('\\rowcolor{gray!20}', end='', file=f_out)
                 if (i < len(tc_input)):
-                    # Escape symbols
-                    tc_input[i] = tc_input[i].replace(' ', '~')
-                    print('\\texttt{'+escape_latex_char(tc_input[i])+'}', 
+                    print('\\texttt{'+multiple_replace(patterns, tc_input[i])+'}',
                           end='', file=f_out)
                 print(' & ', end='', file=f_out)
                 if (i < len(tc_output)):
-                    # Escape symbols
-                    tc_output[i] = tc_output[i].replace(' ', '~')
-                    print('\\texttt{'+escape_latex_char(tc_output[i])+'}',
+                    print('\\texttt{'+multiple_replace(patterns, tc_output[i])+'}',
                           end='', file=f_out)
                 print('\\\\', file=f_out)
         print("\\end{Exemplo}\n", file=f_out)
