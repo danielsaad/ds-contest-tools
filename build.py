@@ -70,7 +70,7 @@ def init(interactive=False) -> None:
     # Rename files and folders if the problem is interactive
     interactor = os.path.join(*[problem_folder, 'src', 'interactor.cpp'])
     interactive_json = os.path.join(problem_folder, 'problem-interactive.json')
-    interactor_tex = os.path.join(*[problem_folder, 'statement', 'interacao.tex'])
+    interactor_tex = os.path.join(*[problem_folder, 'statement', 'interactor.tex'])
     if (interactive):
         shutil.move(interactive_json, os.path.join(
             problem_folder, 'problem.json'))

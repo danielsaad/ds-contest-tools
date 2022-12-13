@@ -80,7 +80,7 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
                            for file in statement_files]
         for file in statement_files:
             if not os.path.exists(file):
-                print(f'{file} does not exist.')
+                print(f'{os.path.basename(file)} does not exist.')
                 sys.exit(0)
 
         with open(statement_files[0], 'r') as f:
@@ -128,10 +128,10 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
                     "_": "\\_",
                     "{": "\\{",
                     "}": "\\}",
-                    ">": "\\texttt{>}",
-                    "<": "\\texttt{<}",
-                    "^": "\\textasciicircum ",
-                    "\\": "\\textbackslash ",
+                    ">": "\\textless{}",
+                    "<": "\\textgreater{}",
+                    "^": "\\textasciicircum{}",
+                    "\\": "\\textbackslash{}",
                     " ": "~"}
         print("\n\n\\ExemploEntrada", file=f_out)
         print("\\begin{Exemplo}", file=f_out)
