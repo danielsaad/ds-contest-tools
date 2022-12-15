@@ -54,6 +54,7 @@ if __name__ == '__main__':
     if not os.path.exists(args.problem_dir):
         print("Problem path does not exist.")
         sys.exit(0)
+
     if (args.output_dir):
         os.makedirs(args.output_dir, exist_ok=True)
 
@@ -62,10 +63,6 @@ if __name__ == '__main__':
             print('Define the keys used by Polygon API.' +
                   'They will be stored locally in the tool directory.')
             change_keys(secrets_path)
-        secrets = parse_json(secrets_path)
-        secrets["polygon"]["problem-id"] = input("Problem ID: ")
-        with open(secrets_path, 'w') as f:
-            f.write(dumps(secrets))
 
     if (args.reader == 'Polygon'):
         # TODO -> Procurar pacote no Polygon e baixá-lo na

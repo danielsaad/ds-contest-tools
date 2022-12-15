@@ -6,21 +6,10 @@ import hashlib
 import string
 import requests
 import time
-import argparse
-from logger import info_log, error_log
+from logger import info_log
 from jsonutils import parse_json
 from metadata import Paths
 from utils import convert_to_bytes
-
-
-def create_parser() -> argparse.ArgumentParser:
-    """Initialize the argparser of the tool."""
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('mode', choices=['submit', 'retry'],
-                        help='submit: submit a problem to Polygon.\n' +
-                        'retry: submit failed requests to Polygon.\n')
-    return parser
 
 
 def get_apisig(method_name: str, secret: str, params: dict) -> bytes:
@@ -37,66 +26,34 @@ def get_apisig(method_name: str, secret: str, params: dict) -> bytes:
     return rand + convert_to_bytes(hashlib.sha512(apisig).hexdigest())
 
 
-def polygon_auth(method_name: str, params: dict) -> None:
-    """Get response from Polygon API methods."""
-    tool_path = os.path.dirname(os.path.abspath(__file__))
-    keys = parse_json(os.path.join(tool_path, 'secrets.json'))
-
-    params['apiKey'] = keys["polygon"]["apikey"]
-    params['time'] = int(time.time())
-    params['problemId'] = keys["polygon"]["problem-id"]
-
-    for key in params:
-        params[key] = convert_to_bytes(params[key])
-    params['apiSig'] = get_apisig(
-        method_name, keys["polygon"]["secret"], params)
-
-    url = f"https://polygon.codeforces.com/api/{method_name}"
-    response = requests.post(url, files=params)
-
-    # TODO -> Print correct information about the return of
-    # the connection
-    if (response.status_code != 200):
-        if (response.status_code == 400):
-            print(response.content)
-        else:
-            print(response.content)
-        print("Could not connect to the API.")
-        sys.exit(1)
-
-    info_log(f"Request {method_name} done.")
-    return response.content
-
-
-def update_info(problem_json: dict):
-    """Save general information of a problem."""
+def update_info(problem_json: dict) -> tuple[str, dict]:
+    """Get general information parameters of the problem."""
     interactive = problem_json['interactive']
     time_limit = problem_json['time_limit'] * 1000
     if (time_limit < 250 or time_limit > 15000):
         print("Time limit is only between 0.25s and 15s.")
         sys.exit(0)
-
     memory_limit = problem_json['memory_limit']
     if (memory_limit < 4 or memory_limit > 1024):
         print("Memory limit is only between 4MB and 1024MB.")
         sys.exit(0)
 
-    params = dict(
-        inputFile=problem_json['input_file'],
-        outputFile=problem_json['output_file'],
-        interactive=str(interactive).lower(),
-        timeLimit=time_limit,
-        memoryLimit=memory_limit)
-    polygon_auth('problem.updateInfo', params)
+    params = {
+        'inputFile': problem_json['input_file'],
+        'outputFile': problem_json['output_file'],
+        'interactive': str(interactive).lower(),
+        'timeLimit': time_limit,
+        'memoryLimit': memory_limit}
+    return ('problem.updateInfo', params)
 
 
-def save_statement(interactive: bool, name: str):
-    """Save statement information of a problem."""
+def save_statement(name: str) -> tuple[str, dict]:
+    """Get statement information of the problem."""
     statement_dir = os.path.join(
         Paths.instance().dirs['problem_dir'], 'statement')
 
-    statement_files = ['descricao.tex', 'entrada.tex',
-                       'saida.tex', 'notas.tex', 'tutorial.tex']
+    statement_files = ['description.tex', 'input.tex',
+                       'output.tex', 'notes.tex', 'tutorial.tex']
     statement_files = [os.path.join(statement_dir, f) for f in statement_files]
     for file in statement_files:
         if (not os.path.exists(file)):
@@ -114,66 +71,68 @@ def save_statement(interactive: bool, name: str):
     with open(statement_files[4]) as f:
         tutorial = ''.join(f.readlines())
 
-    params = dict(
-        lang='english',
-        encoding='utf-8',
-        name=name,
-        legend=legend,
-        input=inp,
-        output=out,
-        notes=notes,
-        tutorial=tutorial)
-    polygon_auth('problem.saveStatement', params)
+    params = {
+        'lang': 'english',
+        'encoding': 'utf-8',
+        'name': name,
+        'legend': legend,
+        'input': inp,
+        'output': out,
+        'notes': notes,
+        'tutorial': tutorial}
+    return ('problem.saveStatement', params)
 
 
-def save_statement_resources():
-    """Save the statement resource files of a problem"""
+def save_statement_resources() -> list:
+    """Get statement resource files of the problem"""
     statement_dir = os.path.join(
         Paths.instance().dirs['problem_dir'], 'statement')
+    params_list = []
     for file in os.listdir(statement_dir):
         if (file.endswith('.tex')):
             continue
-
         with open(os.path.join(statement_dir, file), 'rb') as f:
             file_content = b''.join(f.readlines())
 
-        params = dict(
-            name=file,
-            file=file_content)
-        polygon_auth('problem.saveStatementResource', params)
+        params = {
+            'name': file,
+            'file': file_content}
+        params_list.append(('problem.saveStatementResource', params))
+    return params_list
 
 
-def set_validator(name):
+def set_validator(name) -> tuple[str, dict]:
     """Set validator used by the problem."""
-    params = dict(validator=name)
-    polygon_auth('problem.setValidator', params)
+    params = {'validator': name}
+    return ('problem.setValidator', params)
 
 
-def set_checker(name):
+def set_checker(name) -> tuple[str, dict]:
     """Set checker used by the problem."""
-    params = dict(checker=name)
-    polygon_auth('problem.setChecker', params)
+    params = {'checker': name}
+    return ('problem.setChecker', params)
 
 
-def set_interactor(name):
+def set_interactor(name) -> tuple[str, dict]:
     """Set interactor used by the problem."""
-    params = dict(interactor=name)
-    polygon_auth('problem.setInteractor', params)
+    params = {'interactor': name}
+    return ('problem.setInteractor', params)
 
 
-def save_file(file_path: str, file_type: str) -> None:
+def save_file(file_path: str, file_type: str) -> tuple[str, dict]:
+    """Get files of the problem"""
     with open(file_path, 'r') as f:
         file_content = ''.join(f.readlines())
 
-    params = dict(
-        name = os.path.basename(file_path),
-        file = file_content,
-        type = file_type)
-    polygon_auth('problem.saveFile', params)
+    params = {
+        'name': os.path.basename(file_path),
+        'file': file_content,
+        'type': file_type}
+    return ('problem.saveFile', params)
 
 
-def save_solution(file_path, tag):
-    """Save the solution file of a problem."""
+def save_solution(file_path: str, tag: str) -> tuple[str, dict]:
+    """Get solution files of a problem."""
     with open(file_path, 'r') as f:
         file_content = ''.join(f.readlines())
 
@@ -188,104 +147,133 @@ def save_solution(file_path, tag):
     else:
         tag = 'RE'
 
-    params = dict(
-        name = os.path.basename(file_path),
-        file = file_content,
-        tag = tag)
-    polygon_auth('problem.saveSolution', params)
+    params = {
+        'name': os.path.basename(file_path),
+        'file': file_content,
+        'tag': tag}
+    return ('problem.saveSolution', params)
 
 
-def save_files(solutions: dict):
+def save_files(solutions: dict) -> list:
     """Save source, resource and solution files of a problem."""
     src_dir = os.path.join(Paths.instance().dirs['problem_dir'], 'src')
 
+    params_list = []
     solution_files = []
     for key in solutions:
-        if (isinstance(solutions[key], str)):
-            solutions[key] = [f'{solutions[key]}']
+        if key == 'main-ac':
+            solutions[key] = list(solutions[key].split(' '))
 
         for s in solutions[key]:
             if (s == ''):
                 continue
-
             solution_path = os.path.join(src_dir, s)
             if (not os.path.exists(solution_path)):
                 print(f'Solution file {s} does not exist.')
                 sys.exit(0)
 
-            save_solution(solution_path, key)
+            params_list.append(save_solution(solution_path, key))
             solution_files.append(s)
 
+    setters = []
     for file in os.listdir(src_dir):
         if file in solution_files:
             continue
         elif file.startswith('checker'):
-            save_file(os.path.join(src_dir, file), 'source')
-            set_checker(file)
+            params_list.append(save_file(os.path.join(src_dir, file), 'source'))
+            setters.append(set_checker(file))
         elif file.startswith('validator'):
-            save_file(os.path.join(src_dir, file), 'source')
-            set_validator(file)
+            params_list.append(save_file(os.path.join(src_dir, file), 'source'))
+            setters.append(set_validator(file))
         elif file.startswith('interactor'):
-            save_file(os.path.join(src_dir, file), 'source')
-            set_interactor(file)
+            params_list.append(save_file(os.path.join(src_dir, file), 'source'))
+            setters.append(set_interactor(file))
         elif file.startswith('generator'):
-            save_file(os.path.join(src_dir, file), 'source')
+            params_list.append(save_file(os.path.join(src_dir, file), 'source'))
         else:
-            save_file(os.path.join(src_dir, file), 'aux')
+            params_list.append(save_file(os.path.join(src_dir, file), 'aux'))
+    return params_list + setters
 
 
-def save_tags(tag_list):
-    """Save tags of a problem."""
-    tags = ''
-    for tag in tag_list:
-        tags += tag + ','
-    tags[:-1]
-
-    params = dict(tags = tags)
-    polygon_auth('problem.saveTags', params)
+def save_tags(tag_list: list) -> tuple[str, dict]:
+    """Get tags of a problem."""
+    tags = ','.join(tag_list)
+    params = {'tags': tags}
+    return ('problem.saveTags', params)
 
 
-def save_test(tests_in_statement: int):
+def save_test(tests_in_statement: int) -> list:
     """Save the inputs of a problem."""
     input_folder = os.path.join(Paths.instance().dirs['problem_dir'], 'input')
     if (not os.path.exists(input_folder)):
         print(f'Input folder does not exist.')
         sys.exit(0)
-    tests_list = []
+
+    params_list = []
     for input_file in os.listdir(input_folder):
         testset = 'tests'  # Standard testset
         with open(os.path.join(input_folder, input_file), 'r') as f:
             test_input = ''.join(f.readlines())
         test_use_in_statements = (int(input_file) <= tests_in_statement)
-        test_description = f'Test {input_file} converted from DS problem.'
+        test_description = f'Test {input_file} from DS problem.'
         verify_input_output_for_statement = True
         check_existing = False
+        params = {
+            'testset': testset,
+            'testIndex': input_file,
+            'testInput': test_input,
+            'checkExisting': str(check_existing).lower(),
+            'testDescription': test_description,
+            'testUseInStatements': str(test_use_in_statements).lower(),
+            'verifyInputOutputForStatements': str(
+            verify_input_output_for_statement).lower()}
+        params_list.append(('problem.saveTest', params))
+    return params_list
 
-        params = dict()
-        params['testset'] = testset
-        params['testIndex'] = input_file
-        params['testInput'] = test_input
-        params['checkExisting'] = str(check_existing).lower()
-        params['testDescription'] = test_description
-        params['testUseInStatements'] = str(test_use_in_statements).lower()
-        params['verifyInputOutputForStatements'] = str(
-            verify_input_output_for_statement).lower()
-        polygon_auth('problem.saveTest', params)
+
+def get_requests_list() -> list[tuple]:
+    requests_list = []
+    problem_dir = Paths.instance().dirs['problem_dir']
+    problem_json = parse_json(os.path.join(problem_dir, 'problem.json'))
+    requests_list.append(update_info(problem_json['problem']))
+    requests_list.append(save_statement(problem_json['problem']['title']))
+    requests_list = requests_list + save_statement_resources()
+    requests_list = requests_list + save_files(problem_json['solutions'])
+    requests_list.append(save_tags(problem_json['problem']['subject']['en_us']))
+    if (problem_json['problem']['interactive']):
+        requests_list.append(set_interactor('interactor.cpp'))
+    requests_list = requests_list + save_test(problem_json['io_samples'])
+    return requests_list
 
 
 def send_to_polygon() -> None:
     """Make requests"""
-    problem_dir = Paths.instance().dirs['problem_dir']
-    problem_json = parse_json(os.path.join(problem_dir, 'problem.json'))
-    update_info(problem_json['problem'])
-    save_statement(problem_json['problem']['interactive'],
-                   problem_json['problem']['title'])
-    save_statement_resources()
-    save_files(problem_json['solutions'])
-    save_tags(problem_json['problem']['subject']['en_us'])
-    # save_test(problem_json['io_samples'])
+    problem_id = input('ID: ')
+    
+    requests_list = get_requests_list()
 
+    tool_path = os.path.dirname(os.path.abspath(__file__))
+    keys = parse_json(os.path.join(tool_path, 'secrets.json'))
 
-# if __name__ == '__main__':
-#     parser = create_parser()
-#     args = parser.parse_args()
+    for method, params in requests_list:
+        params['apiKey'] = keys["polygon"]["apikey"]
+        params['time'] = int(time.time())
+        params['problemId'] = problem_id
+        
+        for key in params:
+            params[key] = convert_to_bytes(params[key])
+        
+        params['apiSig'] = get_apisig(
+            method, keys["polygon"]["secret"], params)
+
+    conn = requests.Session()
+    url = 'https://polygon.codeforces.com/api/'
+    for link, params in requests_list:
+        response = conn.post(url + link, files=params)
+        if response.status_code != 200:
+            print(link)
+            print(response.content.decode())
+            print("Could not connect to the API.")
+            sys.exit(1)
+        else:
+            print(f'Request {link} successfull.')
