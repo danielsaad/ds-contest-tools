@@ -49,7 +49,7 @@ def build_contest_pdf() -> None:
     cls_file = os.path.join(os.path.join(os.path.dirname(
         os.path.abspath(__file__)), 'arquivos'), 'maratona.cls')
     shutil.copy(cls_file, output_folder)
-    info_log("DIR: " + os.getcwd())
+
     for i, folder in enumerate(problem_folder_l):
         label = convert_idx_to_string(i)
         options = {'display_author': False,
