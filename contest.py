@@ -49,7 +49,7 @@ def build_contest_pdf() -> None:
     cls_file = os.path.join(os.path.join(os.path.dirname(
         os.path.abspath(__file__)), 'arquivos'), 'maratona.cls')
     shutil.copy(cls_file, output_folder)
-
+    info_log("DIR: " + os.getcwd())
     for i, folder in enumerate(problem_folder_l):
         label = convert_idx_to_string(i)
         options = {'display_author': False,
@@ -57,13 +57,15 @@ def build_contest_pdf() -> None:
         build_pdf(folder, output_folder, options)
         basename = os.path.basename(folder)
         problem_pdf_l.append(os.path.join(output_folder, basename+'.pdf'))
-        tutorial_pdf_l.append(os.path.join(
-            output_folder, basename+'-tutorial.pdf'))
+        if (os.path.exists(folder + '-tutorial.pdf')):
+            tutorial_pdf_l.append(os.path.join(
+                output_folder, basename+'-tutorial.pdf'))
     clean_auxiliary_files(output_folder)
     merge_pdf = os.path.join(output_folder, 'maratona.pdf')
     merge_tutorial_pdf = os.path.join(output_folder, 'tutoriais.pdf')
     merge_pdfs(problem_pdf_l, merge_pdf)
-    merge_pdfs(tutorial_pdf_l, merge_tutorial_pdf)
+    if (tutorial_pdf_l):
+        merge_pdfs(tutorial_pdf_l, merge_tutorial_pdf)
     for f in problem_pdf_l:
         os.remove(f)
     for f in tutorial_pdf_l:
