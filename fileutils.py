@@ -61,11 +61,8 @@ def write_secrets() -> None:
     """Write file to store sensitive information used by the tools."""
     tool_path = os.path.dirname(os.path.abspath(__file__))
     secrets = {
-        "polygon": {
-            "apikey": "",
-            "secret": "",
-            "problem-id": ""
-        }
+        "apikey": "",
+        "secret": "",
     }
     with open(os.path.join(tool_path, 'secrets.json'), 'w') as f:
         f.write(dumps(secrets))

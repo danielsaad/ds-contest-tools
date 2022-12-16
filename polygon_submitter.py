@@ -6,7 +6,8 @@ import hashlib
 import string
 import requests
 import time
-from logger import info_log
+import json
+from logger import info_log, error_log
 from jsonutils import parse_json
 from metadata import Paths
 from utils import convert_to_bytes
@@ -48,7 +49,7 @@ def update_info(problem_json: dict) -> tuple[str, dict]:
 
 
 def save_statement(name: str) -> tuple[str, dict]:
-    """Get statement information of the problem."""
+    """Get statement parameters of the problem."""
     statement_dir = os.path.join(
         Paths.instance().dirs['problem_dir'], 'statement')
 
@@ -84,9 +85,10 @@ def save_statement(name: str) -> tuple[str, dict]:
 
 
 def save_statement_resources() -> list:
-    """Get statement resource files of the problem"""
+    """Get statement resource files of the problem."""
     statement_dir = os.path.join(
         Paths.instance().dirs['problem_dir'], 'statement')
+
     params_list = []
     for file in os.listdir(statement_dir):
         if (file.endswith('.tex')):
@@ -120,7 +122,7 @@ def set_interactor(name) -> tuple[str, dict]:
 
 
 def save_file(file_path: str, file_type: str) -> tuple[str, dict]:
-    """Get files of the problem"""
+    """Get files of the problem."""
     with open(file_path, 'r') as f:
         file_content = ''.join(f.readlines())
 
@@ -132,7 +134,7 @@ def save_file(file_path: str, file_type: str) -> tuple[str, dict]:
 
 
 def save_solution(file_path: str, tag: str) -> tuple[str, dict]:
-    """Get solution files of a problem."""
+    """Get solution files of the problem."""
     with open(file_path, 'r') as f:
         file_content = ''.join(f.readlines())
 
@@ -155,7 +157,7 @@ def save_solution(file_path: str, tag: str) -> tuple[str, dict]:
 
 
 def save_files(solutions: dict) -> list:
-    """Save source, resource and solution files of a problem."""
+    """Save auxiliar, source and solution files of a problem."""
     src_dir = os.path.join(Paths.instance().dirs['problem_dir'], 'src')
 
     params_list = []
@@ -171,7 +173,6 @@ def save_files(solutions: dict) -> list:
             if (not os.path.exists(solution_path)):
                 print(f'Solution file {s} does not exist.')
                 sys.exit(0)
-
             params_list.append(save_solution(solution_path, key))
             solution_files.append(s)
 
@@ -180,30 +181,34 @@ def save_files(solutions: dict) -> list:
         if file in solution_files:
             continue
         elif file.startswith('checker'):
-            params_list.append(save_file(os.path.join(src_dir, file), 'source'))
+            params_list.append(
+                save_file(os.path.join(src_dir, file), 'source'))
             setters.append(set_checker(file))
         elif file.startswith('validator'):
-            params_list.append(save_file(os.path.join(src_dir, file), 'source'))
+            params_list.append(
+                save_file(os.path.join(src_dir, file), 'source'))
             setters.append(set_validator(file))
         elif file.startswith('interactor'):
-            params_list.append(save_file(os.path.join(src_dir, file), 'source'))
+            params_list.append(
+                save_file(os.path.join(src_dir, file), 'source'))
             setters.append(set_interactor(file))
         elif file.startswith('generator'):
-            params_list.append(save_file(os.path.join(src_dir, file), 'source'))
+            params_list.append(
+                save_file(os.path.join(src_dir, file), 'source'))
         else:
             params_list.append(save_file(os.path.join(src_dir, file), 'aux'))
     return params_list + setters
 
 
 def save_tags(tag_list: list) -> tuple[str, dict]:
-    """Get tags of a problem."""
+    """Get tags parameters of the problem."""
     tags = ','.join(tag_list)
     params = {'tags': tags}
     return ('problem.saveTags', params)
 
 
 def save_test(tests_in_statement: int) -> list:
-    """Save the inputs of a problem."""
+    """Get input files of the problem."""
     input_folder = os.path.join(Paths.instance().dirs['problem_dir'], 'input')
     if (not os.path.exists(input_folder)):
         print(f'Input folder does not exist.')
@@ -211,13 +216,14 @@ def save_test(tests_in_statement: int) -> list:
 
     params_list = []
     for input_file in os.listdir(input_folder):
-        testset = 'tests'  # Standard testset
+        testset = 'tests'
         with open(os.path.join(input_folder, input_file), 'r') as f:
             test_input = ''.join(f.readlines())
         test_use_in_statements = (int(input_file) <= tests_in_statement)
-        test_description = f'Test {input_file} from DS problem.'
+        test_description = f'Test {input_file} from DS contest tools.'
         verify_input_output_for_statement = True
         check_existing = False
+
         params = {
             'testset': testset,
             'testIndex': input_file,
@@ -226,54 +232,56 @@ def save_test(tests_in_statement: int) -> list:
             'testDescription': test_description,
             'testUseInStatements': str(test_use_in_statements).lower(),
             'verifyInputOutputForStatements': str(
-            verify_input_output_for_statement).lower()}
+                verify_input_output_for_statement).lower()}
         params_list.append(('problem.saveTest', params))
     return params_list
 
 
 def get_requests_list() -> list[tuple]:
-    requests_list = []
     problem_dir = Paths.instance().dirs['problem_dir']
     problem_json = parse_json(os.path.join(problem_dir, 'problem.json'))
+
+    requests_list = []
     requests_list.append(update_info(problem_json['problem']))
     requests_list.append(save_statement(problem_json['problem']['title']))
-    requests_list = requests_list + save_statement_resources()
-    requests_list = requests_list + save_files(problem_json['solutions'])
-    requests_list.append(save_tags(problem_json['problem']['subject']['en_us']))
+    requests_list.append(
+        save_tags(problem_json['problem']['subject']['en_us']))
     if (problem_json['problem']['interactive']):
         requests_list.append(set_interactor('interactor.cpp'))
+    requests_list = requests_list + save_statement_resources()
+    requests_list = requests_list + save_files(problem_json['solutions'])
     requests_list = requests_list + save_test(problem_json['io_samples'])
     return requests_list
 
 
 def send_to_polygon() -> None:
-    """Make requests"""
+    """Send problem information to Polygon."""
     problem_id = input('ID: ')
-    
     requests_list = get_requests_list()
-
     tool_path = os.path.dirname(os.path.abspath(__file__))
     keys = parse_json(os.path.join(tool_path, 'secrets.json'))
 
     for method, params in requests_list:
-        params['apiKey'] = keys["polygon"]["apikey"]
+        params['apiKey'] = keys["apikey"]
         params['time'] = int(time.time())
         params['problemId'] = problem_id
-        
+
         for key in params:
             params[key] = convert_to_bytes(params[key])
-        
-        params['apiSig'] = get_apisig(
-            method, keys["polygon"]["secret"], params)
+        params['apiSig'] = get_apisig(method, keys["secret"], params)
 
     conn = requests.Session()
     url = 'https://polygon.codeforces.com/api/'
-    for link, params in requests_list:
-        response = conn.post(url + link, files=params)
-        if response.status_code != 200:
-            print(link)
-            print(response.content.decode())
-            print("Could not connect to the API.")
-            sys.exit(1)
+    for method, params in requests_list:
+        response = conn.post(url + method, files=params)
+        if response.status_code == 200:
+            info_log(f'Request {method} successfull.')
         else:
-            print(f'Request {link} successfull.')
+            if response.status_code == 400:
+                content = json.loads(response.content.decode())
+                error_log("API status: " + content['status'])
+                error_log(content['comment'])
+                print(f"Wrong parameter of {method} method.")
+            else:
+                print("Could not connect to the API.")
+            sys.exit(1)

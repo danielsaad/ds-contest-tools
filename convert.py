@@ -32,8 +32,8 @@ def change_keys(secrets_path: str) -> None:
         write_secrets()
 
     keys = parse_json(secrets_path)
-    keys["polygon"]["apikey"] = getpass('apiKey: ')
-    keys["polygon"]["secret"] = getpass('secret: ')
+    keys["apikey"] = getpass('apiKey: ')
+    keys["secret"] = getpass('secret: ')
     with open(secrets_path, 'w') as f:
         f.write(dumps(keys))
     info_log("Keys defined.")
@@ -68,11 +68,15 @@ if __name__ == '__main__':
         # TODO -> Procurar pacote no Polygon e baixá-lo na
         # pasta do problema. Após isso, converter para a pasta
         # de saída.
-        print("Not implemented yet.")
-        pass
+        if (args.writer == 'DS'):
+            pass
+        else:
+            print("Not implemented yet.")
+            pass
     elif (args.reader == 'DS'):
         if (args.writer == 'Polygon'):
             send_to_polygon()
+            print('Problem sent successfully.')
         else:
             # TODO -> Converter o pacote de DS para o Polygon
             # E enviar as informações para API
