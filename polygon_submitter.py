@@ -13,6 +13,12 @@ from metadata import Paths
 from utils import convert_to_bytes
 
 
+LANGUAGE = 'english'
+ENCONDING = 'utf-8'
+TESTSET = 'tests'
+VERIFY_IO_STATEMENT = True
+
+
 def get_apisig(method_name: str, secret: str, params: dict) -> bytes:
     """Generate 'apiSig' value for the API authorization."""
     rand = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
@@ -73,8 +79,8 @@ def save_statement(name: str) -> tuple[str, dict]:
         tutorial = ''.join(f.readlines())
 
     params = {
-        'lang': 'english',
-        'encoding': 'utf-8',
+        'lang': LANGUAGE,
+        'encoding': ENCONDING,
         'name': name,
         'legend': legend,
         'input': inp,
@@ -216,23 +222,20 @@ def save_test(tests_in_statement: int) -> list:
 
     params_list = []
     for input_file in os.listdir(input_folder):
-        testset = 'tests'
         with open(os.path.join(input_folder, input_file), 'r') as f:
             test_input = ''.join(f.readlines())
         test_use_in_statements = (int(input_file) <= tests_in_statement)
         test_description = f'Test {input_file} from DS contest tools.'
-        verify_input_output_for_statement = True
-        check_existing = False
 
         params = {
-            'testset': testset,
+            'testset': TESTSET,
             'testIndex': input_file,
             'testInput': test_input,
-            'checkExisting': str(check_existing).lower(),
+            'checkExisting': 'false',
             'testDescription': test_description,
             'testUseInStatements': str(test_use_in_statements).lower(),
             'verifyInputOutputForStatements': str(
-                verify_input_output_for_statement).lower()}
+                VERIFY_IO_STATEMENT).lower()}
         params_list.append(('problem.saveTest', params))
     return params_list
 
