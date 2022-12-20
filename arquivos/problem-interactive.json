@@ -3,7 +3,7 @@
         "title" : "Problem Title",
         "event" : "Event Name",
         "time_limit" : 1,
-        "memory_limit": 256,
+        "memory_limit_mb": 256,
         "input_file": "stdin",
         "output_file": "stdout",
         "interactive" : true,

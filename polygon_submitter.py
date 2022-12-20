@@ -33,7 +33,7 @@ def get_apisig(method_name: str, secret: str, params: dict) -> bytes:
     return rand + convert_to_bytes(hashlib.sha512(apisig).hexdigest())
 
 
-def update_info(problem_json: dict) -> tuple[str, dict]:
+def update_info(problem_json: dict) -> tuple:
     """Get general information parameters of the problem."""
     interactive = problem_json['interactive']
     time_limit = problem_json['time_limit'] * 1000
@@ -54,7 +54,7 @@ def update_info(problem_json: dict) -> tuple[str, dict]:
     return ('problem.updateInfo', params)
 
 
-def save_statement(name: str) -> tuple[str, dict]:
+def save_statement(name: str) -> tuple:
     """Get statement parameters of the problem."""
     statement_dir = os.path.join(
         Paths.instance().dirs['problem_dir'], 'statement')
@@ -109,25 +109,25 @@ def save_statement_resources() -> list:
     return params_list
 
 
-def set_validator(name) -> tuple[str, dict]:
+def set_validator(name) -> tuple:
     """Set validator used by the problem."""
     params = {'validator': name}
     return ('problem.setValidator', params)
 
 
-def set_checker(name) -> tuple[str, dict]:
+def set_checker(name) -> tuple:
     """Set checker used by the problem."""
     params = {'checker': name}
     return ('problem.setChecker', params)
 
 
-def set_interactor(name) -> tuple[str, dict]:
+def set_interactor(name) -> tuple:
     """Set interactor used by the problem."""
     params = {'interactor': name}
     return ('problem.setInteractor', params)
 
 
-def save_file(file_path: str, file_type: str) -> tuple[str, dict]:
+def save_file(file_path: str, file_type: str) -> tuple:
     """Get files of the problem."""
     with open(file_path, 'r') as f:
         file_content = ''.join(f.readlines())
@@ -139,7 +139,7 @@ def save_file(file_path: str, file_type: str) -> tuple[str, dict]:
     return ('problem.saveFile', params)
 
 
-def save_solution(file_path: str, tag: str) -> tuple[str, dict]:
+def save_solution(file_path: str, tag: str) -> tuple:
     """Get solution files of the problem."""
     with open(file_path, 'r') as f:
         file_content = ''.join(f.readlines())
@@ -206,7 +206,7 @@ def save_files(solutions: dict) -> list:
     return params_list + setters
 
 
-def save_tags(tag_list: list) -> tuple[str, dict]:
+def save_tags(tag_list: list) -> tuple:
     """Get tags parameters of the problem."""
     tags = ','.join(tag_list)
     params = {'tags': tags}
@@ -240,7 +240,7 @@ def save_test(tests_in_statement: int) -> list:
     return params_list
 
 
-def get_requests_list() -> list[tuple]:
+def get_requests_list() -> list:
     problem_dir = Paths.instance().dirs['problem_dir']
     problem_json = parse_json(os.path.join(problem_dir, 'problem.json'))
 
