@@ -241,8 +241,12 @@ def save_test(tests_in_statement: int) -> list:
 
 
 def get_requests_list() -> list:
-    problem_dir = Paths.instance().dirs['problem_dir']
-    problem_json = parse_json(os.path.join(problem_dir, 'problem.json'))
+    problem_id = input('ID: ')
+    path_json = os.path.join(Paths.instance().dirs['problem_dir'], 'problem.json')
+    if not os.path.exists(path_json):
+        print('File problem.json does not exist.')
+        sys.exit(0)
+    problem_json = parse_json(path_json)
 
     requests_list = []
     requests_list.append(update_info(problem_json['problem']))
@@ -254,16 +258,9 @@ def get_requests_list() -> list:
     requests_list = requests_list + save_statement_resources()
     requests_list = requests_list + save_files(problem_json['solutions'])
     requests_list = requests_list + save_test(problem_json['io_samples'])
-    return requests_list
 
-
-def send_to_polygon() -> None:
-    """Send problem information to Polygon."""
-    problem_id = input('ID: ')
-    requests_list = get_requests_list()
     tool_path = os.path.dirname(os.path.abspath(__file__))
     keys = parse_json(os.path.join(tool_path, 'secrets.json'))
-
     for method, params in requests_list:
         params['apiKey'] = keys["apikey"]
         params['time'] = int(time.time())
@@ -272,6 +269,12 @@ def send_to_polygon() -> None:
         for key in params:
             params[key] = convert_to_bytes(params[key])
         params['apiSig'] = get_apisig(method, keys["secret"], params)
+    return requests_list
+
+
+def send_to_polygon() -> None:
+    """Send problem information to Polygon."""
+    requests_list = get_requests_list()
 
     conn = requests.Session()
     url = 'https://polygon.codeforces.com/api/'

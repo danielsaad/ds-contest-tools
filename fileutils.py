@@ -2,6 +2,7 @@ import os
 import shutil
 from json import dumps
 from math import log10, floor
+from logger import info_log
 
 
 def rename_io(io_folder: str) -> None:
@@ -59,10 +60,11 @@ def copy_directory(source: str, dest: str) -> None:
 
 def write_secrets() -> None:
     """Write file to store sensitive information used by the tools."""
+    info_log("Writing secrets file.")
+
     tool_path = os.path.dirname(os.path.abspath(__file__))
     secrets = {
         "apikey": "",
-        "secret": "",
-    }
+        "secret": "", }
     with open(os.path.join(tool_path, 'secrets.json'), 'w') as f:
         f.write(dumps(secrets))
