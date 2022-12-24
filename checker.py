@@ -9,9 +9,18 @@ import sys
 import time
 import shutil
 import psutil
+from enum import Enum
 from multiprocessing import Process, cpu_count, Manager, Event, Pipe
 from metadata import Paths
 from logger import info_log, debug_log, error_log
+
+
+class Status(Enum):
+    AC = 0
+    WA = 1
+    RE = 2
+    MLE = 3
+    TLE = 4
 
 
 """ Java definitions """
@@ -47,7 +56,7 @@ def run_binary(binary_file, input_folder, output_folder, input_files, output_dic
         fname_in = input_files[i]
         fname_in = os.path.join(input_folder, fname_in)
         fname_out = os.path.join(output_folder, os.path.basename(fname_in))
-        error = 0  # Find a better name
+        status = Status.AC  # Find a better name
         event = Event()
         conn_sender, con_recv = Pipe()
         mem_usage = (0, 0)  # Find a better name for this variable
@@ -62,16 +71,16 @@ def run_binary(binary_file, input_folder, output_folder, input_files, output_dic
                 process.start()
                 p.communicate(timeout=problem_limits['time_limit'])
                 if p.returncode < 0:
-                    error = 're'
+                    status = Status.RE
             except subprocess.TimeoutExpired:
-                error = 'tle'
+                status = Status.TLE
             finally:
                 local_time_end = time.perf_counter()
                 event.set()
                 mem_usage = con_recv.recv()
-            if mem_usage[1] != 0:
-                error = 'ml'
-            output_dict[i] = [error, local_time_end -
+            if mem_usage[1] != Status.AC:
+                status = Status.MLE
+            output_dict[i] = [status, local_time_end -
                               local_time_start, mem_usage[0]]
 
 
@@ -229,24 +238,26 @@ def run_solutions(input_folder, output_folder, problem_metadata) -> None:
 
 
 def create_thread(binary_file, input_folder, output_folder, input_files, routine, problem_limits: dict):
-    n_threads = cpu_count()//2
+    n_threads = max(cpu_count()//2, 1)
     with Manager() as manager:
         output_dict = manager.dict()
         processes = [Process(target=routine, args=(
             binary_file, input_folder, output_folder, input_files, output_dict, problem_limits, idx, n_threads)) for idx in range(n_threads)]
-        [process.start() for process in processes]
-        [process.join() for process in processes]
+        for process in processes:
+            process.start()
+        for process in processes:
+            process.join()
         write_to_log(output_dict)
 
 
 def write_to_log(output_dict):
     for i in range(len(output_dict)):
         debug_log(f'Running test {i + 1}')
-        if output_dict[i][0] == 're':
+        if output_dict[i][0] == Status.RE:
             debug_log('RE: Runtime error')
-        elif output_dict[i][0] == 'tle':
+        elif output_dict[i][0] == Status.TLE:
             debug_log('TLE: Time limit exceeded')
-        elif output_dict[i][0] == 'ml':
+        elif output_dict[i][0] == Status.MLE:
             debug_log('ML: Memory limit exceeded')
         debug_log('Time elapsed: {0:.2f}'.format(
             output_dict[i][1]) + ' seconds')
@@ -255,17 +266,17 @@ def write_to_log(output_dict):
 
 def memory_monitor(pid: int, memory_limit: int, event, con) -> None:
     mem_usage = 0
-    error = 0
+    status = Status.AC
     try:
         while (not event.is_set()):
             process = psutil.Process(pid)
             mem_usage = (max(process.memory_info().rss, mem_usage))
             if (mem_usage > memory_limit):
-                error = 'ml'
+                status = Status.MLE
                 return
             time.sleep(0.05)
     except psutil.NoSuchProcess as no_process:
         print(no_process)
         return
     finally:
-        con.send((mem_usage, error))
+        con.send((mem_usage, status))
