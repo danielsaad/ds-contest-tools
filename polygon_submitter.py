@@ -233,16 +233,15 @@ def save_test(tests_in_statement: int) -> list:
             'testInput': test_input,
             'checkExisting': 'false',
             'testDescription': test_description,
-            'testUseInStatements': str(test_use_in_statements).lower(),
-            'verifyInputOutputForStatements': str(
-                VERIFY_IO_STATEMENT).lower()}
+            'testUseInStatements': str(test_use_in_statements).lower()}
         params_list.append(('problem.saveTest', params))
     return params_list
 
 
 def get_requests_list() -> list:
     problem_id = input('ID: ')
-    path_json = os.path.join(Paths.instance().dirs['problem_dir'], 'problem.json')
+    path_json = os.path.join(
+        Paths.instance().dirs['problem_dir'], 'problem.json')
     if not os.path.exists(path_json):
         print('File problem.json does not exist.')
         sys.exit(0)
