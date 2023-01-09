@@ -16,6 +16,7 @@ from build import init
 from utils import instance_paths
 from logger import info_log, error_log
 from jsonutils import parse_json
+from fileutils import copy_directory
 
 DEFAULT_LANGUAGE = 'english'
 
@@ -127,43 +128,29 @@ def copy_solutions(package_folder, problem_folder) -> None:
         shutil.copy(f, destination)
 
 
-def check(package_folder, problem_folder):
-    if not os.path.isdir(package_folder):
-        print(package_folder, 'not a valid Polygon package folder')
+def init_problem(problem_folder):
+    """change to init from build.py"""
+    if os.path.isdir(problem_folder):
+        print(problem_folder, 'is already a problem folder')
         exit(1)
-    if not os.path.isdir(problem_folder):
-        print(problem_folder, 'is not a valid problem folder')
-        exit(1)
-    check_package(package_folder)
-    check_problem(problem_folder)
-
-
-def check_problem(problem_folder):
-    pass
-
-
-def check_package(package_folder):
-    paths = ['files', 'solutions', 'problem.xml',
-             'statement-sections', 'statements/english', 'tests', 'tags']
-    paths = [os.path.join(package_folder, f) for f in paths]
-    for path in paths:
-        if not os.path.exists(path):
-            print(os.path.basename(path), 'is not a valid path.')
-            exit(1)
+    tool_path = os.path.dirname(os.path.abspath(__file__))
+    copy_directory(os.path.join(tool_path, 'arquivos'), problem_folder)
+    os.makedirs(os.path.join(problem_folder, 'input'), exist_ok=True)
+    os.makedirs(os.path.join(problem_folder, 'output'), exist_ok=True)
 
 
 def write_statement(package_data, problem_folder):
     statement_dir = os.path.join(problem_folder, 'statement')
     with open(os.path.join(statement_dir, 'description.tex'), 'w') as f:
-        print(package_data['statement'], file=f)
+        [print(line, file=f) for line in package_data['statement']]
     with open(os.path.join(statement_dir, 'input.tex'), 'w') as f:
-        print(package_data['input_description'], file=f)
+        [print(line, file=f) for line in package_data['input_description']]
     with open(os.path.join(statement_dir, 'output.tex'), 'w') as f:
-        print(package_data['output_description'], file=f)
+        [print(line, file=f) for line in package_data['output_description']]
     with open(os.path.join(statement_dir, 'notes.tex'), 'w') as f:
-        print(package_data['notes'], file=f)
+        [print(line, file=f) for line in package_data['notes']]
     with open(os.path.join(statement_dir, 'tutorial.tex'), 'w') as f:
-        print(package_data['tutorial'], file=f)
+        [print(line, file=f) for line in package_data['tutorial']]
 
 
 def get_package_data(package_folder):
@@ -192,7 +179,7 @@ def get_solution_tag(tag: str) -> str:
         return 'runtime-error'
 
 
-def get_scrips_xml(root) -> str:
+def get_scripts_xml(root) -> str:
     gen_scripts = ''
     for tests in root.findall('./judging/testset/tests/test'):
         script = tests.get('cmd')
@@ -222,7 +209,7 @@ def get_xml_data(package_folder):
     root = tree.getroot()
 
     xml_data = {}
-    xml_data['script'] = get_scrips_xml(root)
+    xml_data['script'] = get_scripts_xml(root)
     xml_data['solutions'] = get_solutions_xml(root)
     return xml_data
 
@@ -258,7 +245,7 @@ def update_problem_json(package_folder, problem_folder, tags, title, solutions):
 
 
 def convert(package_folder, problem_folder):
-    check(package_folder, problem_folder)
+    init_problem(problem_folder)
     package_data = get_package_data(package_folder)
     xml_data = get_xml_data(package_folder)
     tags = get_tags(package_folder)
@@ -274,6 +261,7 @@ def convert(package_folder, problem_folder):
     copy_generator(package_folder, problem_folder, xml_data['script'])
     update_problem_json(package_folder, problem_folder, tags,
                         package_data['title'], xml_data['solutions'])
+    shutil.rmtree(package_folder)
 
 
 def get_package_id(packages: dict) -> int:
