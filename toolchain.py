@@ -1,12 +1,13 @@
 import os
 import subprocess
 import sys
+import hashlib
 from metadata import Paths
 from logger import info_log, error_log
 from config import custom_key
 from jsonutils import parse_json
 from utils import verify_command
-from checker import run_checker, run_solutions
+from checker import run_solutions
 
 
 def build_executables() -> None:
@@ -52,7 +53,8 @@ def validate_inputs() -> None:
     input_files.sort(key=custom_key)
     for fname in input_files:
         with open(fname) as f:
-            p = subprocess.Popen([os.path.join('../bin', 'validator')], stdin=f, stdout=subprocess.PIPE,
+            p = subprocess.Popen([os.path.join('../bin', 'validator')],
+                                 stdin=f, stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE, text=True)
             out, err = p.communicate()
             if (out or err):
@@ -60,6 +62,25 @@ def validate_inputs() -> None:
                 error_log(err)
                 print("Failed validation on input.", fname)
                 exit(1)
+
+    tests = dict()
+    for fname in input_files:
+        with open(fname, 'rb') as f:
+            encoded = (hashlib.sha1(f.read())).digest()
+        if encoded in tests:
+            tests[encoded].append(fname)
+        else:
+            tests[encoded] = [fname]
+    equal_tests = 0
+    for key in tests:
+        if len(tests[key]) > 1:
+            equal_tests += len(tests[key])
+            info_log("Testcases " + ', '.join(tests[key]) + " are equal.")
+
+    if (equal_tests):
+        print("All test cases must be different, however there are " +
+            f"{equal_tests} equal tests.")
+        sys.exit(0)
 
 
 def generate_inputs() -> None:
