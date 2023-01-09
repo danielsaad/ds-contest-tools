@@ -228,10 +228,10 @@ def get_xml_data(package_folder):
 
 
 def get_tags(problem_folder) -> dict:
-    tags = {'en-us': list()}
+    tags = {'en_us': list()}
     with open(os.path.join(problem_folder, 'tags'), 'r') as f:
         for line in f.readlines():
-            tags['en-us'].append(line.rstrip())
+            tags['en_us'].append(line.rstrip())
     return tags
 
 
