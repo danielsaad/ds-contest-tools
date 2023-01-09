@@ -21,6 +21,13 @@ def convert_idx_to_string(idx: int) -> str:
     return ans
 
 
+def convert_to_bytes(x) -> bytes:
+    """Converts a string to bytes."""
+    if isinstance(x, bytes):
+        return x
+    return bytes(str(x), 'utf8')
+
+
 def verify_command(p: CompletedProcess, message: str) -> None:
     """Checks if the output of the function 'subprocess.run' is ok."""
     if (p.returncode):
@@ -38,7 +45,7 @@ def verify_command(p: CompletedProcess, message: str) -> None:
 def instance_paths(problem_dir, output_dir='') -> None:
     """Initialize metadata dictionary and logs."""
     if (type(problem_dir) is list):
-        [os.path.abspath(s) for s in problem_dir]
+        problem_dir = [os.path.abspath(s) for s in problem_dir]
     else:
         problem_dir = os.path.abspath(problem_dir)
     output_dir = os.path.abspath(output_dir)
