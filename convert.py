@@ -15,7 +15,7 @@ def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument(
-        '-o', '--output', help='Directory where the problem will be saved. Default is "./".')
+        '-o', '--output-dir', help='Directory where the problem will be saved. Default is "./".')
     parser.add_argument('-c', '--change-keys',
                         help='Change Polygon API keys.', action='store_true')
     parser.add_argument('reader', choices=['BOCA', 'DS', 'Polygon'],
