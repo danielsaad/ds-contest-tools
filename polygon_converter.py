@@ -1,13 +1,20 @@
 # Converts a Linux Package from Polygon to DS format
 
-
+import io
 import os
 import json
+import time
 import shutil
+import zipfile
+import requests
 import argparse
+import hashlib
+import random
+import string
 import xml.etree.ElementTree as ET
 from build import init
 from utils import instance_paths
+from logger import info_log, error_log
 from jsonutils import parse_json
 
 DEFAULT_LANGUAGE = 'english'
@@ -269,10 +276,104 @@ def convert(package_folder, problem_folder):
                         package_data['title'], xml_data['solutions'])
 
 
+def get_package_id(packages: dict) -> int:
+    """Get the latest READY package ID from the dictionary."""
+    recent = 0
+    package_id = -1
+
+    for package in packages:
+        if package['state'] != 'READY':
+            continue
+        if package['type'] != 'linux':
+            continue
+        if package['creationTimeSeconds'] < recent:
+            continue
+        package_id = package['id']
+        recent = package['creationTimeSeconds']
+
+    if (package_id == -1):
+        print("There is no package READY.")
+        exit(1)
+
+    return package_id
+
+
+def convert_to_bytes(x) -> bytes:
+    """Converts a string to bytes."""
+    if isinstance(x, bytes):
+        return x
+    return bytes(str(x), 'utf8')
+
+
+def get_apisig(method_name: str, secret: str, params: dict) -> bytes:
+    """Generate 'apiSig' value for the API authorization."""
+    rand = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
+    rand = convert_to_bytes(rand)
+
+    param_list = [(convert_to_bytes(key), params[key]) for key in params]
+    param_list.sort()
+
+    apisig = rand + b'/' + convert_to_bytes(method_name) + b'?'
+    apisig += b'&'.join([param[0] + b'=' + param[1] for param in param_list])
+    apisig += b'#' + convert_to_bytes(secret)
+    return rand + convert_to_bytes(hashlib.sha512(apisig).hexdigest())
+
+
+def get_polygon_response(params, method, problem_id):
+    tool_path = os.path.dirname(os.path.abspath(__file__))
+    keys = parse_json(os.path.join(tool_path, 'secrets.json'))
+
+    # Get list of all packages
+    params['apiKey'] = keys['apikey']
+    params['time'] = int(time.time())
+    params['problemId'] = problem_id
+    for key in params:
+        params[key] = convert_to_bytes(params[key])
+    params['apiSig'] = get_apisig(method, keys['secret'], params)
+
+    url = 'https://polygon.codeforces.com/api/'
+    response = requests.post(url + method, files=params)
+    if response.status_code == 200:
+        info_log(f'Request {method} successfull.')
+    else:
+        if response.status_code == 400:
+            content = json.loads(response.content.decode())
+            error_log("API status: " + content['status'])
+            error_log(content['comment'])
+            print(f"Wrong parameter of {method} method.")
+        else:
+            print("Could not connect to the API.")
+        exit(1)
+    return response.content
+
+
+def download_package_polygon(package_folder):
+    """Download zip package from Polygon."""
+    problem_id = input('ID: ')
+
+    content = json.loads(get_polygon_response(
+        dict(), 'problem.packages', problem_id))
+
+    # Get the correct package
+    package_id = get_package_id(content['result'])
+
+    # Get bytes of the package
+    params = dict()
+    params['packageId'] = package_id
+    params['type'] = 'linux'
+    response = get_polygon_response(params, 'problem.package', problem_id)
+
+    # Save bytes as a zip file
+    package = zipfile.ZipFile(io.BytesIO(response))
+    package.extractall(package_folder)
+    package.close()
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('package_folder')
     parser.add_argument('problem_folder')
     args = parser.parse_args()
     instance_paths(args.package_folder, args.problem_folder)
+    download_package_polygon(args.package_folder)
     convert(args.package_folder, args.problem_folder)
