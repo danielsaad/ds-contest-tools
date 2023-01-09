@@ -8,9 +8,19 @@ import subprocess
 import sys
 import time
 import shutil
-from multiprocessing import Process, cpu_count, Manager
+import psutil
+from enum import Enum
+from multiprocessing import Process, cpu_count, Manager, Event, Pipe, Pool
 from metadata import Paths
 from logger import info_log, debug_log, error_log
+
+
+class Status(Enum):
+    AC = 0
+    WA = 1
+    RE = 2
+    MLE = 3
+    TLE = 4
 
 
 """ Java definitions """
@@ -41,20 +51,41 @@ def compile_java(submission_file, problem_id):
         print(renamed_file, 'class file', 'generated')
 
 
-def run_binary(binary_file, input_folder, output_folder, input_files, output_dict, begin=0, pace=1):
+def run_binary(binary_file, input_folder: str, output_folder: str, input_files: list, output_dict, problem_limits: dict, begin: int = 0, pace: int = 1):
+    ans_folder = os.path.join(
+        Paths.instance().dirs["problem_dir"], 'output')
     for i in range(begin, len(input_files), pace):
-        fname_in = input_files[i]
-        fname_in = os.path.join(input_folder, fname_in)
-        fname_out = os.path.join(output_folder, os.path.basename(fname_in))
-        local_time_start = time.perf_counter()
+        ans_file = os.path.join(ans_folder, input_files[i])
+        fname_in = os.path.join(input_folder, input_files[i])
+        fname_out = os.path.join(output_folder, input_files[i])
+        status = Status.AC  # Find a better name
+        event = Event()
+        conn_sender, con_recv = Pipe()
+        mem_info = (0, 0)  # Find a better name for this variable
         with open(fname_in, 'r') as inf, open(fname_out, 'w') as ouf:
-            p = subprocess.run([binary_file],
-                               stdin=inf, stdout=ouf)
-        local_time_end = time.perf_counter()
-        run_time_error = False
-        if (p.returncode):
-            run_time_error = True
-        output_dict[i] = [run_time_error, local_time_end-local_time_start]
+            local_time_start = time.perf_counter()
+            local_time_end = 0
+            try:
+                p = subprocess.Popen([binary_file],
+                                     stdin=inf, stdout=ouf, stderr=subprocess.PIPE,)
+                process = Process(target=memory_monitor,
+                                  args=(p.pid, problem_limits['memory_limit'], event, conn_sender))
+                process.start()
+                p.communicate(timeout=problem_limits['time_limit'])
+                if p.returncode < 0:
+                    status = Status.RE
+            except subprocess.TimeoutExpired:
+                status = Status.TLE
+            finally:
+                local_time_end = time.perf_counter()
+                event.set()
+                mem_info = con_recv.recv()
+            if mem_info[1] != Status.AC:
+                status = Status.MLE
+            elif status == Status.AC:
+                status = run_checker(ans_file, fname_in, fname_out)
+            output_dict[i] = [status, local_time_end -
+                              local_time_start, mem_info[0]]
 
 
 def run_java(class_name, input_folder, output_folder):
@@ -104,7 +135,7 @@ def run_python3(submission_file: str, input_folder: str, output_folder):
             local_time_end-local_time_start), 'seconds')
 
 
-def run(submission_file: str, input_folder: str, output_folder: str) -> None:
+def run(submission_file: str, input_folder: str, output_folder: str, problem_limits: dict) -> None:
     binary_file, ext = os.path.splitext(submission_file)
     debug_log('Run binary ' + binary_file)
     problem_folder = os.path.join(
@@ -118,7 +149,7 @@ def run(submission_file: str, input_folder: str, output_folder: str) -> None:
     if (ext == '.cpp' or ext == '.c'):
         start_time = time.perf_counter()
         create_thread(binary_file, input_folder,
-                      output_folder, input_files, run_binary)
+                      output_folder, input_files, run_binary, problem_limits)
         end_time = time.perf_counter()
     elif (ext == '.java'):
         problem_id = os.path.basename(os.path.dirname(input_folder))
@@ -136,55 +167,43 @@ def run(submission_file: str, input_folder: str, output_folder: str) -> None:
     debug_log('Total time elapsed: {0:.2f}:'.format(end_time - start_time))
 
 
-def run_checker(input_folder: str, output_folder: str, tmp_dir: str, checker_file: str) -> None:
-    output_files = [os.path.join(output_folder, f) for f in os.listdir(
-        output_folder) if os.path.isfile(os.path.join(output_folder, f))]
-    output_files.sort(key=custom_key)
-    error_found = False
-    for f in output_files:
-        fname = os.path.basename(f)
-        inf = os.path.join(input_folder, fname)
-        ouf = f
-        ans = os.path.join(tmp_dir, fname)
-        if (not os.path.isfile(inf)):
-            error_log('Input' + fname + 'not available')
-            sys.exit(1)
-        if (not os.path.isfile(ans)):
-            error_log('Answer' + fname + 'not available')
-            sys.exit(1)
-        debug_log('Checking input ' + fname)
-        command = [checker_file, inf, ouf, ans]
-        p = subprocess.run(command, stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE)
-        checker_output = p.stderr.decode('utf-8')
-        if (checker_output.startswith('ok')):
-            debug_log('Input ' + fname + ': AC')
-        elif (checker_output.startswith('wrong answer')):
-            debug_log('Input ' + fname + ': WA')
-            error_found = True
-        elif (checker_output.startswith('wrong output format')):
-            debug_log('Input ' + fname + ': PE')
-            error_found = True
-        elif (checker_output.startswith('FAIL Unexpected')):
-            debug_log(f'Input {fname}: RE')
-            error_found = True
-            # TODO : Esclarecer essa saída com o Saad
-        elif (checker_output.startswith('FAIL')):
-            error_log('Input ' + fname +
-                      ': FAIL: maybe the jury solution or the checker are not correct')
-            error_found = True
-        else:
-            error_log(
-                f'Input {fname}: Output not recognized -> {checker_output}')
-            error_found = True
-    if not error_found:
-        info_log('OK: All tests passed!')
-
+def run_checker(ans: str, inf: str, ouf: str) -> Status:
+    fname = os.path.basename(inf)
+    status = Status.AC
+    checker_file: str = os.path.join(
+        Paths.instance().dirs["problem_dir"], 'bin/checker')
+    if (not os.path.isfile(inf)):
+        error_log('Input' + fname + 'not available')
+        sys.exit(1)
+    if (not os.path.isfile(ans)):
+        error_log('Answer' + fname + 'not available')
+        sys.exit(1)
+    command = [checker_file, inf, ouf, ans]
+    p = subprocess.run(command, stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE)
+    checker_output = p.stderr.decode('utf-8')
+    if (checker_output.startswith('ok')):
+        status = Status.AC
+        # debug_log('Input ' + fname + ': AC')
+    elif (checker_output.startswith('wrong answer')):
+        # debug_log('Input ' + fname + ': WA')
+        status = Status.WA
+    elif (checker_output.startswith('FAIL')):
+        error_log('Input ' + fname +
+                  ': FAIL: maybe the jury solution or the checker are not correct')
+    else:
+        error_log(
+            f'Input {fname}: Output not recognized -> {checker_output}')
+    return status
 
 # TODO - write documentation
 
 
 def run_solutions(input_folder, output_folder, problem_metadata) -> None:
+    time_limit = problem_metadata["problem"]["time_limit"]
+    memory_limit = problem_metadata["problem"]["memory_limit_mb"] * 2 ** 20
+    problem_limits = {'time_limit': time_limit,
+                      'memory_limit': memory_limit}
     solutions = problem_metadata['solutions']
     problem_folder = Paths.instance().dirs["problem_dir"]
     tmp_folder = os.path.join(os.getcwd(), problem_folder, 'tmp_output')
@@ -193,33 +212,59 @@ def run_solutions(input_folder, output_folder, problem_metadata) -> None:
         if isinstance(files, list):
             for submission_file in files:
                 if submission_file != '':
-                    info_log(f'Running {submission_file.upper()} solution')
-                    run(submission_file, input_folder, tmp_folder)
-                    run_checker(input_folder, output_folder,
-                                tmp_folder, os.path.join(problem_folder, 'bin/checker'))
+                    info_log(f'Running {submission_file} solution')
+                    run(submission_file, input_folder,
+                        tmp_folder, problem_limits)
         else:
-            info_log(f'Running {files.upper()} solution')
-            run(files, input_folder, tmp_folder)
-            run_checker(input_folder, output_folder,
-                        tmp_folder, os.path.join(problem_folder, 'bin/checker'))
+            info_log(f'Running {files} solution')
+            run(files, input_folder, tmp_folder, problem_limits)
     shutil.rmtree(tmp_folder)
 
 
-def create_thread(binary_file, input_folder, output_folder, input_files, routine):
-    n_threads = cpu_count()
+def create_thread(binary_file, input_folder, output_folder, input_files: list, routine, problem_limits: dict):
+    n_threads = max(cpu_count()//2, 1)
+
     with Manager() as manager:
         output_dict = manager.dict()
-        threads = [Process(target=routine, args=(
-            binary_file, input_folder, output_folder, input_files, output_dict, idx, n_threads)) for idx in range(n_threads)]
-        [thread.start() for thread in threads]
-        [thread.join() for thread in threads]
+        processes = [Process(target=routine, args=(
+            binary_file, input_folder, output_folder, input_files, output_dict, problem_limits, idx, n_threads)) for idx in range(n_threads)]
+        for process in processes:
+            process.start()
+        for process in processes:
+            process.join()
         write_to_log(output_dict)
 
 
 def write_to_log(output_dict):
     for i in range(len(output_dict)):
         debug_log(f'Running test {i + 1}')
-        if output_dict[i][0]:
+        if output_dict[i][0] == Status.AC:
+            debug_log('AC: Accepted')
+        elif output_dict[i][0] == Status.WA:
+            debug_log('WA: Wrong answer')
+        elif output_dict[i][0] == Status.RE:
             debug_log('RE: Runtime error')
+        elif output_dict[i][0] == Status.TLE:
+            debug_log('TLE: Time limit exceeded')
+        elif output_dict[i][0] == Status.MLE:
+            debug_log('ML: Memory limit exceeded')
         debug_log('Time elapsed: {0:.2f}'.format(
             output_dict[i][1]) + ' seconds')
+        debug_log(f'Memory: {output_dict[i][2]/1000} KB')
+
+
+def memory_monitor(pid: int, memory_limit: int, event, con) -> None:
+    mem_usage = 0
+    status = Status.AC
+    try:
+        while (not event.is_set()):
+            process = psutil.Process(pid)
+            mem_usage = (max(process.memory_info().rss, mem_usage))
+            if (mem_usage > memory_limit):
+                status = Status.MLE
+                return
+            time.sleep(0.05)
+    except psutil.NoSuchProcess as no_process:
+        return
+    finally:
+        con.send((mem_usage, status))
