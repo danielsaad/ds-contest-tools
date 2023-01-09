@@ -57,13 +57,15 @@ def build_contest_pdf() -> None:
         build_pdf(folder, output_folder, options)
         basename = os.path.basename(folder)
         problem_pdf_l.append(os.path.join(output_folder, basename+'.pdf'))
-        tutorial_pdf_l.append(os.path.join(
-            output_folder, basename+'-tutorial.pdf'))
+        if (os.path.exists(folder + '-tutorial.pdf')):
+            tutorial_pdf_l.append(os.path.join(
+                output_folder, basename+'-tutorial.pdf'))
     clean_auxiliary_files(output_folder)
     merge_pdf = os.path.join(output_folder, 'maratona.pdf')
     merge_tutorial_pdf = os.path.join(output_folder, 'tutoriais.pdf')
     merge_pdfs(problem_pdf_l, merge_pdf)
-    merge_pdfs(tutorial_pdf_l, merge_tutorial_pdf)
+    if (tutorial_pdf_l):
+        merge_pdfs(tutorial_pdf_l, merge_tutorial_pdf)
     for f in problem_pdf_l:
         os.remove(f)
     for f in tutorial_pdf_l:
@@ -98,7 +100,7 @@ if __name__ == '__main__':
         if (not os.path.exists(problem)):
             print(problem, "path doesn't exist.")
             sys.exit(1)
-        if (not os.path.exists(os.path.join(problem, 'statement.md'))):
+        if (not os.path.exists(os.path.join(problem, 'statement'))):
             print(problem, "path doesn't have an initialized problem.")
             sys.exit(1)
         if (args.mode == 'genpdf'):

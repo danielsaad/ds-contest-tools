@@ -45,7 +45,7 @@ def verify_command(p: CompletedProcess, message: str) -> None:
 def instance_paths(problem_dir, output_dir='') -> None:
     """Initialize metadata dictionary and logs."""
     if (type(problem_dir) is list):
-        [os.path.abspath(s) for s in problem_dir]
+        problem_dir = [os.path.abspath(s) for s in problem_dir]
     else:
         problem_dir = os.path.abspath(problem_dir)
     output_dir = os.path.abspath(output_dir)

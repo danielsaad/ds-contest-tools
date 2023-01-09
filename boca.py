@@ -39,7 +39,6 @@ def boca_pack(problem_folder='') -> None:
     # Copy template files
     recursive_overwrite(boca_template_folder, boca_folder)
     # Get problem metadata
-    problem_md = glob.glob(os.path.join(problem_folder, '*.md'))[0]
     tl = 0
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
     basename = os.path.basename(os.path.abspath(problem_folder))
