@@ -19,20 +19,6 @@ TESTSET = 'tests'
 VERIFY_IO_STATEMENT = True
 
 
-def get_apisig(method_name: str, secret: str, params: dict) -> bytes:
-    """Generate 'apiSig' value for the API authorization."""
-    rand = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
-    rand = convert_to_bytes(rand)
-
-    param_list = [(convert_to_bytes(key), params[key]) for key in params]
-    param_list.sort()
-
-    apisig = rand + b'/' + convert_to_bytes(method_name) + b'?'
-    apisig += b'&'.join([param[0] + b'=' + param[1] for param in param_list])
-    apisig += b'#' + convert_to_bytes(secret)
-    return rand + convert_to_bytes(hashlib.sha512(apisig).hexdigest())
-
-
 def update_info(problem_json: dict) -> tuple:
     """Get general information parameters of the problem."""
     interactive = problem_json['interactive']
@@ -238,8 +224,31 @@ def save_test(tests_in_statement: int) -> list:
     return params_list
 
 
+def get_apisig(method_name: str, secret: str, params: dict) -> bytes:
+    """Generate 'apiSig' value for the API authorization."""
+    rand = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
+    rand = convert_to_bytes(rand)
+
+    param_list = [(convert_to_bytes(key), params[key]) for key in params]
+    param_list.sort()
+
+    apisig = rand + b'/' + convert_to_bytes(method_name) + b'?'
+    apisig += b'&'.join([param[0] + b'=' + param[1] for param in param_list])
+    apisig += b'#' + convert_to_bytes(secret)
+    return rand + convert_to_bytes(hashlib.sha512(apisig).hexdigest())
+
+
+def add_auth_parameters(method, params, problem_id, keys):
+    params['apiKey'] = keys["apikey"]
+    params['time'] = int(time.time())
+    params['problemId'] = problem_id
+    for key in params:
+        params[key] = convert_to_bytes(params[key])
+    params['apiSig'] = get_apisig(method, keys["secret"], params)
+    return params
+
+
 def get_requests_list() -> list:
-    problem_id = input('ID: ')
     path_json = os.path.join(
         Paths.instance().dirs['problem_dir'], 'problem.json')
     if not os.path.exists(path_json):
@@ -257,36 +266,39 @@ def get_requests_list() -> list:
     requests_list = requests_list + save_statement_resources()
     requests_list = requests_list + save_files(problem_json['solutions'])
     requests_list = requests_list + save_test(problem_json['io_samples'])
+    return requests_list
 
+
+def add_requests_info(requests_list):
     tool_path = os.path.dirname(os.path.abspath(__file__))
     keys = parse_json(os.path.join(tool_path, 'secrets.json'))
-    for method, params in requests_list:
-        params['apiKey'] = keys["apikey"]
-        params['time'] = int(time.time())
-        params['problemId'] = problem_id
 
-        for key in params:
-            params[key] = convert_to_bytes(params[key])
-        params['apiSig'] = get_apisig(method, keys["secret"], params)
+    problem_id = input('ID: ')
+    for method, params in requests_list:
+        params = add_auth_parameters(method, params, problem_id, keys)
     return requests_list
+
+
+def verify_response(response, method):
+    if response.status_code == 200:
+        info_log(f'Request {method} successfull.')
+    else:
+        if response.status_code == 400:
+            content = json.loads(response.content.decode())
+            error_log("API status: " + content['status'])
+            error_log(content['comment'])
+            print(f"Wrong parameter of {method} method.")
+        else:
+            print("Could not connect to the API.")
+        sys.exit(1)
 
 
 def send_to_polygon() -> None:
     """Send problem information to Polygon."""
     requests_list = get_requests_list()
-
+    requests_list = add_requests_info(requests_list)
     conn = requests.Session()
     url = 'https://polygon.codeforces.com/api/'
     for method, params in requests_list:
         response = conn.post(url + method, files=params)
-        if response.status_code == 200:
-            info_log(f'Request {method} successfull.')
-        else:
-            if response.status_code == 400:
-                content = json.loads(response.content.decode())
-                error_log("API status: " + content['status'])
-                error_log(content['comment'])
-                print(f"Wrong parameter of {method} method.")
-            else:
-                print("Could not connect to the API.")
-            sys.exit(1)
+        verify_response(response, method)
