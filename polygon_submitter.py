@@ -10,27 +10,13 @@ import json
 from logger import info_log, error_log
 from jsonutils import parse_json
 from metadata import Paths
-from utils import convert_to_bytes
+from utils import convert_to_bytes, instance_paths
 
 
 LANGUAGE = 'english'
 ENCONDING = 'utf-8'
 TESTSET = 'tests'
 VERIFY_IO_STATEMENT = True
-
-
-def get_apisig(method_name: str, secret: str, params: dict) -> bytes:
-    """Generate 'apiSig' value for the API authorization."""
-    rand = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
-    rand = convert_to_bytes(rand)
-
-    param_list = [(convert_to_bytes(key), params[key]) for key in params]
-    param_list.sort()
-
-    apisig = rand + b'/' + convert_to_bytes(method_name) + b'?'
-    apisig += b'&'.join([param[0] + b'=' + param[1] for param in param_list])
-    apisig += b'#' + convert_to_bytes(secret)
-    return rand + convert_to_bytes(hashlib.sha512(apisig).hexdigest())
 
 
 def update_info(problem_json: dict) -> tuple:
@@ -40,7 +26,7 @@ def update_info(problem_json: dict) -> tuple:
     if (time_limit < 250 or time_limit > 15000):
         print("Time limit is only between 0.25s and 15s.")
         sys.exit(0)
-    memory_limit = problem_json['memory_limit']
+    memory_limit = problem_json['memory_limit_mb']
     if (memory_limit < 4 or memory_limit > 1024):
         print("Memory limit is only between 4MB and 1024MB.")
         sys.exit(0)
@@ -109,6 +95,22 @@ def save_statement_resources() -> list:
     return params_list
 
 
+def save_script():
+    problem_folder = Paths.instance().dirs['problem_dir']
+    script_path = os.path.join(*[problem_folder, 'src', 'script.sh'])
+    if not os.path.exists(script_path):
+        return None
+
+    with open(script_path, 'r') as f:
+        scripts = f.readlines()
+
+    params = {
+        'testset': TESTSET,
+        'source': ''.join(script.rstrip() + ' > $\n' for script in scripts)
+    }
+    return ('problem.saveScript', params)
+
+
 def set_validator(name) -> tuple:
     """Set validator used by the problem."""
     params = {'validator': name}
@@ -148,10 +150,18 @@ def save_solution(file_path: str, tag: str) -> tuple:
         tag = 'MA'
     elif tag == 'alternative-ac':
         tag = 'OK'
-    elif tag == 'wrong-anwser':
+    elif tag == 'wrong-answer':
         tag = 'WA'
     elif tag == 'time-limit':
         tag = 'TL'
+    elif tag == 'time-limit-or-ac':
+        tag = 'TO'
+    elif tag == 'time-limit-or-memory-limit':
+        tag = 'TM'
+    elif tag == 'memory-limit':
+        tag = 'ML'
+    elif tag == 'presentation-error':
+        tag = 'PE'
     else:
         tag = 'RE'
 
@@ -184,7 +194,7 @@ def save_files(solutions: dict) -> list:
 
     setters = []
     for file in os.listdir(src_dir):
-        if file in solution_files:
+        if file in solution_files or file.endswith('.sh'):
             continue
         elif file.startswith('checker'):
             params_list.append(
@@ -215,13 +225,24 @@ def save_tags(tag_list: list) -> tuple:
 
 def save_test(tests_in_statement: int) -> list:
     """Get input files of the problem."""
-    input_folder = os.path.join(Paths.instance().dirs['problem_dir'], 'input')
+    problem_folder = Paths.instance().dirs['problem_dir']
+    input_folder = os.path.join(problem_folder, 'input')
     if (not os.path.exists(input_folder)):
         print(f'Input folder does not exist.')
         sys.exit(0)
 
+    total_inputs = len(os.listdir(input_folder))
+    script_path = os.path.join(*[problem_folder, 'src', 'script.sh'])
+    if os.path.exists(script_path):
+        with open(script_path, 'r') as f:
+            total_scripts = len(f.readlines())
+        total_inputs -= total_scripts
+
     params_list = []
     for input_file in os.listdir(input_folder):
+        if int(input_file) > total_inputs:
+            continue
+
         with open(os.path.join(input_folder, input_file), 'r') as f:
             test_input = ''.join(f.readlines())
         test_use_in_statements = (int(input_file) <= tests_in_statement)
@@ -238,8 +259,31 @@ def save_test(tests_in_statement: int) -> list:
     return params_list
 
 
+def get_apisig(method_name: str, secret: str, params: dict) -> bytes:
+    """Generate 'apiSig' value for the API authorization."""
+    rand = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
+    rand = convert_to_bytes(rand)
+
+    param_list = [(convert_to_bytes(key), params[key]) for key in params]
+    param_list.sort()
+
+    apisig = rand + b'/' + convert_to_bytes(method_name) + b'?'
+    apisig += b'&'.join([param[0] + b'=' + param[1] for param in param_list])
+    apisig += b'#' + convert_to_bytes(secret)
+    return rand + convert_to_bytes(hashlib.sha512(apisig).hexdigest())
+
+
+def add_auth_parameters(method, params, problem_id, keys):
+    params['apiKey'] = keys["apikey"]
+    params['time'] = int(time.time())
+    params['problemId'] = problem_id
+    for key in params:
+        params[key] = convert_to_bytes(params[key])
+    params['apiSig'] = get_apisig(method, keys["secret"], params)
+    return params
+
+
 def get_requests_list() -> list:
-    problem_id = input('ID: ')
     path_json = os.path.join(
         Paths.instance().dirs['problem_dir'], 'problem.json')
     if not os.path.exists(path_json):
@@ -257,36 +301,46 @@ def get_requests_list() -> list:
     requests_list = requests_list + save_statement_resources()
     requests_list = requests_list + save_files(problem_json['solutions'])
     requests_list = requests_list + save_test(problem_json['io_samples'])
-
-    tool_path = os.path.dirname(os.path.abspath(__file__))
-    keys = parse_json(os.path.join(tool_path, 'secrets.json'))
-    for method, params in requests_list:
-        params['apiKey'] = keys["apikey"]
-        params['time'] = int(time.time())
-        params['problemId'] = problem_id
-
-        for key in params:
-            params[key] = convert_to_bytes(params[key])
-        params['apiSig'] = get_apisig(method, keys["secret"], params)
+    script = save_script()
+    if script is not None:
+        requests_list.append(script)
     return requests_list
 
 
-def send_to_polygon() -> None:
-    """Send problem information to Polygon."""
-    requests_list = get_requests_list()
+def add_requests_info(requests_list):
+    tool_path = os.path.dirname(os.path.abspath(__file__))
+    keys = parse_json(os.path.join(tool_path, 'secrets.json'))
 
+    problem_id = input('ID: ')
+    for method, params in requests_list:
+        params = add_auth_parameters(method, params, problem_id, keys)
+    return requests_list
+
+
+def verify_response(response, method):
+    if response.status_code == 200:
+        info_log(f'Request {method} successfull.')
+    else:
+        if response.status_code == 400:
+            content = json.loads(response.content.decode())
+            error_log("API status: " + content['status'])
+            error_log(content['comment'])
+            print(f"Wrong parameter of {method} method.")
+        else:
+            print("Could not connect to the API.")
+        sys.exit(1)
+
+
+def send_to_polygon(problem_folder) -> None:
+    """Send problem information to Polygon."""
+    if not os.path.exists(problem_folder):
+        print(f'{problem_folder} does not exist.')
+        sys.exit(1)
+    instance_paths(problem_folder)
+    requests_list = get_requests_list()
+    requests_list = add_requests_info(requests_list)
     conn = requests.Session()
     url = 'https://polygon.codeforces.com/api/'
     for method, params in requests_list:
         response = conn.post(url + method, files=params)
-        if response.status_code == 200:
-            info_log(f'Request {method} successfull.')
-        else:
-            if response.status_code == 400:
-                content = json.loads(response.content.decode())
-                error_log("API status: " + content['status'])
-                error_log(content['comment'])
-                print(f"Wrong parameter of {method} method.")
-            else:
-                print("Could not connect to the API.")
-            sys.exit(1)
+        verify_response(response, method)
