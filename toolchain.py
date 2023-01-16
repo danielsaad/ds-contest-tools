@@ -79,17 +79,45 @@ def validate_inputs() -> None:
 
     if (equal_tests):
         print("All test cases must be different, however there are " +
-            f"{equal_tests} equal tests.")
+              f"{equal_tests} equal tests.")
         sys.exit(0)
 
 
 def generate_inputs() -> None:
     """Generates input files from the generator file."""
-    generator_command = os.path.join('../bin', 'generator')
-    info_log('Generating inputs')
-    p = subprocess.run(generator_command, stdout=subprocess.PIPE,
-                       stderr=subprocess.PIPE, text=True)
-    verify_command(p, "Error generating inputs.")
+    scripts = []
+    ds_generator = True
+    script_path = os.path.join('../src', 'script.sh')
+    if os.path.exists(script_path):
+        with open(script_path, 'r') as f:
+            scripts = f.readlines()
+
+        for script in scripts:
+            if script.startswith('generator '):
+                ds_generator = False
+                break
+
+    if ds_generator:
+        generator_command = os.path.join('../bin', 'generator')
+        info_log('Generating inputs')
+        p = subprocess.run(generator_command, stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE, text=True)
+        verify_command(p, "Error generating inputs.")
+
+    index = len(os.listdir()) + 1
+    for script in scripts:
+        info_log(f'Generating {index} testcase from script')
+        
+        script = script.split()
+        generator_path = os.path.join('../bin', script[0])
+        if not os.path.exists(generator_path):
+            print(f'Generator {os.path.basename(generator_path)} does not exist.')
+            sys.exit(1)
+
+        p = subprocess.run([generator_path, *script, '>', str(index)], stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE, text=True)
+        verify_command(p, "Error generating inputs.")
+        index += 1
 
 
 def produce_outputs(problem_metadata) -> None:
