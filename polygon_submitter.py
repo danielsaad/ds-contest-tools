@@ -10,7 +10,7 @@ import json
 from logger import info_log, error_log
 from jsonutils import parse_json
 from metadata import Paths
-from utils import convert_to_bytes
+from utils import convert_to_bytes, instance_paths
 
 
 LANGUAGE = 'english'
@@ -331,8 +331,12 @@ def verify_response(response, method):
         sys.exit(1)
 
 
-def send_to_polygon() -> None:
+def send_to_polygon(problem_folder) -> None:
     """Send problem information to Polygon."""
+    if not os.path.exists(problem_folder):
+        print(f'{problem_folder} does not exist.')
+        sys.exit(1)
+    instance_paths(problem_folder)
     requests_list = get_requests_list()
     requests_list = add_requests_info(requests_list)
     conn = requests.Session()

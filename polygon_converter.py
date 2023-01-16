@@ -342,11 +342,7 @@ def download_package_polygon():
     package.close()
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('problem_folder', help='Path to problem folder')
-    args = parser.parse_args()
-    instance_paths(args.problem_folder, os.path.join(
-        args.problem_folder, 'temp_package'))
+def get_polygon_problem(problem_folder):
+    instance_paths(problem_folder, os.path.join(problem_folder, 'temp_package'))
     download_package_polygon()
     convert_problem()
