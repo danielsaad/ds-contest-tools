@@ -26,7 +26,7 @@ def update_info(problem_json: dict) -> tuple:
     if (time_limit < 250 or time_limit > 15000):
         print("Time limit is only between 0.25s and 15s.")
         sys.exit(0)
-    memory_limit = problem_json['memory_limit']
+    memory_limit = problem_json['memory_limit_mb']
     if (memory_limit < 4 or memory_limit > 1024):
         print("Memory limit is only between 4MB and 1024MB.")
         sys.exit(0)
@@ -95,6 +95,22 @@ def save_statement_resources() -> list:
     return params_list
 
 
+def save_script():
+    problem_folder = Paths.instance().dirs['problem_dir']
+    script_path = os.path.join(*[problem_folder, 'src', 'script.sh'])
+    if not os.path.exists(script_path):
+        return None
+
+    with open(script_path, 'r') as f:
+        scripts = f.readlines()
+
+    params = {
+        'testset': TESTSET,
+        'source': ''.join(script.rstrip() + ' > $\n' for script in scripts)
+    }
+    return ('problem.saveScript', params)
+
+
 def set_validator(name) -> tuple:
     """Set validator used by the problem."""
     params = {'validator': name}
@@ -134,10 +150,18 @@ def save_solution(file_path: str, tag: str) -> tuple:
         tag = 'MA'
     elif tag == 'alternative-ac':
         tag = 'OK'
-    elif tag == 'wrong-anwser':
+    elif tag == 'wrong-answer':
         tag = 'WA'
     elif tag == 'time-limit':
         tag = 'TL'
+    elif tag == 'time-limit-or-ac':
+        tag = 'TO'
+    elif tag == 'time-limit-or-memory-limit':
+        tag = 'TM'
+    elif tag == 'memory-limit':
+        tag = 'ML'
+    elif tag == 'presentation-error':
+        tag = 'PE'
     else:
         tag = 'RE'
 
@@ -170,7 +194,7 @@ def save_files(solutions: dict) -> list:
 
     setters = []
     for file in os.listdir(src_dir):
-        if file in solution_files:
+        if file in solution_files or file.endswith('.sh'):
             continue
         elif file.startswith('checker'):
             params_list.append(
@@ -201,13 +225,24 @@ def save_tags(tag_list: list) -> tuple:
 
 def save_test(tests_in_statement: int) -> list:
     """Get input files of the problem."""
-    input_folder = os.path.join(Paths.instance().dirs['problem_dir'], 'input')
+    problem_folder = Paths.instance().dirs['problem_dir']
+    input_folder = os.path.join(problem_folder, 'input')
     if (not os.path.exists(input_folder)):
         print(f'Input folder does not exist.')
         sys.exit(0)
 
+    total_inputs = len(os.listdir(input_folder))
+    script_path = os.path.join(*[problem_folder, 'src', 'script.sh'])
+    if os.path.exists(script_path):
+        with open(script_path, 'r') as f:
+            total_scripts = len(f.readlines())
+        total_inputs -= total_scripts
+
     params_list = []
     for input_file in os.listdir(input_folder):
+        if int(input_file) > total_inputs:
+            continue
+
         with open(os.path.join(input_folder, input_file), 'r') as f:
             test_input = ''.join(f.readlines())
         test_use_in_statements = (int(input_file) <= tests_in_statement)
@@ -266,6 +301,9 @@ def get_requests_list() -> list:
     requests_list = requests_list + save_statement_resources()
     requests_list = requests_list + save_files(problem_json['solutions'])
     requests_list = requests_list + save_test(problem_json['io_samples'])
+    script = save_script()
+    if script is not None:
+        requests_list.append(script)
     return requests_list
 
 

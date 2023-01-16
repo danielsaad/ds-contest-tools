@@ -8,7 +8,6 @@ import zipfile
 import requests
 import argparse
 import xml.etree.ElementTree as ET
-from build import init
 from metadata import Paths
 from utils import instance_paths
 from jsonutils import parse_json
@@ -137,6 +136,7 @@ def copy_solutions() -> None:
     package_folder = Paths.instance().dirs['output_dir']
     problem_folder = Paths.instance().dirs['problem_dir']
     solution_folder = os.path.join(package_folder, 'solutions')
+
     source_files = [os.path.join(solution_folder, x) for x in os.listdir(
         solution_folder) if not x.endswith('.desc')]
     destination = os.path.join(problem_folder, 'src')
@@ -146,16 +146,16 @@ def copy_solutions() -> None:
 
 def init_problem():
     tool_path = os.path.dirname(os.path.abspath(__file__))
+    folder = os.path.join(tool_path, 'arquivos')
     problem_folder = Paths.instance().dirs['problem_dir']
 
-    folder = os.path.join(os.path.dirname(
-        os.path.abspath(__file__)), 'arquivos')
     shutil.copytree(folder, problem_folder,
-                    ignore=shutil.ignore_patterns('boca', 'src', 'statement'), dirs_exist_ok=True)
-    os.makedirs(os.path.join(*[tool_path, problem_folder, 'statement']))
-    os.makedirs(os.path.join(*[tool_path, problem_folder, 'src']))
-    os.makedirs(os.path.join(*[tool_path, problem_folder, 'input']))
-    os.makedirs(os.path.join(*[tool_path, problem_folder, 'output']))
+                    ignore=shutil.ignore_patterns('boca', 'src', 'statement'),
+                    dirs_exist_ok=True)
+    os.makedirs(os.path.join(problem_folder, 'statement'))
+    os.makedirs(os.path.join(problem_folder, 'src'))
+    os.makedirs(os.path.join(problem_folder, 'input'))
+    os.makedirs(os.path.join(problem_folder, 'output'))
     os.remove(os.path.join(problem_folder, 'problem-interactive.json'))
 
 
@@ -185,12 +185,21 @@ def get_package_data():
     return problem_data
 
 
+def get_scripts_xml(root) -> str:
+    gen_scripts = ''
+    for tests in root.findall('./judging/testset/tests/test'):
+        script = tests.get('cmd')
+        if script is not None:
+            gen_scripts += script + '\n'
+    return gen_scripts
+
+
 def get_solution_tags() -> dict:
     tags = {
         'main': 'main-ac',
         'failed': 'runtime-error',
         'rejected': 'runtime-error',
-        'accepted': 'alternativa-ac',
+        'accepted': 'alternative-ac',
         'wrong-answer': 'wrong-answer',
         'memory-limit-exceeded': 'memory-limit',
         'presentation-error': 'presentation-error',
@@ -199,15 +208,6 @@ def get_solution_tags() -> dict:
         'time-limit-exceeded-or-memory-limit-exceeded': 'time-limit-or-memory-limit'
     }
     return tags
-
-
-def get_scripts_xml(root) -> str:
-    gen_scripts = ''
-    for tests in root.findall('./judging/testset/tests/test'):
-        script = tests.get('cmd')
-        if script is not None:
-            gen_scripts += script + '\n'
-    return gen_scripts
 
 
 def get_solutions_xml(root) -> dict:
@@ -250,16 +250,17 @@ def get_tags() -> dict:
 def update_problem_json(title, solutions):
     package_folder = Paths.instance().dirs['output_dir']
     problem_folder = Paths.instance().dirs['problem_dir']
+
+    tags = get_tags()
+    json_path = os.path.join(problem_folder, 'problem.json')
     package_json = parse_json(os.path.join(
         *[package_folder, 'statements', 'english', 'problem-properties.json']))
-    json_path = os.path.join(problem_folder, 'problem.json')
-    tags = get_tags()
-
+    
     problem_json = parse_json(json_path)
     problem_json['problem']['title'] = ''.join(title).rstrip()
     problem_json['problem']['time_limit'] = int(
         package_json['timeLimit'] / 1000)
-    problem_json['problem']['memory_limit'] = int(
+    problem_json['problem']['memory_limit_mb'] = int(
         (package_json['memoryLimit'] / 1024) / 1024)
     problem_json['problem']['interactive'] = False if not package_json['interaction'] else True
     problem_json['problem']['input_file'] = package_json['inputFile']
