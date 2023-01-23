@@ -22,7 +22,7 @@ def build_executables() -> None:
     os.chdir(old_cwd)
 
 
-def run_programs() -> None:
+def run_programs(all_solutions) -> None:
     """Run the executables to create the problem."""
     problem_folder = Paths.instance().dirs["problem_dir"]
     input_folder = os.path.join(problem_folder, 'input')
@@ -41,7 +41,7 @@ def run_programs() -> None:
     produce_outputs(problem_metadata)
     os.chdir(old_cwd)
     info_log("Running solutions")
-    run_solutions(input_folder, output_folder, problem_metadata)
+    run_solutions(input_folder, output_folder, problem_metadata, all_solutions)
 
 
 def validate_inputs() -> None:
@@ -79,7 +79,7 @@ def validate_inputs() -> None:
 
     if (equal_tests):
         print("All test cases must be different, however there are " +
-            f"{equal_tests} equal tests.")
+              f"{equal_tests} equal tests.")
         sys.exit(0)
 
 

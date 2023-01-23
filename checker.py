@@ -58,10 +58,10 @@ def run_binary(binary_file, input_folder: str, output_folder: str, input_files: 
         ans_file = os.path.join(ans_folder, input_files[i])
         fname_in = os.path.join(input_folder, input_files[i])
         fname_out = os.path.join(output_folder, input_files[i])
-        status = Status.AC  # Find a better name
+        status = Status.AC
         event = Event()
         conn_sender, con_recv = Pipe()
-        mem_info = (0, 0)  # Find a better name for this variable
+        mem_info = (0, 0)
         with open(fname_in, 'r') as inf, open(fname_out, 'w') as ouf:
             local_time_start = time.perf_counter()
             local_time_end = 0
@@ -135,7 +135,7 @@ def run_python3(submission_file: str, input_folder: str, output_folder):
             local_time_end-local_time_start), 'seconds')
 
 
-def run(submission_file: str, input_folder: str, output_folder: str, problem_limits: dict) -> None:
+def run(submission_file: str, input_folder: str, output_folder: str, problem_limits: dict, expected_result: str) -> None:
     binary_file, ext = os.path.splitext(submission_file)
     debug_log('Run binary ' + binary_file)
     problem_folder = os.path.join(
@@ -149,7 +149,7 @@ def run(submission_file: str, input_folder: str, output_folder: str, problem_lim
     if (ext == '.cpp' or ext == '.c'):
         start_time = time.perf_counter()
         create_thread(binary_file, input_folder,
-                      output_folder, input_files, run_binary, problem_limits)
+                      output_folder, input_files, run_binary, problem_limits, expected_result)
         end_time = time.perf_counter()
     elif (ext == '.java'):
         problem_id = os.path.basename(os.path.dirname(input_folder))
@@ -199,7 +199,7 @@ def run_checker(ans: str, inf: str, ouf: str) -> Status:
 # TODO - write documentation
 
 
-def run_solutions(input_folder, output_folder, problem_metadata) -> None:
+def run_solutions(input_folder, output_folder, problem_metadata, all_solutions: bool) -> None:
     time_limit = problem_metadata["problem"]["time_limit"]
     memory_limit = problem_metadata["problem"]["memory_limit_mb"] * 2 ** 20
     problem_limits = {'time_limit': time_limit,
@@ -208,21 +208,27 @@ def run_solutions(input_folder, output_folder, problem_metadata) -> None:
     problem_folder = Paths.instance().dirs["problem_dir"]
     tmp_folder = os.path.join(os.getcwd(), problem_folder, 'tmp_output')
     os.makedirs(tmp_folder, exist_ok=True)
-    for expected_result, files in solutions.items():
-        if isinstance(files, list):
+    if all_solutions:
+        for expected_result, files in solutions.items():
             for submission_file in files:
                 if submission_file != '':
                     info_log(f'Running {submission_file} solution')
                     run(submission_file, input_folder,
-                        tmp_folder, problem_limits)
-        else:
-            info_log(f'Running {files} solution')
-            run(files, input_folder, tmp_folder, problem_limits)
+                        tmp_folder, problem_limits, expected_result)
+    else:
+        expected_result = "main-ac"
+        submission_file = solutions[expected_result][0]
+        info_log(f'Running {submission_file} solution')
+        run(submission_file, input_folder, tmp_folder,
+            problem_limits, expected_result)
     shutil.rmtree(tmp_folder)
 
 
-def create_thread(binary_file, input_folder, output_folder, input_files: list, routine, problem_limits: dict):
-    n_threads = max(cpu_count()//2, 1)
+def create_thread(binary_file, input_folder, output_folder, input_files: list, routine, problem_limits: dict, expected_result: str):
+    solution_tp = True if expected_result == "main-ac" or expected_result == "alternative-ac" else False
+    n_threads = 1 if solution_tp else max(cpu_count()//2, 1)
+    print(binary_file)
+    print(n_threads)
 
     with Manager() as manager:
         output_dict = manager.dict()
