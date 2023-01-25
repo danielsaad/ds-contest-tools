@@ -31,16 +31,16 @@ def setup_logger(name: str, log_file: str, level=logging.DEBUG) -> logging.Logge
 def info_log(text: str) -> None:
     """Print informations of the tool to a log."""
     tool = logging.getLogger('tool')
-    tool.info(text)
+    tool.info(text.rstrip())
 
 
 def debug_log(text: str) -> None:
     """Print informations of subprocesses of the tool to a log."""
     debug = logging.getLogger('debug')
-    debug.debug(text)
+    debug.debug(text.rstrip())
 
 
 def error_log(text: str) -> None:
     """Print errors to a log."""
     tool = logging.getLogger('tool')
-    tool.error(text)
+    tool.error(text.rstrip())

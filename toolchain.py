@@ -3,7 +3,7 @@ import subprocess
 import sys
 import hashlib
 from metadata import Paths
-from logger import info_log, error_log
+from logger import info_log, error_log, debug_log
 from config import custom_key
 from jsonutils import parse_json
 from utils import verify_command
@@ -44,6 +44,19 @@ def run_programs() -> None:
     run_solutions(input_folder, output_folder, problem_metadata)
 
 
+def encode_tests(input_files: list) -> dict:
+    """Generates hash dictionary of the content of input files."""
+    tests = dict()
+    for fname in input_files:
+        with open(fname, 'rb') as f:
+            encoded = (hashlib.sha1(f.read())).digest()
+        if encoded in tests:
+            tests[encoded].append(fname)
+        else:
+            tests[encoded] = [fname]
+    return tests
+
+
 def validate_inputs() -> None:
     """Checks if the input files are correctly formatted 
     by running the validator file.
@@ -63,19 +76,13 @@ def validate_inputs() -> None:
                 print("Failed validation on input.", fname)
                 exit(1)
 
-    tests = dict()
-    for fname in input_files:
-        with open(fname, 'rb') as f:
-            encoded = (hashlib.sha1(f.read())).digest()
-        if encoded in tests:
-            tests[encoded].append(fname)
-        else:
-            tests[encoded] = [fname]
     equal_tests = 0
-    for key in tests:
-        if len(tests[key]) > 1:
-            equal_tests += len(tests[key])
-            info_log("Testcases " + ', '.join(tests[key]) + " are equal.")
+    encoded_tests = encode_tests(input_files)
+    for key in encoded_tests:
+        if len(encoded_tests[key]) > 1:
+            equal_tests += len(encoded_tests[key])
+            info_log("Testcases " +
+                     ', '.join(encoded_tests[key]) + " are equal.")
 
     if (equal_tests):
         print("All test cases must be different, however there are " +
@@ -105,19 +112,31 @@ def generate_inputs() -> None:
         verify_command(p, "Error generating inputs.")
 
     index = len(os.listdir()) + 1
+    input_files = [f for f in os.listdir() if os.path.isfile(f)
+                   and not f.endswith('.interactive')]
+    input_files.sort(key=custom_key)
+    encoded_tests = encode_tests(input_files)
+
     for script in scripts:
-        info_log(f'Generating {index} testcase from script')
-        
+        debug_log(f"Generating script '{script.rstrip()}'.")
         script = script.split()
-        generator_path = os.path.join('../bin', script[0])
+        generator_path = os.path.join(*['..', 'bin', script[0]])
         if not os.path.exists(generator_path):
-            print(f'Generator {os.path.basename(generator_path)} does not exist.')
+            print(
+                f'Generator {os.path.basename(generator_path)} does not exist.')
             sys.exit(1)
 
-        script[0] = os.path.join('../bin', script[0])
+        script[0] = generator_path
         p = subprocess.run([*script], stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE, text=True)
         verify_command(p, "Error generating inputs.")
+
+        if hashlib.sha1(p.stdout.encode()).digest() in encoded_tests:
+            debug_log(f"Script generated repeated testcase. Ignoring...")
+            continue
+
+        debug_log(f"Script generated successfully.")
+        info_log(f"Generating testcase {index} from script.")
         with open(str(index), 'w') as input_file:
             input_file.write(p.stdout)
         index += 1
@@ -127,33 +146,32 @@ def produce_outputs(problem_metadata) -> None:
     """Run AC solution on inputs to produce the outputs."""
     info_log("Producing outputs")
     # change cwd to output folder
-    input_files = os.listdir('../input')
+    input_files = [f for f in os.listdir(os.path.join('..', 'input'))
+                   if not f.endswith('.interactive')]
     for fname in input_files:
         inf_path = os.path.join('../input', fname)
         ouf_path = fname
         with open(os.path.join('../input', fname), 'r') as inf, open(fname, 'w') as ouf:
-            ac_solution = os.path.join('../bin', 'ac')
+            ac_solution = os.path.join(
+                '../bin', os.path.splitext(problem_metadata["solutions"]["main-ac"])[0])
             if (problem_metadata["problem"]["interactive"]):
-                interactor = os.path.join('../bin/interactor')
-                # TODO: do this in a more pythonic way
-                if (os.path.isfile('tmpfifo')):
-                    print("Removing existant FIFO")
+
+                interactor = os.path.join('../bin', 'interactor')
+                if os.path.exists('tmpfifo'):
+                    info_log("Removing existing FIFO")
                     subprocess.run(['rm', 'tmpfifo'])
                 subprocess.run(['mkfifo', 'tmpfifo'])
-                command = interactor + ' ' + inf_path + ' ' + ouf_path + \
-                    ' < tmpfifo | ' + ac_solution + ' > tmpfifo'
-                p = subprocess.run(command, stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE, shell=True, text=True)
-                p1 = subprocess.run(['rm', 'tmpfifo'], stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE, text=True)
-                verify_command(p1, "Error removing temporary files.")
+
+                command = [interactor, inf_path, ouf_path, '<',
+                           'tmpfifo', '|', ac_solution, '>', 'tmpfifo']
+                p = subprocess.run(' '.join(command),
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
+                subprocess.run(['rm', 'tmpfifo'])
             else:
-                p = subprocess.Popen([ac_solution], stdin=inf, stdout=ouf,
-                                     stderr=subprocess.PIPE, text=True, encoding='utf-8')
-                _, err = p.communicate()
-            if (p.returncode):
-                print("Generation of output for input", fname, "failed")
-                sys.exit(1)
+                p = subprocess.run([ac_solution], stdin=inf, stdout=ouf,
+                                   stderr=subprocess.PIPE, text=True, encoding='utf-8')
+            verify_command(p, f"Generation of output failed for input {fname}")
+    info_log("Outputs produced successfully.")
 
 
 def clean_files() -> None:
