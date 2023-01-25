@@ -131,10 +131,11 @@ def generate_inputs() -> None:
                            stderr=subprocess.PIPE, text=True)
         verify_command(p, "Error generating inputs.")
 
-        if hashlib.sha1(p.stdout.encode()).digest() in encoded_tests:
+        temp_test = hashlib.sha1(p.stdout.encode()).digest()
+        if temp_test in encoded_tests:
             debug_log(f"Script generated repeated testcase. Ignoring...")
             continue
-
+        encoded_tests[temp_test] = script
         debug_log(f"Script generated successfully.")
         info_log(f"Generating testcase {index} from script.")
         with open(str(index), 'w') as input_file:
