@@ -13,8 +13,7 @@ def create_parser() -> argparse.ArgumentParser:
     """Initialize the argparser of the tool."""
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument(
-        '-o', '--output-dir', help='Directory where the problem will be saved. Default is "./".')
+    parser.add_argument('-l', '--local', help='Convert local Polygon problem.')
     parser.add_argument('-c', '--change-keys',
                         help='Change Polygon API keys.', action='store_true')
     parser.add_argument('reader', choices=['BOCA', 'DS', 'Polygon'],
@@ -51,7 +50,7 @@ if __name__ == '__main__':
 
     if (args.reader == 'Polygon'):
         if (args.writer == 'DS'):
-            get_polygon_problem(args.problem_dir)
+            get_polygon_problem(args.problem_dir, args.local)
             print('Problem converted successfully.')
         else:
             print("Not implemented yet.")

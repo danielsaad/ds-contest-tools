@@ -273,7 +273,8 @@ def get_apisig(method_name: str, secret: str, params: dict) -> bytes:
     return rand + convert_to_bytes(hashlib.sha512(apisig).hexdigest())
 
 
-def add_auth_parameters(method, params, problem_id, keys):
+def add_auth_parameters(method, params, problem_id, keys) -> dict:
+    """Add authentication parameters to the Polygon request."""
     params['apiKey'] = keys["apikey"]
     params['time'] = int(time.time())
     params['problemId'] = problem_id
@@ -284,6 +285,7 @@ def add_auth_parameters(method, params, problem_id, keys):
 
 
 def get_requests_list() -> list:
+    """Get each request needed to convert the problem to Polygon."""
     path_json = os.path.join(
         Paths.instance().dirs['problem_dir'], 'problem.json')
     if not os.path.exists(path_json):
@@ -307,7 +309,8 @@ def get_requests_list() -> list:
     return requests_list
 
 
-def add_requests_info(requests_list):
+def add_requests_info(requests_list) -> list:
+    """Add authentication parameters to the Polygon request."""
     tool_path = os.path.dirname(os.path.abspath(__file__))
     keys = parse_json(os.path.join(tool_path, 'secrets.json'))
 
@@ -317,7 +320,8 @@ def add_requests_info(requests_list):
     return requests_list
 
 
-def verify_response(response, method):
+def verify_response(response, method) -> None:
+    """Verify if the request from Polygon was successfull."""
     if response.status_code == 200:
         info_log(f'Request {method} successfull.')
     else:
