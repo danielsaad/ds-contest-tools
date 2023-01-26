@@ -169,15 +169,15 @@ def write_statement(package_data) -> None:
     problem_folder = Paths.instance().dirs['problem_dir']
     statement_dir = os.path.join(problem_folder, 'statement')
     with open(os.path.join(statement_dir, 'description.tex'), 'w') as f:
-        [print(line, file=f) for line in package_data['statement']]
+        [print(line, file=f, end='') for line in package_data['statement']]
     with open(os.path.join(statement_dir, 'input.tex'), 'w') as f:
-        [print(line, file=f) for line in package_data['input_description']]
+        [print(line, file=f, end='') for line in package_data['input_description']]
     with open(os.path.join(statement_dir, 'output.tex'), 'w') as f:
-        [print(line, file=f) for line in package_data['output_description']]
+        [print(line, file=f, end='') for line in package_data['output_description']]
     with open(os.path.join(statement_dir, 'notes.tex'), 'w') as f:
-        [print(line, file=f) for line in package_data['notes']]
+        [print(line, file=f, end='') for line in package_data['notes']]
     with open(os.path.join(statement_dir, 'tutorial.tex'), 'w') as f:
-        [print(line, file=f) for line in package_data['tutorial']]
+        [print(line, file=f, end='') for line in package_data['tutorial']]
 
 
 def get_package_data() -> dict:
