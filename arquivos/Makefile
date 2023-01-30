@@ -6,24 +6,49 @@ SRC := $(wildcard $(SRC_DIR)/*.cpp)
 BIN := $(patsubst $(SRC_DIR)/%.cpp, $(BIN_DIR)/%, $(SRC))
 DBG := $(patsubst $(SRC_DIR)/%.cpp, $(DBG_DIR)/%, $(SRC))
 
+SRC_C := $(wildcard $(SRC_DIR)/*.c)
+BIN_C := $(patsubst $(SRC_DIR)/%.c, $(BIN_DIR)/%, $(SRC_C))
+DBG_C := $(patsubst $(SRC_DIR)/%.c, $(DBG_DIR)/%, $(SRC_C))
+
+SRC_JAVA := $(wildcard $(SRC_DIR)/*.java)
+BIN_JAVA := $(patsubst $(SRC_DIR)/%.java, $(BIN_DIR)/%.class, $(SRC_JAVA))
+DBG_JAVA := $(patsubst $(SRC_DIR)/%.java, $(DBG_DIR)/%.class, $(SRC_JAVA))
+
 CXX := g++
 CXX_FLAGS := -Wall -O2
-BOCA_FLAGS := -static -DBOCA_SUPPORT
 DEBUG_FLAGS := -Wall -g
+BOCA_FLAGS := -static -DBOCA_SUPPORT
+
+JV = javac
+JV_DEBUG = -g
+JV_DIR = -d bin
+JV_DBG_DIR = -d bin/debug
 
 .PHONY: all debug release clean
 
 all: debug release
 
-debug: $(DBG) $(DBG_DIR)/checker-boca
+debug: $(DBG) $(DBG_C) $(DBG_JAVA) $(DBG_DIR)/checker-boca
 
-release: $(BIN) $(BIN_DIR)/checker-boca
+release: $(BIN) $(BIN_C) $(BIN_JAVA) $(BIN_DIR)/checker-boca
 
 $(BIN): $(BIN_DIR)/% : $(SRC_DIR)/%.cpp | $(BIN_DIR)
 	$(CXX) $(CXX_FLAGS) $^ -o $@
 
 $(DBG): $(DBG_DIR)/% : $(SRC_DIR)/%.cpp | $(DBG_DIR)
 	$(CXX) $(DEBUG_FLAGS) $^ -o $@
+
+$(BIN_C): $(BIN_DIR)/% : $(SRC_DIR)/%.c | $(BIN_DIR)
+	$(CXX) $(CXX_FLAGS) $^ -o $@
+
+$(DBG_C): $(DBG_DIR)/% : $(SRC_DIR)/%.c | $(DBG_DIR)
+	$(CXX) $(DEBUG_FLAGS) $^ -o $@
+
+$(BIN_JAVA): $(BIN_DIR)/%.class : $(SRC_DIR)/%.java | $(BIN_DIR)
+	$(JV) $(JV_DIR) $^
+
+$(DBG_JAVA): $(DBG_DIR)/%.class : $(SRC_DIR)/%.java | $(DBG_DIR)
+	$(JV) $(JV_DEBUG) $(JV_DBG_DIR) $^ 
 
 $(BIN_DIR):
 	mkdir -p $@
