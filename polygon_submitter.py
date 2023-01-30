@@ -223,11 +223,12 @@ def save_tags(tag_list: list) -> tuple:
     return ('problem.saveTags', params)
 
 
-def save_test(tests_in_statement: int) -> list:
+def save_test(tests_in_statement: int, interactive: bool) -> list:
     """Get input files of the problem."""
     problem_folder = Paths.instance().dirs['problem_dir']
     input_folder = os.path.join(problem_folder, 'input')
-    if (not os.path.exists(input_folder)):
+    output_folder = os.path.join(problem_folder, 'output')
+    if not os.path.exists(input_folder):
         print(f'Input folder does not exist.')
         sys.exit(0)
 
@@ -240,13 +241,16 @@ def save_test(tests_in_statement: int) -> list:
 
     params_list = []
     for input_file in os.listdir(input_folder):
+        if input_file.endswith('.interactive'):
+            continue
         if int(input_file) > total_inputs:
             continue
 
-        with open(os.path.join(input_folder, input_file), 'r') as f:
-            test_input = ''.join(f.readlines())
         test_use_in_statements = (int(input_file) <= tests_in_statement)
         test_description = f'Test {input_file} from DS contest tools.'
+        input_path = os.path.join(input_folder, input_file)
+        with open(input_path, 'r') as f:
+            test_input = f.read()
 
         params = {
             'testset': TESTSET,
@@ -255,6 +259,27 @@ def save_test(tests_in_statement: int) -> list:
             'checkExisting': 'false',
             'testDescription': test_description,
             'testUseInStatements': str(test_use_in_statements).lower()}
+
+        if interactive and test_use_in_statements:
+            input_path += '.interactive'
+            if not os.path.exists(input_path):
+                print(f'{os.path.basename(input_path)} does not exist.')
+                sys.exit(0)
+
+            output_path = os.path.join(
+                output_folder, input_file + '.interactive')
+            if not os.path.exists(output_path):
+                print(f'{os.path.basename(output_path)} does not exist.')
+                sys.exit(0)
+
+            with open(input_path, 'r') as f:
+                test_input_statement = f.read()
+            with open(output_path, 'r') as f:
+                test_output_statement = f.read()
+
+            params['inputForStatement'] = test_input_statement
+            params['outputForStatement'] = test_output_statement
+
         params_list.append(('problem.saveTest', params))
     return params_list
 
@@ -273,7 +298,8 @@ def get_apisig(method_name: str, secret: str, params: dict) -> bytes:
     return rand + convert_to_bytes(hashlib.sha512(apisig).hexdigest())
 
 
-def add_auth_parameters(method, params, problem_id, keys):
+def add_auth_parameters(method, params, problem_id, keys) -> dict:
+    """Add authentication parameters to the Polygon request."""
     params['apiKey'] = keys["apikey"]
     params['time'] = int(time.time())
     params['problemId'] = problem_id
@@ -284,30 +310,34 @@ def add_auth_parameters(method, params, problem_id, keys):
 
 
 def get_requests_list() -> list:
+    """Get each request needed to convert the problem to Polygon."""
     path_json = os.path.join(
         Paths.instance().dirs['problem_dir'], 'problem.json')
     if not os.path.exists(path_json):
         print('File problem.json does not exist.')
         sys.exit(0)
     problem_json = parse_json(path_json)
+    interactive = problem_json['problem']['interactive']
 
     requests_list = []
     requests_list.append(update_info(problem_json['problem']))
     requests_list.append(save_statement(problem_json['problem']['title']))
     requests_list.append(
         save_tags(problem_json['problem']['subject']['en_us']))
-    if (problem_json['problem']['interactive']):
+    if interactive:
         requests_list.append(set_interactor('interactor.cpp'))
     requests_list = requests_list + save_statement_resources()
     requests_list = requests_list + save_files(problem_json['solutions'])
-    requests_list = requests_list + save_test(problem_json['io_samples'])
+    requests_list = requests_list + \
+        save_test(problem_json['io_samples'], interactive)
     script = save_script()
     if script is not None:
         requests_list.append(script)
     return requests_list
 
 
-def add_requests_info(requests_list):
+def add_requests_info(requests_list) -> list:
+    """Add authentication parameters to the Polygon request."""
     tool_path = os.path.dirname(os.path.abspath(__file__))
     keys = parse_json(os.path.join(tool_path, 'secrets.json'))
 
@@ -317,7 +347,8 @@ def add_requests_info(requests_list):
     return requests_list
 
 
-def verify_response(response, method):
+def verify_response(response, method) -> None:
+    """Verify if the request from Polygon was successfull."""
     if response.status_code == 200:
         info_log(f'Request {method} successfull.')
     else:
