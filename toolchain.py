@@ -165,6 +165,7 @@ def produce_outputs(problem_metadata) -> None:
 
                 command = [interactor, inf_path, ouf_path, '<',
                            'tmpfifo', '|', ac_solution, '>', 'tmpfifo']
+
                 p = subprocess.run(' '.join(command),
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
                 subprocess.run(['rm', 'tmpfifo'])

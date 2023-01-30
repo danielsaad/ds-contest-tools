@@ -141,22 +141,13 @@ def copy_generator(script) -> None:
             f.write(script)
 
 
-def copy_checker() -> None:
-    """Copy checker from package to problem folder."""
+def copy_source_files(file_name: str) -> None:
+    """Copy source files from package to problem folder."""
     package_folder = Paths.instance().dirs['output_dir']
     problem_folder = Paths.instance().dirs['problem_dir']
-    checker = os.path.join(*[package_folder, 'files', 'checker.cpp'])
-    destination = os.path.join(*[problem_folder, 'src', 'checker.cpp'])
+    checker = os.path.join(*[package_folder, 'files', file_name])
+    destination = os.path.join(*[problem_folder, 'src', file_name])
     shutil.copy(checker, destination)
-
-
-def copy_testlib() -> None:
-    """Copy generator from package to problem folder."""
-    package_folder = Paths.instance().dirs['output_dir']
-    problem_folder = Paths.instance().dirs['problem_dir']
-    testlib = os.path.join(*[package_folder, 'files', 'testlib.h'])
-    destination = os.path.join(*[problem_folder, 'src', 'testlib.h'])
-    shutil.copy(testlib, destination)
 
 
 def copy_solutions() -> None:
@@ -172,6 +163,12 @@ def copy_solutions() -> None:
         shutil.copy(f, destination)
 
 
+def verify_interactive(problem_id: str) -> bool:
+    content = get_polygon_response(dict(), 'problem.info', problem_id)
+    content = json.loads(content)
+    return content['result']['interactive']
+
+
 def init_problem() -> None:
     """Initialize problem folder before the conversion."""
     tool_path = os.path.dirname(os.path.abspath(__file__))
@@ -185,6 +182,7 @@ def init_problem() -> None:
     os.makedirs(os.path.join(problem_folder, 'src'), exist_ok=True)
     os.makedirs(os.path.join(problem_folder, 'input'), exist_ok=True)
     os.makedirs(os.path.join(problem_folder, 'output'), exist_ok=True)
+    shutil.copy(os.path.join(*[folder, 'src', 'testlib.h']), os.path.join(problem_folder, 'src'))
     os.remove(os.path.join(problem_folder, 'problem-interactive.json'))
 
 
@@ -317,17 +315,15 @@ def convert_problem(local, problem_id):
     """Convert package from Polygon to DS."""
     xml_data = get_data_xml()
     package_data = get_package_data()
-    problem_info = json.loads(get_polygon_response(
-        dict(), 'problem.info', problem_id))
-    interactive = problem_info['result']['interactive']
+    interactive = verify_interactive(problem_id)
 
     init_problem()
     copy_input_files()
     copy_output_files()
-    copy_testlib()
     copy_solutions()
-    copy_checker()
-    copy_validator()
+    copy_source_files('checker.cpp')
+    copy_source_files('validator.cpp')
+    copy_source_files('interactor.cpp')
     if interactive:
         copy_interactive_files()
 

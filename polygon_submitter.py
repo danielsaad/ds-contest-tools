@@ -232,7 +232,9 @@ def save_test(tests_in_statement: int, interactive: bool) -> list:
         print(f'Input folder does not exist.')
         sys.exit(0)
 
-    total_inputs = len(os.listdir(input_folder))
+    input_files = [f for f in os.listdir(input_folder)
+                   if not f.endswith('.interactive')]
+    total_inputs = len(input_files)
     script_path = os.path.join(*[problem_folder, 'src', 'script.sh'])
     if os.path.exists(script_path):
         with open(script_path, 'r') as f:
