@@ -99,7 +99,7 @@ def generate_inputs() -> None:
 
     if ds_generator:
         generator_command = os.path.join('../bin', 'generator')
-        info_log('Generating inputs')
+        info_log('Generating inputs of generator')
         p = subprocess.run(generator_command, stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE, text=True)
         verify_command(p, "Error generating inputs.")
@@ -114,9 +114,12 @@ def generate_inputs() -> None:
             print(f'Generator {os.path.basename(generator_path)} does not exist.')
             sys.exit(1)
 
-        p = subprocess.run([generator_path, *script, '>', str(index)], stdout=subprocess.PIPE,
+        script[0] = os.path.join('../bin', script[0])
+        p = subprocess.run([*script], stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE, text=True)
         verify_command(p, "Error generating inputs.")
+        with open(str(index), 'w') as input_file:
+            input_file.write(p.stdout)
         index += 1
 
 
