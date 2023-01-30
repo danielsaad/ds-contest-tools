@@ -246,20 +246,21 @@ def get_solution_tags() -> dict:
 
 
 def get_solutions_xml(root) -> dict:
-    # TODO mnemonic names
-    data = dict()
+    """Parse solution files from XML."""
+    solutions = dict()
     tags = get_solution_tags()
-    for solutions in root.findall('./assets/solutions/solution'):
-        solution_tag = solutions.get('tag')
+    for data in root.findall('./assets/solutions/solution'):
+        solution_tag = data.get('tag')
         if solution_tag is None:
             continue
-        for filename in solutions.findall('source'):
+
+        for filename in data.findall('source'):
             name = filename.get('path')
             if name is not None:
-                data.setdefault(tags[solution_tag], []).append(
+                solutions.setdefault(tags[solution_tag], []).append(
                     os.path.basename(name))
-    data['main-ac'] = ''.join(data['main-ac'])
-    return data
+    solutions['main-ac'] = ''.join(solutions['main-ac'])
+    return solutions
 
 
 def get_data_xml() -> dict:
@@ -305,7 +306,8 @@ def update_problem_json(title, solutions, interactive) -> None:
     problem_json['problem']['output_file'] = package_json['outputFile']
     problem_json['problem']['subject'] = tags
     problem_json['io_samples'] = len(package_json['sampleTests'])
-    problem_json['solutions'] = solutions
+    for key in solutions:
+        problem_json['solutions'][key] = solutions[key]
 
     with open(json_path, 'w') as f:
         f.write(json.dumps(problem_json, ensure_ascii=False))
