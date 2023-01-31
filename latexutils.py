@@ -1,10 +1,11 @@
 import os
-import config
-import sys
 import io
 import re
+import sys
+import config
 from logger import info_log
 from jsonutils import parse_json
+from fileutils import get_statement_files
 
 
 def print_line(line: str, f_out: io.TextIOWrapper) -> None:
@@ -19,13 +20,10 @@ def multiple_replace(patterns: dict, text: str) -> str:
 
 
 def get_io(io_folder: str, problem_metadata: dict) -> list:
-    """Returns the input/output file lines of the examples in the pdf."""
-    interactive = False
-    if (problem_metadata['problem']['interactive']):
-        interactive = True
-
+    """Returns I/O lines for the examples of the PDF."""
     l = []
     io_samples = problem_metadata["io_samples"]
+    interactive = problem_metadata['problem']['interactive']
 
     if (interactive):
         io_files = [os.path.join(io_folder, str(f)+'.interactive')
@@ -34,7 +32,7 @@ def get_io(io_folder: str, problem_metadata: dict) -> list:
         io_files = [os.path.join(io_folder, str(f))
                     for f in range(1, io_samples+1)]
     for f in io_files:
-        if (not os.path.isfile(f)):
+        if not os.path.isfile(f):
             print(f, 'file does not exist.')
             sys.exit(1)
         tc_io = []
@@ -52,7 +50,7 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
 
     statement_folder = os.path.join(problem_folder, 'statement')
-    if (not os.path.exists(statement_folder)):
+    if not os.path.exists(statement_folder):
         print("Statement directory does not exist.")
         sys.exit(0)
 
@@ -74,15 +72,8 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
                   str(problem_metadata["problem"]["time_limit"]) +
                   "}\n", file=f_out)
 
-        statement_files = ['description.tex', 'input.tex',
-                           'output.tex', 'notes.tex', 'tutorial.tex']
-        statement_files = [os.path.join(statement_folder, file)
-                           for file in statement_files]
-        for file in statement_files:
-            if not os.path.exists(file):
-                print(f'{os.path.basename(file)} does not exist.')
-                sys.exit(0)
-
+        # Get statement information
+        statement_files = get_statement_files(statement_folder, interactive)
         with open(statement_files[0], 'r') as f:
             statement_lines = f.readlines()
         with open(statement_files[1], 'r') as f:
@@ -93,16 +84,12 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
             note_lines = f.readlines()
         with open(statement_files[4], 'r') as f:
             tutorial_lines = f.readlines()
-
         interactor_lines = []
         if interactive:
-            interactive_file = os.path.join(statement_folder, 'interactor.tex')
-            if not os.path.exists(interactive_file):
-                print(f'{interactive_file} does not exist.')
-                sys.exit(0)
-            with open(os.path.join(statement_folder, 'interactor.tex'), 'r') as f:
+            with open(statement_files[5], 'r') as f:
                 interactor_lines = f.readlines()
 
+        # Print statement information
         if (statement_lines):
             for line in statement_lines:
                 print_line(line, f_out)
@@ -119,6 +106,7 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
             for line in interactor_lines:
                 print_line(line, f_out)
 
+        # Print I/O examples
         in_list = get_io(input_folder, problem_metadata)
         out_list = get_io(output_folder, problem_metadata)
         patterns = {"#": "\\#",
