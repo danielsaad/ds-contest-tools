@@ -74,6 +74,11 @@ def init(interactive=False) -> None:
     if (interactive):
         shutil.move(interactive_json, os.path.join(
             problem_folder, 'problem.json'))
+        # Create .interactive files for statement
+        os.makedirs(os.path.join(problem_folder, 'input'))
+        os.makedirs(os.path.join(problem_folder, 'output'))
+        open(os.path.join(*[problem_folder, 'input', '1.interactive']), 'w').close()
+        open(os.path.join(*[problem_folder, 'output', '1.interactive']), 'w').close()
     else:
         os.remove(interactor_tex)
         os.remove(interactive_json)

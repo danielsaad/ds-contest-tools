@@ -111,12 +111,12 @@ def generate_inputs() -> None:
                            stderr=subprocess.PIPE, text=True)
         verify_command(p, "Error generating inputs.")
 
-    index = len(os.listdir()) + 1
     input_files = [f for f in os.listdir() if os.path.isfile(f)
                    and not f.endswith('.interactive')]
     input_files.sort(key=custom_key)
     encoded_tests = encode_tests(input_files)
 
+    index = len(input_files) + 1
     for script in scripts:
         debug_log(f"Generating script '{script.rstrip()}'.")
         script = script.split()

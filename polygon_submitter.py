@@ -223,7 +223,7 @@ def save_tags(tag_list: list) -> tuple:
     return ('problem.saveTags', params)
 
 
-def save_test(tests_in_statement: int, interactive: bool) -> list:
+def save_test(tests_in_statement: int, interactive: bool) -> tuple:
     """Get input files of the problem."""
     problem_folder = Paths.instance().dirs['problem_dir']
     input_folder = os.path.join(problem_folder, 'input')
@@ -235,13 +235,18 @@ def save_test(tests_in_statement: int, interactive: bool) -> list:
     input_files = [f for f in os.listdir(input_folder)
                    if not f.endswith('.interactive')]
     total_inputs = len(input_files)
+
     script_path = os.path.join(*[problem_folder, 'src', 'script.sh'])
     if os.path.exists(script_path):
         with open(script_path, 'r') as f:
             total_scripts = len(f.readlines())
         total_inputs -= total_scripts
 
+    if interactive:
+        total_inputs += tests_in_statement
+
     params_list = []
+    script_written = False
     for input_file in os.listdir(input_folder):
         if input_file.endswith('.interactive'):
             continue
@@ -263,6 +268,13 @@ def save_test(tests_in_statement: int, interactive: bool) -> list:
             'testUseInStatements': str(test_use_in_statements).lower()}
 
         if interactive and test_use_in_statements:
+            if not script_written:
+                # Generate script to save .interactive info
+                script = save_script()
+                if script is not None:
+                    params_list.append(script)
+                script_written = True
+
             input_path += '.interactive'
             if not os.path.exists(input_path):
                 print(f'{os.path.basename(input_path)} does not exist.')
@@ -279,11 +291,12 @@ def save_test(tests_in_statement: int, interactive: bool) -> list:
             with open(output_path, 'r') as f:
                 test_output_statement = f.read()
 
-            params['inputForStatement'] = test_input_statement
-            params['outputForStatement'] = test_output_statement
+            params['testInputForStatements'] = test_input_statement
+            params['testOutputForStatements'] = test_output_statement
+            params.pop('testInput')
 
         params_list.append(('problem.saveTest', params))
-    return params_list
+    return (params_list, script_written)
 
 
 def get_apisig(method_name: str, secret: str, params: dict) -> bytes:
@@ -326,14 +339,12 @@ def get_requests_list() -> list:
     requests_list.append(save_statement(problem_json['problem']['title']))
     requests_list.append(
         save_tags(problem_json['problem']['subject']['en_us']))
-    if interactive:
-        requests_list.append(set_interactor('interactor.cpp'))
     requests_list = requests_list + save_statement_resources()
     requests_list = requests_list + save_files(problem_json['solutions'])
-    requests_list = requests_list + \
-        save_test(problem_json['io_samples'], interactive)
+    test_results = save_test(problem_json['io_samples'], interactive)
+    requests_list = requests_list + test_results[0]
     script = save_script()
-    if script is not None:
+    if not test_results[1] and script is not None:
         requests_list.append(script)
     return requests_list
 

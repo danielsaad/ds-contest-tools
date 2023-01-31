@@ -24,7 +24,7 @@
         "country" : "Brazil",
         "email" : "email@email.com"
     },
-    "io_samples" : 3,
+    "io_samples" : 1,
     "boca_config" : {
         "number_of_repetitions" :  1,
         "maximum_memory_mb" : 512,
