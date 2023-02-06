@@ -41,7 +41,7 @@ def run_programs(all_solutions) -> None:
     produce_outputs(problem_metadata)
     os.chdir(old_cwd)
     info_log("Running solutions")
-    run_solutions(input_folder, output_folder, problem_metadata, all_solutions)
+    run_solutions(input_folder, problem_metadata, all_solutions)
 
 
 def validate_inputs() -> None:
