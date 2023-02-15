@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 from json import dumps
 from math import log10, floor
@@ -6,7 +7,7 @@ from logger import info_log
 
 
 def rename_io(io_folder: str) -> None:
-    """Receives a list of files and adds leading zeros 
+    """Receive a list of files and add leading zeros 
     to the name of each one.
     """
     if os.path.isdir(io_folder):
@@ -65,6 +66,23 @@ def write_secrets() -> None:
     tool_path = os.path.dirname(os.path.abspath(__file__))
     secrets = {
         "apikey": "",
-        "secret": "", }
+        "secret": "",
+    }
     with open(os.path.join(tool_path, 'secrets.json'), 'w') as f:
         f.write(dumps(secrets))
+
+
+def get_statement_files(statement_folder: str, interactive=False) -> list:
+    """Return list of needed statement files."""
+    statement_files = ['description.tex', 'input.tex',
+                       'output.tex', 'notes.tex', 'tutorial.tex']
+    if interactive:
+        statement_files.append('interactor.tex')
+    statement_files = [os.path.join(statement_folder, file)
+                       for file in statement_files]
+    # Verify if files exist
+    for file in statement_files:
+        if not os.path.exists(file):
+            print(f'{os.path.basename(file)} does not exist.')
+            sys.exit(0)
+    return statement_files

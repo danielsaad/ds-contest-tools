@@ -3,7 +3,7 @@ class Paths:
     _instance = None
 
     def __init__(self, problem_dir, output_dir):
-        """Constructs all the necessary attributes for the instance."""
+        """Construct all the necessary attributes for the instance."""
         self.dirs = {
             "problem_dir": problem_dir,
             "output_dir": output_dir
@@ -11,7 +11,7 @@ class Paths:
 
     @classmethod
     def instance(cls, problem_dir='', output_dir=''):
-        """Starts a singleton class."""
+        """Start a singleton class."""
         if cls._instance is None:
             cls._instance = cls(problem_dir, output_dir)
         return cls._instance
