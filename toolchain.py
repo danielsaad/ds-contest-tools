@@ -22,8 +22,8 @@ def build_executables() -> None:
     os.chdir(old_cwd)
 
 
-def run_programs() -> None:
-    """Run executables to create I/O of the problem."""
+def run_programs(all_solutions) -> None:
+    """Run the executables to create the problem."""
     problem_folder = Paths.instance().dirs["problem_dir"]
     input_folder = os.path.join(problem_folder, 'input')
     output_folder = os.path.join(problem_folder, 'output')
@@ -41,7 +41,7 @@ def run_programs() -> None:
     produce_outputs(problem_metadata)
     os.chdir(old_cwd)
     info_log("Running solutions")
-    run_solutions(input_folder, output_folder, problem_metadata)
+    run_solutions(input_folder, problem_metadata, all_solutions)
 
 
 def validate_inputs() -> None:

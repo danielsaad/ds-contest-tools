@@ -27,21 +27,24 @@ def create_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-i', '--interactive', action='store_true',
                         default=False, help='set problem to interative on init')
+    parser.add_argument('-a', '--all', action='store_true',
+                        default=False, help='run all the solutions')
     parser.add_argument(
         'mode', choices=['init', 'build', 'genio', 'genpdf', 'pack2boca', 'clean'],
         help='init: init a problem.\nbuild: build a problem.\n' +
         'genio: gen problem input/output while validating inputs.\n' +
         'genpdf: generates problem and tutorial PDFs.\n' +
         'pack2boca: pack a problem to BOCA format.\n' +
-        'clean: remove executables of a problem.\n')
-    parser.add_argument('problem_id', help='name or id of the problem.')
+        'clean: remove executables of a DS problem.\n')
+    parser.add_argument('problem_id', nargs='?')
+
     return parser
 
 
-def genio() -> None:
+def genio(all_solutions=False) -> None:
     """Call functions to generate the input/output of the problem."""
     build_executables()
-    run_programs()
+    run_programs(all_solutions)
 
 
 def genpdf() -> None:
@@ -49,10 +52,10 @@ def genpdf() -> None:
     build_pdf()
 
 
-def build() -> None:
+def build(all_solutions=False) -> None:
     """Call functions to build a problem."""
     build_executables()
-    run_programs()
+    run_programs(all_solutions)
     genpdf()
 
 
@@ -107,7 +110,7 @@ if __name__ == "__main__":
         print('Problem', args.problem_id, 'initialized.')
     elif (args.mode == 'build'):
         info_log("Building problem " + args.problem_id)
-        build()
+        build(args.all)
         print("Problem " + args.problem_id + " built.")
     elif (args.mode == 'pack2boca'):
         pack2boca()
@@ -116,7 +119,7 @@ if __name__ == "__main__":
         genpdf()
         print("PDFs generated.")
     elif (args.mode == 'genio'):
-        genio()
+        genio(args.all)
         print("Input and Output generated.")
     elif (args.mode == 'clean'):
         clean()
