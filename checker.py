@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+
 from multiprocessing.managers import DictProxy
 import os
 from signal import SIGKILL
@@ -105,14 +106,14 @@ def run(submission_file: str, input_folder: str, output_folder: str,
     if (ext == '.cpp' or ext == '.c'):
         start_time = time.perf_counter()
         create_thread(binary_file, input_folder,
-                      output_folder, input_files, run_binary, problem_limits, expected_result)
+                      output_folder, input_files, problem_limits, expected_result)
         end_time = time.perf_counter()
     elif (ext == '.java'):
         compiler = JAVA_INTERPRETER
         problem_id = os.path.join(problem_folder, 'bin', submission_file)
         start_time = time.perf_counter()
         create_thread(problem_id, input_folder,
-                      output_folder, input_files, run_binary, problem_limits, expected_result, compiler)
+                      output_folder, input_files, problem_limits, expected_result, compiler)
         end_time = time.perf_counter()
     elif (ext == '.py'):
         submission_file = os.path.join(problem_folder, 'src', submission_file)
@@ -120,7 +121,7 @@ def run(submission_file: str, input_folder: str, output_folder: str,
         print(submission_file)
         start_time = time.perf_counter()
         create_thread(submission_file, input_folder,
-                      output_folder, input_files, run_binary, problem_limits, expected_result, compiler)
+                      output_folder, input_files, problem_limits, expected_result, compiler)
         # run_python3(submission_file, input_folder, output_folder)
         end_time = time.perf_counter()
     else:
@@ -188,24 +189,22 @@ def run_solutions(input_folder, problem_metadata, all_solutions: bool) -> None:
     shutil.rmtree(tmp_folder)
 
 
-def create_thread(binary_file, input_folder, output_folder, input_files: list, routine, problem_limits: dict, expected_result: str, compiler: str = ""):
+def create_thread(binary_file, input_folder, output_folder, input_files: list, problem_limits: dict, expected_result: str, compiler: str = ""):
     solution_tp = True if expected_result == "main-ac" or expected_result == "alternative-ac" else False
     n_threads = 1 if solution_tp else max(cpu_count()//2, 1)
 
     with Manager() as manager:
         output_dict = manager.dict()
-        processes = [Process(target=routine, args=(
+        processes = [Process(target=run_binary, args=(
             binary_file, input_folder, output_folder, input_files, output_dict, problem_limits, idx, n_threads, compiler)) for idx in range(n_threads)]
         for process in processes:
             process.start()
         for process in processes:
             process.join()
-        
+
         processes = Process(target=write_to_log, args=(output_dict,))
         processes.start()
-        print(binary_file)
         solution_status(output_dict, expected_result)
-
         processes.join()
 
 def write_to_log(output_dict):
