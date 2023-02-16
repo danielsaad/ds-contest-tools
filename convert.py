@@ -1,12 +1,11 @@
 import argparse
 import os
-import sys
-from utils import instance_paths
 from jsonutils import parse_json
 from json import dumps
 from logger import info_log
 from getpass import getpass
 from polygon_submitter import send_to_polygon
+from polygon_converter import get_polygon_problem
 from fileutils import write_secrets
 
 
@@ -14,8 +13,7 @@ def create_parser() -> argparse.ArgumentParser:
     """Initialize the argparser of the tool."""
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument(
-        '-o', '--output-dir', help='Directory where the problem will be saved. Default is "./".')
+    parser.add_argument('-l', '--local', help='Convert local Polygon problem.')
     parser.add_argument('-c', '--change-keys',
                         help='Change Polygon API keys.', action='store_true')
     parser.add_argument('reader', choices=['BOCA', 'DS', 'Polygon'],
@@ -27,7 +25,6 @@ def create_parser() -> argparse.ArgumentParser:
 
 
 def change_polygon_keys(secrets_path: str) -> None:
-    """"""
     print('Define the keys used by Polygon API.' +
           'They will be stored locally in the tool directory.')
 
@@ -44,17 +41,8 @@ if __name__ == '__main__':
     parser = create_parser()
     args = parser.parse_args()
 
-    if not os.path.exists(args.problem_dir):
-        print("Problem path does not exist.")
-        sys.exit(0)
-
-    if (args.output_dir):
-        os.makedirs(args.output_dir, exist_ok=True)
-
     tool_path = os.path.dirname(os.path.abspath(__file__))
     secrets_path = os.path.join(tool_path, 'secrets.json')
-    output_dir = "" if args.output_dir == None else args.output_dir
-    instance_paths(args.problem_dir, output_dir)
 
     if args.reader == 'Polygon' or args.writer == 'Polygon':
         if args.change_keys or not os.path.exists(secrets_path):
@@ -62,20 +50,18 @@ if __name__ == '__main__':
 
     if (args.reader == 'Polygon'):
         if (args.writer == 'DS'):
-            # TODO
-            pass
+            get_polygon_problem(args.problem_dir, args.local)
+            print('Problem converted successfully.')
         else:
             print("Not implemented yet.")
             pass
     elif (args.reader == 'DS'):
         if (args.writer == 'Polygon'):
-            send_to_polygon()
+            send_to_polygon(args.problem_dir)
             print('Problem sent successfully.')
         else:
-            # TODO
             print("Not implemented yet.")
             pass
     elif (args.reader == 'BOCA'):
-        # TODO
         print("Not implemented yet.")
         pass
