@@ -14,7 +14,7 @@ def create_parser() -> argparse.ArgumentParser:
 
 
 def write_file(statement_file: str, statement) -> str:
-    """Write a new file."""
+    """Write a new statement file."""
     text = ''
     with open(statement_file, 'w') as f:
         while (True):
@@ -49,10 +49,10 @@ if __name__ == '__main__':
     parser = create_parser()
     args = parser.parse_args()
 
-    if (not os.path.exists(args.problem_dir)):
+    if not os.path.exists(args.problem_dir):
         print("Path does not exist.")
         sys.exit(0)
-    if (not os.path.join(args.problem_dir, 'statement.md')):
+    if not os.path.join(args.problem_dir, 'statement.md'):
         print("Statement file does not exist.")
         sys.exit(0)
     instance_paths(args.problem_dir)

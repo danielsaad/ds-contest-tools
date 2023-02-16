@@ -14,7 +14,8 @@ SRC_JAVA := $(wildcard $(SRC_DIR)/*.java)
 BIN_JAVA := $(patsubst $(SRC_DIR)/%.java, $(BIN_DIR)/%.class, $(SRC_JAVA))
 DBG_JAVA := $(patsubst $(SRC_DIR)/%.java, $(DBG_DIR)/%.class, $(SRC_JAVA))
 
-CXX := g++
+C := gcc
+CPP := g++
 CXX_FLAGS := -Wall -O2
 DEBUG_FLAGS := -Wall -g
 BOCA_FLAGS := -static -DBOCA_SUPPORT
@@ -33,16 +34,16 @@ debug: $(DBG) $(DBG_C) $(DBG_JAVA) $(DBG_DIR)/checker-boca
 release: $(BIN) $(BIN_C) $(BIN_JAVA) $(BIN_DIR)/checker-boca
 
 $(BIN): $(BIN_DIR)/% : $(SRC_DIR)/%.cpp | $(BIN_DIR)
-	$(CXX) $(CXX_FLAGS) $^ -o $@
+	$(CPP) $(CXX_FLAGS) $^ -o $@
 
 $(DBG): $(DBG_DIR)/% : $(SRC_DIR)/%.cpp | $(DBG_DIR)
-	$(CXX) $(DEBUG_FLAGS) $^ -o $@
+	$(CPP) $(DEBUG_FLAGS) $^ -o $@
 
 $(BIN_C): $(BIN_DIR)/% : $(SRC_DIR)/%.c | $(BIN_DIR)
-	$(CXX) $(CXX_FLAGS) $^ -o $@
+	$(C) $(CXX_FLAGS) $^ -o $@
 
 $(DBG_C): $(DBG_DIR)/% : $(SRC_DIR)/%.c | $(DBG_DIR)
-	$(CXX) $(DEBUG_FLAGS) $^ -o $@
+	$(C) $(DEBUG_FLAGS) $^ -o $@
 
 $(BIN_JAVA): $(BIN_DIR)/%.class : $(SRC_DIR)/%.java | $(BIN_DIR)
 	$(JV) $(JV_DIR) $^
@@ -57,10 +58,10 @@ $(DBG_DIR):
 	mkdir -p $@
 
 $(BIN_DIR)/checker-boca: $(SRC_DIR)/checker.cpp
-	$(CXX) $(CXX_FLAGS) $(BOCA_FLAGS) $^ -o $@ 
+	$(CPP) $(CXX_FLAGS) $(BOCA_FLAGS) $^ -o $@ 
 
 $(DBG_DIR)/checker-boca: $(SRC_DIR)/checker.cpp
-	$(CXX) $(DEBUG_FLAGS) $(BOCA_FLAGS) $^ -o $@ 
+	$(CPP) $(DEBUG_FLAGS) $(BOCA_FLAGS) $^ -o $@ 
 
 clean:
 	@echo Cleaning problem files

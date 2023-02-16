@@ -9,16 +9,16 @@ Author:
 """
 
 
-import sys
 import os
+import sys
 import shutil
 import argparse
+from boca import boca_pack
+from metadata import Paths
 from logger import info_log
 from pdfutils import build_pdf
-from boca import boca_pack
-from toolchain import build_executables, run_programs, clean_files
-from metadata import Paths
 from utils import instance_paths
+from toolchain import build_executables, run_programs, clean_files
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -27,21 +27,24 @@ def create_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-i', '--interactive', action='store_true',
                         default=False, help='set problem to interative on init')
+    parser.add_argument('-a', '--all', action='store_true',
+                        default=False, help='run all the solutions')
     parser.add_argument(
-        'mode', choices=['init', 'build', 'genio', 'genpdf', 'pack2boca', 'clean'], 
-                help='init: init a problem.\nbuild: build a problem.\n' +
-                'genio: gen problem input/output while validating inputs.\n' +
-                'genpdf: generates problem and tutorial PDFs.\n' +
-                'pack2boca: pack a problem to BOCA format.\n' + 
-                'clean: remove executables of a DS problem.\n')
+        'mode', choices=['init', 'build', 'genio', 'genpdf', 'pack2boca', 'clean'],
+        help='init: init a problem.\nbuild: build a problem.\n' +
+        'genio: gen problem input/output while validating inputs.\n' +
+        'genpdf: generates problem and tutorial PDFs.\n' +
+        'pack2boca: pack a problem to BOCA format.\n' +
+        'clean: remove executables of a DS problem.\n')
     parser.add_argument('problem_id', nargs='?')
+
     return parser
 
 
-def genio() -> None:
+def genio(all_solutions=False) -> None:
     """Call functions to generate the input/output of the problem."""
     build_executables()
-    run_programs()
+    run_programs(all_solutions)
 
 
 def genpdf() -> None:
@@ -49,10 +52,10 @@ def genpdf() -> None:
     build_pdf()
 
 
-def build() -> None:
+def build(all_solutions=False) -> None:
     """Call functions to build a problem."""
     build_executables()
-    run_programs()
+    run_programs(all_solutions)
     genpdf()
 
 
@@ -70,7 +73,8 @@ def init(interactive=False) -> None:
     # Rename files and folders if the problem is interactive
     interactor = os.path.join(*[problem_folder, 'src', 'interactor.cpp'])
     interactive_json = os.path.join(problem_folder, 'problem-interactive.json')
-    interactor_tex = os.path.join(*[problem_folder, 'statement', 'interactor.tex'])
+    interactor_tex = os.path.join(
+        *[problem_folder, 'statement', 'interactor.tex'])
     if (interactive):
         shutil.move(interactive_json, os.path.join(
             problem_folder, 'problem.json'))
@@ -101,7 +105,7 @@ def clean() -> None:
 if __name__ == "__main__":
     parser = create_parser()
     args = parser.parse_args()
-    if (not args.problem_id):
+    if not args.problem_id:
         parser.error(args.mode + ' mode requires a problem id. Usage: ' +
                      sys.argv[0] + ' ' + args.mode + ' <problem ID>')
     instance_paths(args.problem_id)
@@ -111,7 +115,7 @@ if __name__ == "__main__":
         print('Problem', args.problem_id, 'initialized.')
     elif (args.mode == 'build'):
         info_log("Building problem " + args.problem_id)
-        build()
+        build(args.all)
         print("Problem " + args.problem_id + " built.")
     elif (args.mode == 'pack2boca'):
         pack2boca()
@@ -120,7 +124,7 @@ if __name__ == "__main__":
         genpdf()
         print("PDFs generated.")
     elif (args.mode == 'genio'):
-        genio()
+        genio(args.all)
         print("Input and Output generated.")
     elif (args.mode == 'clean'):
         clean()

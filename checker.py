@@ -4,6 +4,7 @@
 # TODO: clean temporary files
 
 import os
+from signal import SIGKILL
 import subprocess
 import sys
 import time
@@ -21,6 +22,9 @@ class Status(Enum):
     RE = 2
     MLE = 3
     TLE = 4
+    PE = 5
+    AC_TLE = 6
+    TLE_MLE = 7
 
 
 """ Java definitions """
@@ -51,41 +55,48 @@ def compile_java(submission_file, problem_id):
         print(renamed_file, 'class file', 'generated')
 
 
-def run_binary(binary_file, input_folder: str, output_folder: str, input_files: list, output_dict, problem_limits: dict, begin: int = 0, pace: int = 1):
+def run_binary(binary_file: str, input_folder: str, output_folder: str,
+               input_files: list, output_dict, problem_limits: dict,
+               begin: int = 0, pace: int = 1):
     ans_folder = os.path.join(
         Paths.instance().dirs["problem_dir"], 'output')
     for i in range(begin, len(input_files), pace):
         ans_file = os.path.join(ans_folder, input_files[i])
         fname_in = os.path.join(input_folder, input_files[i])
         fname_out = os.path.join(output_folder, input_files[i])
-        status = Status.AC  # Find a better name
+        status = Status.AC
         event = Event()
         conn_sender, con_recv = Pipe()
-        mem_info = (0, 0)  # Find a better name for this variable
+        mem_info = (0, 0)
         with open(fname_in, 'r') as inf, open(fname_out, 'w') as ouf:
             local_time_start = time.perf_counter()
             local_time_end = 0
+            total_time_elapsed = 0
             try:
                 p = subprocess.Popen([binary_file],
-                                     stdin=inf, stdout=ouf, stderr=subprocess.PIPE,)
+                                     stdin=inf, stdout=ouf, stderr=subprocess.PIPE)
                 process = Process(target=memory_monitor,
                                   args=(p.pid, problem_limits['memory_limit'], event, conn_sender))
                 process.start()
-                p.communicate(timeout=problem_limits['time_limit'])
+                p.communicate(timeout=2*problem_limits['time_limit'])
                 if p.returncode < 0:
                     status = Status.RE
             except subprocess.TimeoutExpired:
                 status = Status.TLE
             finally:
                 local_time_end = time.perf_counter()
+                total_time_elapsed = local_time_end - local_time_start
                 event.set()
                 mem_info = con_recv.recv()
             if mem_info[1] != Status.AC:
                 status = Status.MLE
+                if total_time_elapsed > problem_limits['time_limit']:
+                    status = Status.TLE_MLE
             elif status == Status.AC:
                 status = run_checker(ans_file, fname_in, fname_out)
-            output_dict[i] = [status, local_time_end -
-                              local_time_start, mem_info[0]]
+                if total_time_elapsed > problem_limits['time_limit'] and status == Status.AC:
+                    status = Status.AC_TLE
+            output_dict[i] = [status, total_time_elapsed, mem_info[0]]
 
 
 def run_java(class_name, input_folder, output_folder):
@@ -135,7 +146,8 @@ def run_python3(submission_file: str, input_folder: str, output_folder):
             local_time_end-local_time_start), 'seconds')
 
 
-def run(submission_file: str, input_folder: str, output_folder: str, problem_limits: dict) -> None:
+def run(submission_file: str, input_folder: str, output_folder: str,
+        problem_limits: dict, expected_result: str) -> None:
     binary_file, ext = os.path.splitext(submission_file)
     debug_log('Run binary ' + binary_file)
     problem_folder = os.path.join(
@@ -149,7 +161,7 @@ def run(submission_file: str, input_folder: str, output_folder: str, problem_lim
     if (ext == '.cpp' or ext == '.c'):
         start_time = time.perf_counter()
         create_thread(binary_file, input_folder,
-                      output_folder, input_files, run_binary, problem_limits)
+                      output_folder, input_files, run_binary, problem_limits, expected_result)
         end_time = time.perf_counter()
     elif (ext == '.java'):
         problem_id = os.path.basename(os.path.dirname(input_folder))
@@ -184,22 +196,19 @@ def run_checker(ans: str, inf: str, ouf: str) -> Status:
     checker_output = p.stderr.decode('utf-8')
     if (checker_output.startswith('ok')):
         status = Status.AC
-        # debug_log('Input ' + fname + ': AC')
     elif (checker_output.startswith('wrong answer')):
-        # debug_log('Input ' + fname + ': WA')
         status = Status.WA
     elif (checker_output.startswith('FAIL')):
         error_log('Input ' + fname +
                   ': FAIL: maybe the jury solution or the checker are not correct')
     else:
-        error_log(
-            f'Input {fname}: Output not recognized -> {checker_output}')
+        status = Status.PE
     return status
 
 # TODO - write documentation
 
 
-def run_solutions(input_folder, output_folder, problem_metadata) -> None:
+def run_solutions(input_folder, problem_metadata, all_solutions: bool) -> None:
     time_limit = problem_metadata["problem"]["time_limit"]
     memory_limit = problem_metadata["problem"]["memory_limit_mb"] * 2 ** 20
     problem_limits = {'time_limit': time_limit,
@@ -208,21 +217,30 @@ def run_solutions(input_folder, output_folder, problem_metadata) -> None:
     problem_folder = Paths.instance().dirs["problem_dir"]
     tmp_folder = os.path.join(os.getcwd(), problem_folder, 'tmp_output')
     os.makedirs(tmp_folder, exist_ok=True)
-    for expected_result, files in solutions.items():
-        if isinstance(files, list):
-            for submission_file in files:
-                if submission_file != '':
-                    info_log(f'Running {submission_file} solution')
-                    run(submission_file, input_folder,
-                        tmp_folder, problem_limits)
-        else:
-            info_log(f'Running {files} solution')
-            run(files, input_folder, tmp_folder, problem_limits)
+    if all_solutions:
+        for expected_result, files in solutions.items():
+            if isinstance(files, list):
+                for submission_file in files:
+                    if submission_file != '':
+                        info_log(f'Running {submission_file} solution')
+                        run(submission_file, input_folder,
+                            tmp_folder, problem_limits, expected_result)
+            else:
+                info_log(f'Running {files} solution')
+                run(files, input_folder, tmp_folder,
+                    problem_limits, expected_result)
+    else:
+        expected_result = "main-ac"
+        submission_file = solutions[expected_result]
+        info_log(f'Running {submission_file} solution')
+        run(submission_file, input_folder, tmp_folder,
+            problem_limits, expected_result)
     shutil.rmtree(tmp_folder)
 
 
-def create_thread(binary_file, input_folder, output_folder, input_files: list, routine, problem_limits: dict):
-    n_threads = max(cpu_count()//2, 1)
+def create_thread(binary_file, input_folder, output_folder, input_files: list, routine, problem_limits: dict, expected_result: str):
+    solution_tp = True if expected_result == "main-ac" or expected_result == "alternative-ac" else False
+    n_threads = 1 if solution_tp else max(cpu_count()//2, 1)
 
     with Manager() as manager:
         output_dict = manager.dict()
@@ -248,6 +266,13 @@ def write_to_log(output_dict):
             debug_log('TLE: Time limit exceeded')
         elif output_dict[i][0] == Status.MLE:
             debug_log('ML: Memory limit exceeded')
+        elif output_dict[i][0] == Status.PE:
+            debug_log('PE: Presentation Error')
+        elif output_dict[i][0] == Status.AC_TLE:
+            debug_log('AC or TLE: Accepted or Time limit exceeded')
+        elif output_dict[i][0] == Status.TLE_MLE:
+            debug_log(
+                'TLE or MLE: d or Time limit exceeded or Memory limit exceeded')
         debug_log('Time elapsed: {0:.2f}'.format(
             output_dict[i][1]) + ' seconds')
         debug_log(f'Memory: {output_dict[i][2]/1000} KB')
@@ -262,9 +287,10 @@ def memory_monitor(pid: int, memory_limit: int, event, con) -> None:
             mem_usage = (max(process.memory_info().rss, mem_usage))
             if (mem_usage > memory_limit):
                 status = Status.MLE
+                os.kill(pid, SIGKILL)
                 return
             time.sleep(0.05)
-    except psutil.NoSuchProcess as no_process:
+    except psutil.NoSuchProcess:
         return
     finally:
         con.send((mem_usage, status))

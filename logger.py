@@ -1,25 +1,24 @@
-import logging
 import os
+import logging
 from metadata import Paths
 
 
-formatter = logging.Formatter('%(levelname)s - %(message)s')
-
-
 def setup_logger(name: str, log_file: str, level=logging.DEBUG) -> logging.Logger:
-    """To setup as many loggers as you want"""
+    """Setup as many loggers as needed"""
     old_cwd = os.getcwd()
+    formatter = logging.Formatter('%(levelname)s - %(message)s')
 
-    if (type(Paths.instance().dirs['problem_dir']) is list):
+    # Generate log inside problem directory
+    if type(Paths.instance().dirs['problem_dir']) is list:
         os.makedirs(Paths.instance().dirs['output_dir'], exist_ok=True)
         os.chdir(Paths.instance().dirs['output_dir'])
     else:
         os.makedirs(Paths.instance().dirs['problem_dir'], exist_ok=True)
         os.chdir(Paths.instance().dirs['problem_dir'])
 
+    # Log configurations
     handler = logging.FileHandler(log_file, mode='w')
     handler.setFormatter(formatter)
-
     logger = logging.getLogger(name)
     logger.setLevel(level)
     logger.addHandler(handler)
@@ -36,14 +35,14 @@ def info_log(text: str) -> None:
 
 
 def debug_log(text: str) -> None:
-    """Print informations of subprocesses of the tool to a log."""
+    """Print debug informations of the tool to a log."""
     debug = logging.getLogger('debug')
     if text is not None:
         debug.debug(text.rstrip())
 
 
 def error_log(text: str) -> None:
-    """Print errors to a log."""
+    """Print errors of the tool to a log."""
     tool = logging.getLogger('tool')
     if text is not None:
         tool.error(text.rstrip())
