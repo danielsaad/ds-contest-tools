@@ -52,3 +52,9 @@ def instance_paths(problem_dir, output_dir='') -> None:
     Paths.instance(problem_dir, output_dir)
     setup_logger('tool', 'tool.log')
     setup_logger('debug', 'debug.log')
+
+
+def verify_path(path: str) -> None:
+    if not os.path.exists(path):
+        print(f'{os.path.basename(path)} does not exist.')
+        sys.exit(1)
