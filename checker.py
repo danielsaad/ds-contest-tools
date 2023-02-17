@@ -173,20 +173,16 @@ def run_solutions(input_folder, problem_metadata, all_solutions: bool) -> None:
             if isinstance(files, list):
                 for submission_file in files:
                     if submission_file:
-                        verify_path(os.path.join(problem_folder, 'src', submission_file))
                         info_log(f'Running {submission_file} solution')
                         run(submission_file, input_folder,
                             tmp_folder, problem_limits, expected_result)
             else:
-                submission_file = files
-                verify_path(os.path.join(problem_folder, 'src', submission_file))
                 info_log(f'Running {files} solution')
                 run(files, input_folder, tmp_folder,
                     problem_limits, expected_result)
     else:
         expected_result = "main-ac"
         submission_file = solutions[expected_result]
-        verify_path(os.path.join(problem_folder, 'src', submission_file))
         info_log(f'Running {submission_file} solution')
         run(submission_file, input_folder, tmp_folder,
             problem_limits, expected_result)
