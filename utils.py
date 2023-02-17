@@ -63,15 +63,11 @@ def verify_problem_json(problem_json: dict) -> None:
     for key, solutions in solutions_dict.items():
         # Verify main solution
         if isinstance(solutions, str):
-            if not os.path.exists(os.path.join(problem_folder, 'src', solutions)):
-                print(f"Solution {solutions} does not exist.")
-                sys.exit(1)
+            verify_path(os.path.join(problem_folder, 'src', solutions))
             continue
         # Verify others solutions
         for file in solutions:
-            if not os.path.exists(os.path.join(problem_folder, 'src', file)):
-                print(f"Solution {file} does not exist.")
-                sys.exit(1)
+            verify_path(os.path.join(problem_folder, 'src', file))
 
     # Verify instance of variables
     if not isinstance(problem_json['problem']['time_limit'], int):

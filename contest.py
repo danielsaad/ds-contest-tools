@@ -18,7 +18,7 @@ from metadata import Paths
 from logger import info_log
 from pdfutils import build_pdf, merge_pdfs
 from latexutils import clean_auxiliary_files
-from utils import convert_idx_to_string, verify_command, instance_paths
+from utils import convert_idx_to_string, verify_command, instance_paths, verify_path
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -96,12 +96,9 @@ def build_boca_packages() -> None:
 
 def verify_problem(problem: str) -> None:
     """Check if the problem is ready to be used"""
-    if not os.path.exists(problem):
-        print(problem, "path doesn't exist.")
-        sys.exit(1)
-    if not os.path.exists(os.path.join(problem, 'statement')):
-        print(problem, "path doesn't have an initialized problem.")
-        sys.exit(1)
+    verify_path(problem)
+    verify_path(os.path.join(problem, 'statement'))
+
     # Verify I/O for statements
     if args.mode == 'genpdf':
         if not os.path.exists(os.path.join(problem, 'input')):

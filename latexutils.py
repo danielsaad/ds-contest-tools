@@ -5,7 +5,7 @@ import sys
 import config
 from logger import info_log
 from jsonutils import parse_json
-from utils import verify_problem_json
+from utils import verify_problem_json, verify_path
 from fileutils import get_statement_files
 
 
@@ -52,9 +52,7 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
     verify_problem_json(problem_metadata)
 
     statement_folder = os.path.join(problem_folder, 'statement')
-    if not os.path.exists(statement_folder):
-        print("Statement directory does not exist.")
-        sys.exit(0)
+    verify_path(statement_folder)
 
     interactive = problem_metadata['problem']['interactive']
     tex_filename = os.path.basename(os.path.abspath(problem_folder))+'.tex'

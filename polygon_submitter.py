@@ -10,7 +10,7 @@ from metadata import Paths
 from jsonutils import parse_json
 from logger import info_log, error_log
 from fileutils import get_statement_files
-from utils import convert_to_bytes, instance_paths, verify_problem_json
+from utils import convert_to_bytes, instance_paths, verify_problem_json, verify_path
 
 
 LANGUAGE = 'english'
@@ -184,9 +184,7 @@ def save_files(solutions: dict) -> list:
             if (s == ''):
                 continue
             solution_path = os.path.join(src_dir, s)
-            if (not os.path.exists(solution_path)):
-                print(f'Solution file {s} does not exist.')
-                sys.exit(0)
+            verify_path(solution_path)
             params_list.append(save_solution(solution_path, key))
             solution_files.append(s)
 
@@ -227,9 +225,7 @@ def save_test(tests_in_statement: int, interactive: bool) -> tuple:
     problem_folder = Paths.instance().dirs['problem_dir']
     input_folder = os.path.join(problem_folder, 'input')
     output_folder = os.path.join(problem_folder, 'output')
-    if not os.path.exists(input_folder):
-        print(f'Input folder does not exist.')
-        sys.exit(0)
+    verify_path(input_folder)
 
     input_files = [f for f in os.listdir(input_folder)
                    if not f.endswith('.interactive')]
@@ -275,15 +271,11 @@ def save_test(tests_in_statement: int, interactive: bool) -> tuple:
                 script_written = True
 
             input_path += '.interactive'
-            if not os.path.exists(input_path):
-                print(f'{os.path.basename(input_path)} does not exist.')
-                sys.exit(0)
+            verify_path(input_folder)
 
             output_path = os.path.join(
                 output_folder, input_file + '.interactive')
-            if not os.path.exists(output_path):
-                print(f'{os.path.basename(output_path)} does not exist.')
-                sys.exit(0)
+            verify_path(output_folder)
 
             with open(input_path, 'r') as f:
                 test_input_statement = f.read()
@@ -375,9 +367,7 @@ def verify_response(response, method) -> None:
 
 def send_to_polygon(problem_folder) -> None:
     """Send problem to Polygon."""
-    if not os.path.exists(problem_folder):
-        print(f'{problem_folder} does not exist.')
-        sys.exit(1)
+    verify_path(problem_folder)
     instance_paths(problem_folder)
 
     # Get list of requests to Polygon

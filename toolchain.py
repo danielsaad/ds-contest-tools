@@ -5,7 +5,7 @@ import subprocess
 from metadata import Paths
 from config import custom_key
 from jsonutils import parse_json
-from utils import verify_command, verify_problem_json
+from utils import verify_command, verify_problem_json, verify_path
 from checker import run_solutions
 from logger import info_log, error_log, debug_log
 
@@ -16,12 +16,8 @@ def build_executables() -> None:
     os.chdir(Paths.instance().dirs["problem_dir"])
 
     # Verify necessary files
-    if not os.path.exists(os.path.join('src', 'testlib.h')):
-        print("testlib.h does not exist in source folder.")
-        sys.exit(1)
-    if not os.path.exists(os.path.join('src', 'checker.cpp')):
-        print("checker.cpp does not exist in source folder.")
-        sys.exit(1)
+    verify_path(os.path.join('src', 'testlib.h'))
+    verify_path(os.path.join('src', 'checker.cpp'))
 
     info_log("Compiling executables")
     p = subprocess.run(['make', '-j'],
@@ -70,10 +66,8 @@ def validate_inputs() -> None:
     """Checks if the input files are correctly formatted 
     by running the validator file.
     """
-    validator_path = os.path.join('../bin', 'validator')
-    if not os.path.exists(validator_path):
-        print("Executable of validator does not exist.")
-        sys.exit(1)
+    validator_path = os.path.join('..', 'bin', 'validator')
+    verify_path(validator_path)
 
     input_files = [f for f in os.listdir() if os.path.isfile(f)
                    and not f.endswith('.interactive')]
@@ -142,10 +136,7 @@ def generate_inputs() -> None:
         debug_log(f"Generating script '{script.rstrip()}'.")
         script = script.split()
         generator_path = os.path.join(*['..', 'bin', script[0]])
-        if not os.path.exists(generator_path):
-            print(
-                f'Generator {os.path.basename(generator_path)} does not exist.')
-            sys.exit(1)
+        verify_path(generator_path)
 
         script[0] = generator_path
         p = subprocess.run([*script], stdout=subprocess.PIPE,
@@ -171,16 +162,15 @@ def produce_outputs(problem_metadata) -> None:
     input_files = [f for f in os.listdir(os.path.join('..', 'input'))
                    if not f.endswith('.interactive')]
     for fname in input_files:
-        inf_path = os.path.join('../input', fname)
+        inf_path = os.path.join('..', 'input', fname)
         ouf_path = fname
-        with open(os.path.join('../input', fname), 'r') as inf, open(fname, 'w') as ouf:
+        with open(os.path.join('..', 'input', fname), 'r') as inf, open(fname, 'w') as ouf:
             ac_solution = os.path.join(
-                '../bin', os.path.splitext(problem_metadata["solutions"]["main-ac"])[0])
+                '..', 'bin', os.path.splitext(problem_metadata["solutions"]["main-ac"])[0])
             if (problem_metadata["problem"]["interactive"]):
-                interactor = os.path.join('../bin', 'interactor')
-                if not os.path.isfile(interactor):
-                    print("Executable of interactor does not exist.")
-                    sys.exit(1)
+                interactor = os.path.join('..', 'bin', 'interactor')
+                verify_path(interactor)
+
                 if os.path.exists('tmpfifo'):
                     info_log("Removing existing FIFO")
                     subprocess.run(['rm', 'tmpfifo'])

@@ -6,7 +6,7 @@ import zipfile
 import requests
 import xml.etree.ElementTree as ET
 from metadata import Paths
-from utils import instance_paths, verify_problem_json
+from utils import instance_paths, verify_problem_json, verify_path
 from jsonutils import parse_json
 from fileutils import get_statement_files
 from polygon_submitter import add_auth_parameters, verify_response
@@ -185,7 +185,8 @@ def init_problem(interactive: bool) -> None:
     os.makedirs(os.path.join(problem_folder, 'src'), exist_ok=True)
     os.makedirs(os.path.join(problem_folder, 'input'), exist_ok=True)
     os.makedirs(os.path.join(problem_folder, 'output'), exist_ok=True)
-    shutil.copy(os.path.join(*[folder, 'src', 'testlib.h']), os.path.join(problem_folder, 'src'))
+    shutil.copy(os.path.join(*[folder, 'src', 'testlib.h']),
+                os.path.join(problem_folder, 'src'))
     os.remove(os.path.join(problem_folder, 'problem-interactive.json'))
     if not interactive:
         os.remove(os.path.join(
@@ -350,7 +351,7 @@ def convert_problem(local, problem_id):
     write_statement(package_data, interactive)
     copy_generator(xml_data['script'])
     update_problem_metadata(package_data['title'],
-                        xml_data['solutions'], interactive)
+                            xml_data['solutions'], interactive)
     if not local:
         shutil.rmtree(Paths.instance().dirs['output_dir'])
 
@@ -411,9 +412,7 @@ def get_polygon_problem(problem_folder, local):
     """Verify source from problem package and convert it."""
     problem_id = input('ID: ')
     if local:
-        if not os.path.exists(local):
-            print(f"{local} problem does not exist.")
-            exit(1)
+        verify_path(local)
         instance_paths(problem_folder, local)
     else:
         instance_paths(problem_folder, os.path.join(
