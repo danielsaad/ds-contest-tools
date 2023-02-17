@@ -7,7 +7,7 @@ def parse_json(json_file: str) -> dict:
     """Receives a path to a '.json' file and converts it to a dict."""
     json_data = {}
 
-    if (not os.path.isfile(json_file)):
+    if not os.path.isfile(json_file):
         print(json_file, 'does not exists.')
         sys.exit(1)
 

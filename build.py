@@ -9,16 +9,16 @@ Author:
 """
 
 
-import sys
 import os
+import sys
 import shutil
 import argparse
+from boca import boca_pack
+from metadata import Paths
 from logger import info_log
 from pdfutils import build_pdf
-from boca import boca_pack
-from toolchain import build_executables, run_programs, clean_files
-from metadata import Paths
 from utils import instance_paths
+from toolchain import build_executables, run_programs, clean_files
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -37,6 +37,7 @@ def create_parser() -> argparse.ArgumentParser:
         'pack2boca: pack a problem to BOCA format.\n' +
         'clean: remove executables of a DS problem.\n')
     parser.add_argument('problem_id', nargs='?')
+
     return parser
 
 
@@ -99,7 +100,7 @@ def clean() -> None:
 if __name__ == "__main__":
     parser = create_parser()
     args = parser.parse_args()
-    if (not args.problem_id):
+    if not args.problem_id:
         parser.error(args.mode + ' mode requires a problem id. Usage: ' +
                      sys.argv[0] + ' ' + args.mode + ' <problem ID>')
     instance_paths(args.problem_id)

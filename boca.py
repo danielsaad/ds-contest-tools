@@ -1,12 +1,11 @@
 import os
-import subprocess
-import glob
-import shutil
 import sys
+import shutil
+import subprocess
 from metadata import Paths
-from fileutils import recursive_overwrite, rename_io
-from jsonutils import parse_json
 from utils import verify_command
+from jsonutils import parse_json
+from fileutils import recursive_overwrite, rename_io
 
 
 class default_boca_limits:
@@ -17,7 +16,7 @@ class default_boca_limits:
 
 
 def boca_zip(boca_folder: str) -> None:
-    """ Zips a problem of BOCA format."""
+    """ Zip a problem of BOCA format."""
     old_cwd = os.getcwd()
     os.chdir(boca_folder)
     zip_filename = os.path.basename(boca_folder)+'.zip'
@@ -29,10 +28,10 @@ def boca_zip(boca_folder: str) -> None:
 
 
 def boca_pack(problem_folder='') -> None:
-    """Converts a DS problem to a BOCA problem."""
+    """Convert a DS problem to a BOCA problem."""
     if (problem_folder == ''):
         problem_folder = Paths.instance().dirs["problem_dir"]
-        
+
     boca_template_folder = os.path.join(
         *[os.path.dirname(os.path.abspath(__file__)), 'arquivos', 'boca'])
     boca_folder = os.path.join(*[problem_folder, 'boca'])

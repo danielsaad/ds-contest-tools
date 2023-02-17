@@ -1,12 +1,22 @@
-import argparse
+"""Tool to convert problems into DS, BOCA, Polygon or SQTPM format.
+
+Usage:
+    python3 convert.py [flags] [initial_format] [final_format] [problem_folder]
+
+Author:
+    Daniel Saad Nogueira Nunes
+"""
+
+
 import os
-from jsonutils import parse_json
+import argparse
 from json import dumps
 from logger import info_log
 from getpass import getpass
+from jsonutils import parse_json
+from fileutils import write_secrets
 from polygon_submitter import send_to_polygon
 from polygon_converter import get_polygon_problem
-from fileutils import write_secrets
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -17,14 +27,15 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument('-c', '--change-keys',
                         help='Change Polygon API keys.', action='store_true')
     parser.add_argument('reader', choices=['BOCA', 'DS', 'Polygon'],
-                        help='Input problem format')
+                        help='Input problem format.')
     parser.add_argument('writer', choices=['BOCA', 'DS', 'Polygon', 'SQTPM'],
-                        help='Input problem format')
+                        help='Output problem format.')
     parser.add_argument('problem_dir', help='Path to the problem.')
     return parser
 
 
 def change_polygon_keys(secrets_path: str) -> None:
+    """Create new apiKey and secret file for connection with Polygon API."""
     print('Define the keys used by Polygon API.' +
           'They will be stored locally in the tool directory.')
 
@@ -55,6 +66,7 @@ if __name__ == '__main__':
         else:
             print("Not implemented yet.")
             pass
+
     elif (args.reader == 'DS'):
         if (args.writer == 'Polygon'):
             send_to_polygon(args.problem_dir)
@@ -62,6 +74,7 @@ if __name__ == '__main__':
         else:
             print("Not implemented yet.")
             pass
+
     elif (args.reader == 'BOCA'):
         print("Not implemented yet.")
         pass
