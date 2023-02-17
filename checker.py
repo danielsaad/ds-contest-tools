@@ -13,6 +13,7 @@ from enum import Enum
 from multiprocessing import Process, cpu_count, Manager, Event, Pipe
 from metadata import Paths
 from logger import info_log, debug_log, error_log
+from utils import verify_path
 
 
 class Status(Enum):
@@ -118,7 +119,6 @@ def run(submission_file: str, input_folder: str, output_folder: str,
     elif (ext == '.py'):
         submission_file = os.path.join(problem_folder, 'src', submission_file)
         compiler = PYTHON3_INTERPRETER
-        print(submission_file)
         start_time = time.perf_counter()
         create_thread(submission_file, input_folder,
                       output_folder, input_files, problem_limits, expected_result, compiler)
@@ -172,7 +172,7 @@ def run_solutions(input_folder, problem_metadata, all_solutions: bool) -> None:
         for expected_result, files in solutions.items():
             if isinstance(files, list):
                 for submission_file in files:
-                    if submission_file != '':
+                    if submission_file:
                         info_log(f'Running {submission_file} solution')
                         run(submission_file, input_folder,
                             tmp_folder, problem_limits, expected_result)

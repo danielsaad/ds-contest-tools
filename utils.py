@@ -85,3 +85,10 @@ def verify_problem_json(problem_json: dict) -> None:
     else:
         return
     sys.exit(1)
+
+
+def verify_path(path: str) -> None:
+    """Verify if path exists in folder"""
+    if not os.path.exists(path):
+        print(f'{os.path.basename(path)} does not exist.')
+        sys.exit(1)
