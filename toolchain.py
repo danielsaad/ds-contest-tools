@@ -5,7 +5,7 @@ import subprocess
 from metadata import Paths
 from config import custom_key
 from jsonutils import parse_json
-from utils import verify_command
+from utils import verify_command, verify_problem_json
 from checker import run_solutions
 from logger import info_log, error_log, debug_log
 
@@ -14,6 +14,14 @@ def build_executables() -> None:
     """Run Makefile to create release and debug executables."""
     old_cwd = os.getcwd()
     os.chdir(Paths.instance().dirs["problem_dir"])
+
+    # Verify necessary files
+    if not os.path.exists(os.path.join('src', 'testlib.h')):
+        print("testlib.h does not exist in source folder.")
+        sys.exit(1)
+    if not os.path.exists(os.path.join('src', 'checker.cpp')):
+        print("checker.cpp does not exist in source folder.")
+        sys.exit(1)
 
     info_log("Compiling executables")
     p = subprocess.run(['make', '-j'],
@@ -31,6 +39,7 @@ def run_programs(all_solutions) -> None:
     os.makedirs(input_folder, exist_ok=True)
     os.makedirs(output_folder, exist_ok=True)
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
+    verify_problem_json(problem_metadata)
 
     old_cwd = os.getcwd()
     os.chdir(input_folder)
@@ -61,12 +70,17 @@ def validate_inputs() -> None:
     """Checks if the input files are correctly formatted 
     by running the validator file.
     """
+    validator_path = os.path.join('../bin', 'validator')
+    if not os.path.exists(validator_path):
+        print("Executable of validator does not exist.")
+        sys.exit(1)
+
     input_files = [f for f in os.listdir() if os.path.isfile(f)
                    and not f.endswith('.interactive')]
     input_files.sort(key=custom_key)
     for fname in input_files:
         with open(fname) as f:
-            p = subprocess.Popen([os.path.join('../bin', 'validator')],
+            p = subprocess.Popen([validator_path],
                                  stdin=f, stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE, text=True)
             out, err = p.communicate()
@@ -94,7 +108,10 @@ def generate_inputs() -> None:
     """Generates input files from the generator file."""
     scripts = []
     ds_generator = True
-    script_path = os.path.join('../src', 'script.sh')
+    script_path = os.path.join('..', 'src', 'script.sh')
+    generator_path = os.path.join('..', 'bin', 'generator')
+
+    # Verify existance of at least one generator
     if os.path.exists(script_path):
         with open(script_path, 'r') as f:
             scripts = f.readlines()
@@ -103,14 +120,18 @@ def generate_inputs() -> None:
             if script.startswith('generator '):
                 ds_generator = False
                 break
+    elif not os.path.exists(generator_path):
+        print("Error. No generators or scripts found.")
+        sys.exit(1)
 
-    if ds_generator:
-        generator_command = os.path.join('../bin', 'generator')
-        info_log('Generating inputs of generator')
-        p = subprocess.run(generator_command, stdout=subprocess.PIPE,
+    # Verify and run a DS generator
+    if ds_generator and os.path.exists(generator_path):
+        info_log("Generating inputs of generator")
+        p = subprocess.run(generator_path, stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE, text=True)
         verify_command(p, "Error generating inputs.")
 
+    # Prepare input for script generation
     input_files = [f for f in os.listdir() if os.path.isfile(f)
                    and not f.endswith('.interactive')]
     input_files.sort(key=custom_key)
@@ -156,8 +177,10 @@ def produce_outputs(problem_metadata) -> None:
             ac_solution = os.path.join(
                 '../bin', os.path.splitext(problem_metadata["solutions"]["main-ac"])[0])
             if (problem_metadata["problem"]["interactive"]):
-
                 interactor = os.path.join('../bin', 'interactor')
+                if not os.path.isfile(interactor):
+                    print("Executable of interactor does not exist.")
+                    sys.exit(1)
                 if os.path.exists('tmpfifo'):
                     info_log("Removing existing FIFO")
                     subprocess.run(['rm', 'tmpfifo'])

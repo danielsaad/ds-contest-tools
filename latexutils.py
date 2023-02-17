@@ -5,6 +5,7 @@ import sys
 import config
 from logger import info_log
 from jsonutils import parse_json
+from utils import verify_problem_json
 from fileutils import get_statement_files
 
 
@@ -48,6 +49,7 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
     input_folder = os.path.join(problem_folder, 'input')
     output_folder = os.path.join(problem_folder, 'output')
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
+    verify_problem_json(problem_metadata)
 
     statement_folder = os.path.join(problem_folder, 'statement')
     if not os.path.exists(statement_folder):

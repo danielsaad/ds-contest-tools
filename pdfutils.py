@@ -1,4 +1,5 @@
 import os
+import sys
 import config
 import subprocess
 from metadata import Paths
@@ -37,6 +38,9 @@ def build_pdf(problem_folder='', output_directory='', options=config.DEFAULT_PDF
     info_log('Building PDF')
     if problem_folder == '':
         problem_folder = Paths.instance().dirs["problem_dir"]
+    if not os.path.exists(os.path.join(problem_folder, 'maratona.cls')):
+        print('File "maratona.cls" does not exist.')
+        sys.exit(1)
 
     # Generate PDF from tex file
     print_to_latex(problem_folder, options)

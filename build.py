@@ -26,7 +26,7 @@ def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-i', '--interactive', action='store_true',
-                        default=False, help='set problem to interative on init')
+                        default=False, help='init interactive problem')
     parser.add_argument('-a', '--all', action='store_true',
                         default=False, help='run all the solutions')
     parser.add_argument(
@@ -37,7 +37,6 @@ def create_parser() -> argparse.ArgumentParser:
         'pack2boca: pack a problem to BOCA format.\n' +
         'clean: remove executables of a DS problem.\n')
     parser.add_argument('problem_id', nargs='?')
-
     return parser
 
 
@@ -97,7 +96,7 @@ def pack2boca() -> None:
 def clean() -> None:
     """Call functions to clean executables"""
     if (not os.path.exists(Paths.instance().dirs["problem_dir"])):
-        print("Path to problem does not exists.")
+        print("Path to problem does not exist.")
         sys.exit(1)
     clean_files()
 
@@ -108,6 +107,10 @@ if __name__ == "__main__":
     if not args.problem_id:
         parser.error(args.mode + ' mode requires a problem id. Usage: ' +
                      sys.argv[0] + ' ' + args.mode + ' <problem ID>')
+    if not args.mode != 'init':
+        if not os.path.exists(args.problem_id):
+            print("Problem ID does not exist.")
+            sys.exit(1)
     instance_paths(args.problem_id)
     if (args.mode == 'init'):
         info_log('Initializing problem ' + args.problem_id)

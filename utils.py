@@ -52,3 +52,36 @@ def instance_paths(problem_dir, output_dir='') -> None:
     Paths.instance(problem_dir, output_dir)
     setup_logger('tool', 'tool.log')
     setup_logger('debug', 'debug.log')
+
+
+def verify_problem_json(problem_json: dict) -> None:
+    """Verify values in problem.json."""
+
+    # Verify solution paths
+    solutions_dict = problem_json['solutions']
+    problem_folder = Paths.instance().dirs["problem_dir"]
+    for key, solutions in solutions_dict.items():
+        # Verify main solution
+        if isinstance(solutions, str):
+            if not os.path.exists(os.path.join(problem_folder, 'src', solutions)):
+                print(f"Solution {solutions} does not exist.")
+                sys.exit(1)
+            continue
+        # Verify others solutions
+        for file in solutions:
+            if not os.path.exists(os.path.join(problem_folder, 'src', file)):
+                print(f"Solution {file} does not exist.")
+                sys.exit(1)
+
+    # Verify instance of variables
+    if not isinstance(problem_json['problem']['time_limit'], int):
+        print("Variable 'time-limit' in problem.json is invalid.")
+    elif not isinstance(problem_json['problem']['memory_limit_mb'], int):
+        print("Variable 'memory-limit' in problem.json is invalid.")
+    elif not isinstance(problem_json['io_samples'], int):
+        print("Variable 'io_samples' in problem.json is invalid.")
+    elif not isinstance(problem_json['problem']['interactive'], bool):
+        print("Variable 'interactive' in problem.json is invalid.")
+    else:
+        return
+    sys.exit(1)

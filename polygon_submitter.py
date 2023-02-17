@@ -10,7 +10,7 @@ from metadata import Paths
 from jsonutils import parse_json
 from logger import info_log, error_log
 from fileutils import get_statement_files
-from utils import convert_to_bytes, instance_paths
+from utils import convert_to_bytes, instance_paths, verify_problem_json
 
 
 LANGUAGE = 'english'
@@ -19,21 +19,21 @@ TESTSET = 'tests'
 VERIFY_IO_STATEMENT = True
 
 
-def update_info(problem_json: dict) -> tuple:
+def update_info(problem_metadata: dict) -> tuple:
     """Get general information parameters of the problem."""
-    interactive = problem_json['interactive']
-    time_limit = problem_json['time_limit'] * 1000
+    interactive = problem_metadata['interactive']
+    time_limit = problem_metadata['time_limit'] * 1000
     if (time_limit < 250 or time_limit > 15000):
         print("Time limit is only between 0.25s and 15s.")
         sys.exit(0)
-    memory_limit = problem_json['memory_limit_mb']
+    memory_limit = problem_metadata['memory_limit_mb']
     if (memory_limit < 4 or memory_limit > 1024):
         print("Memory limit is only between 4MB and 1024MB.")
         sys.exit(0)
 
     params = {
-        'inputFile': problem_json['input_file'],
-        'outputFile': problem_json['output_file'],
+        'inputFile': problem_metadata['input_file'],
+        'outputFile': problem_metadata['output_file'],
         'interactive': str(interactive).lower(),
         'timeLimit': time_limit,
         'memoryLimit': memory_limit}
@@ -327,18 +327,19 @@ def get_requests_list() -> list:
     """Get each request needed to convert the problem to Polygon."""
     path_json = os.path.join(
         Paths.instance().dirs['problem_dir'], 'problem.json')
-    problem_json = parse_json(path_json)
+    problem_metadata = parse_json(path_json)
+    verify_problem_json(problem_metadata)
 
     requests_list = []
-    interactive = problem_json['problem']['interactive']
-    requests_list.append(update_info(problem_json['problem']))
+    interactive = problem_metadata['problem']['interactive']
+    requests_list.append(update_info(problem_metadata['problem']))
     requests_list.append(save_statement(
-        problem_json['problem']['title'], interactive))
+        problem_metadata['problem']['title'], interactive))
     requests_list.append(
-        save_tags(problem_json['problem']['subject']['en_us']))
+        save_tags(problem_metadata['problem']['subject']['en_us']))
     requests_list = requests_list + save_statement_resources()
-    requests_list = requests_list + save_files(problem_json['solutions'])
-    test_results = save_test(problem_json['io_samples'], interactive)
+    requests_list = requests_list + save_files(problem_metadata['solutions'])
+    test_results = save_test(problem_metadata['io_samples'], interactive)
     requests_list = requests_list + test_results[0]
     script = save_script()
     if not test_results[1] and script is not None:

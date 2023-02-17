@@ -6,7 +6,7 @@ import zipfile
 import requests
 import xml.etree.ElementTree as ET
 from metadata import Paths
-from utils import instance_paths
+from utils import instance_paths, verify_problem_json
 from jsonutils import parse_json
 from fileutils import get_statement_files
 from polygon_submitter import add_auth_parameters, verify_response
@@ -299,7 +299,7 @@ def get_tags() -> dict:
     return tags
 
 
-def update_problem_json(title, solutions, interactive) -> None:
+def update_problem_metadata(title, solutions, interactive) -> None:
     """Update problem information from the package"""
     package_folder = Paths.instance().dirs['output_dir']
     problem_folder = Paths.instance().dirs['problem_dir']
@@ -309,24 +309,25 @@ def update_problem_json(title, solutions, interactive) -> None:
     json_path = os.path.join(problem_folder, 'problem.json')
     package_json = parse_json(os.path.join(
         *[package_folder, 'statements', 'english', 'problem-properties.json']))
-    problem_json = parse_json(json_path)
+    problem_metadata = parse_json(json_path)
+    verify_problem_json(problem_metadata)
 
     # Update problem.json
-    problem_json['problem']['subject'] = tags
-    problem_json['problem']['interactive'] = interactive
-    problem_json['io_samples'] = len(package_json['sampleTests'])
-    problem_json['problem']['title'] = ''.join(title).rstrip()
-    problem_json['problem']['input_file'] = package_json['inputFile']
-    problem_json['problem']['output_file'] = package_json['outputFile']
-    problem_json['problem']['time_limit'] = int(
+    problem_metadata['problem']['subject'] = tags
+    problem_metadata['problem']['interactive'] = interactive
+    problem_metadata['io_samples'] = len(package_json['sampleTests'])
+    problem_metadata['problem']['title'] = ''.join(title).rstrip()
+    problem_metadata['problem']['input_file'] = package_json['inputFile']
+    problem_metadata['problem']['output_file'] = package_json['outputFile']
+    problem_metadata['problem']['time_limit'] = int(
         package_json['timeLimit'] / 1000)
-    problem_json['problem']['memory_limit_mb'] = int(
+    problem_metadata['problem']['memory_limit_mb'] = int(
         (package_json['memoryLimit'] / 1024) / 1024)
     for key in solutions:
-        problem_json['solutions'][key] = solutions[key]
+        problem_metadata['solutions'][key] = solutions[key]
 
     with open(json_path, 'w') as f:
-        f.write(json.dumps(problem_json, ensure_ascii=False))
+        f.write(json.dumps(problem_metadata, ensure_ascii=False))
 
 
 def convert_problem(local, problem_id):
@@ -342,13 +343,13 @@ def convert_problem(local, problem_id):
     copy_solutions()
     copy_source_files('checker.cpp')
     copy_source_files('validator.cpp')
-    copy_source_files('interactor.cpp')
     if interactive:
+        copy_source_files('interactor.cpp')
         copy_interactive_files()
 
     write_statement(package_data, interactive)
     copy_generator(xml_data['script'])
-    update_problem_json(package_data['title'],
+    update_problem_metadata(package_data['title'],
                         xml_data['solutions'], interactive)
     if not local:
         shutil.rmtree(Paths.instance().dirs['output_dir'])
