@@ -33,9 +33,7 @@ def get_io(io_folder: str, problem_metadata: dict) -> list:
         io_files = [os.path.join(io_folder, str(f))
                     for f in range(1, io_samples+1)]
     for f in io_files:
-        if (not os.path.isfile(f)):
-            print(os.path.basename(f), 'file does not exist.')
-            sys.exit(1)
+        verify_path(f)
         tc_io = []
         with open(f) as inf:
             for line in inf.readlines():

@@ -51,7 +51,7 @@ def boca_pack(problem_folder='') -> None:
 
     pdf_file = filename+'.pdf'
     if not os.path.exists(pdf_file):
-        print("PDF file of BOCA problem does not exist.")
+        print("Problem PDF doesn't exist.")
         sys.exit(1)
     shutil.copy2(pdf_file, boca_description_folder)
 

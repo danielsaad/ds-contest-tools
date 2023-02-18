@@ -42,8 +42,9 @@ def build_pdf(problem_folder='', output_directory='', options=config.DEFAULT_PDF
 
     # Generate PDF from tex file
     print_to_latex(problem_folder, options)
-    tex_filename = os.path.basename(problem_folder) + '.tex'
     folder = problem_folder if output_directory == '' else output_directory
+    
+    tex_filename = os.path.basename(problem_folder) + '.tex'
     tex_filepath = os.path.join(problem_folder, tex_filename)
     command = ["pdflatex", '--output-directory', folder, tex_filepath]
     p = subprocess.run(command, stdin=subprocess.PIPE,
@@ -54,7 +55,7 @@ def build_pdf(problem_folder='', output_directory='', options=config.DEFAULT_PDF
     # Generate tutorial PDF from tex file
     tutorial_filename = os.path.basename(problem_folder)+'-tutorial.tex'
     tutorial_filepath = os.path.join(problem_folder, tutorial_filename)
-    if (os.path.isfile(tutorial_filepath)):
+    if os.path.isfile(tutorial_filepath):
         command = ['pdflatex', '--output-directory', folder, tutorial_filepath]
         p = subprocess.run(command, stdin=subprocess.PIPE,
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)

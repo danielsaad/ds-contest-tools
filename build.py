@@ -126,8 +126,9 @@ if __name__ == "__main__":
         genpdf()
         print("PDFs generated.")
     elif (args.mode == 'genio'):
+        info_log("Generating input and output.")
         genio(args.all)
-        print("Input and Output generated.")
+        print("Input and output generated.")
     elif (args.mode == 'clean'):
         clean()
         print('Files removed successfully.')

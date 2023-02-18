@@ -61,6 +61,9 @@ def verify_problem_json(problem_json: dict) -> None:
     solutions_dict = problem_json['solutions']
     problem_folder = Paths.instance().dirs["problem_dir"]
     for key, solutions in solutions_dict.items():
+        # Ignore verification due to creation of contest
+        if isinstance(problem_folder, list):
+            break
         # Verify main solution
         if isinstance(solutions, str):
             verify_path(os.path.join(problem_folder, 'src', solutions))
@@ -86,5 +89,5 @@ def verify_problem_json(problem_json: dict) -> None:
 def verify_path(path: str) -> None:
     """Verify if path exists in folder"""
     if not os.path.exists(path):
-        print(f'{os.path.basename(path)} does not exist.')
+        print(f'{os.path.relpath(path)} does not exist.')
         sys.exit(1)

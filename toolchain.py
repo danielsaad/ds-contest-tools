@@ -81,7 +81,7 @@ def validate_inputs() -> None:
             if (out or err):
                 error_log(out)
                 error_log(err)
-                print("Failed validation on input.", fname)
+                print("Failed validation on input", fname)
                 exit(1)
 
     equal_tests = 0
@@ -141,9 +141,11 @@ def generate_inputs() -> None:
         script[0] = generator_path
         p = subprocess.run([*script], stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE, text=True)
+        script_result = p.stdout
+        p.stdout = ""
         verify_command(p, "Error generating inputs.")
 
-        temp_test = hashlib.sha1(p.stdout.encode()).digest()
+        temp_test = hashlib.sha1(script_result.encode()).digest()
         if temp_test in encoded_tests:
             debug_log(f"Script generated repeated testcase. Ignoring...")
             continue
@@ -151,7 +153,7 @@ def generate_inputs() -> None:
         debug_log(f"Script generated successfully.")
         info_log(f"Generating testcase {index} from script.")
         with open(str(index), 'w') as input_file:
-            input_file.write(p.stdout)
+            input_file.write(script_result)
         index += 1
 
 
@@ -193,6 +195,7 @@ def clean_files() -> None:
     """Call Makefile in order to remove executables"""
     old_cwd = os.getcwd()
     os.chdir(Paths.instance().dirs["problem_dir"])
+    verify_path('Makefile')
 
     command = ['make', 'clean']
     p = subprocess.run(command, stdout=subprocess.PIPE,
