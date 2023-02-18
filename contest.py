@@ -9,7 +9,6 @@ Author:
 
 
 import os
-import sys
 import shutil
 import argparse
 import subprocess
@@ -28,7 +27,7 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument('-b', '--boca', action='store_true',
                         default=False, help='build contest in BOCA format.')
     parser.add_argument('mode', choices=['build', 'genpdf'],
-                        help='build: create a contest.\n' +
+                        help='build: build problems and create contest PDFs.\n' +
                         'genpdf: generates problem and tutorial PDFs.\n')
     parser.add_argument('problem_path', help='path to the problem.',
                         nargs='+')
@@ -57,7 +56,7 @@ def build_contest_pdf() -> None:
         build_pdf(folder, output_folder, options)
         basename = os.path.basename(folder)
         problem_pdf_l.append(os.path.join(output_folder, basename+'.pdf'))
-        if os.path.exists(folder + '-tutorial.pdf'):
+        if os.path.exists(os.path.join(folder, basename+'-tutorial.pdf')):
             tutorial_pdf_l.append(os.path.join(
                 output_folder, basename+'-tutorial.pdf'))
     # Merge PDFs
@@ -67,11 +66,16 @@ def build_contest_pdf() -> None:
     merge_pdfs(problem_pdf_l, merge_pdf)
     if (tutorial_pdf_l):
         merge_pdfs(tutorial_pdf_l, merge_tutorial_pdf)
-    # Remove problems PDFs
+    # Remove problems PDFs and ignore PDFs which are from 
+    # the same folder as the contest.
     for f in problem_pdf_l:
-        os.remove(f)
+        folder_name = os.path.basename(output_folder) + '.pdf'
+        if folder_name != os.path.basename(f):
+            os.remove(f)
     for f in tutorial_pdf_l:
-        os.remove(f)
+        folder_name = os.path.basename(output_folder) + '-tutorial.pdf'
+        if folder_name != os.path.basename(f):
+            os.remove(f)
     if output_folder not in problem_folder_l:
         os.remove(os.path.join(output_folder, 'maratona.cls'))
 
@@ -101,19 +105,16 @@ def verify_problem(problem: str) -> None:
 
     # Verify I/O for statements
     if args.mode == 'genpdf':
-        if not os.path.exists(os.path.join(problem, 'input')):
-            print(problem, "path doesn't have an input folder.")
-            sys.exit(1)
-        if not os.path.exists(os.path.join(problem, 'output')):
-            print(problem, "path doesn't have an output folder.")
-            sys.exit(1)
+        verify_path(os.path.join(problem, 'input'))
+        verify_path(os.path.join(problem, 'output'))
+
     # Build problem if it is only initialized
     elif args.mode == 'build' and not os.path.exists(os.path.join(problem, 'bin')):
         command = ['python3', os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                            'build.py'), 'build', problem]
         p = subprocess.run(command, stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE, text=True)
-        verify_command(p, "Error building problem.")
+        verify_command(p, f"Error building problem {problem}.")
 
 
 if __name__ == '__main__':
