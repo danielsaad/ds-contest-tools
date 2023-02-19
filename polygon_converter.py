@@ -10,6 +10,7 @@ from utils import instance_paths, verify_problem_json, verify_path
 from jsonutils import parse_json
 from fileutils import get_statement_files
 from polygon_submitter import add_auth_parameters, verify_response
+from logger import info_log, error_log
 
 
 DEFAULT_LANGUAGE = 'english'
@@ -95,7 +96,6 @@ def copy_input_files() -> None:
 
 def copy_output_files() -> None:
     """Copy output files from the package to the problem folder."""
-    package_folder = Paths.instance().dirs['output_dir']
     problem_folder = Paths.instance().dirs['problem_dir']
     file_list = get_output_list()
     destination = os.path.join(problem_folder, 'output')
@@ -120,38 +120,61 @@ def copy_interactive_files() -> None:
         shutil.copy(filepath, os.path.join(destination, new_filename))
 
 
-def copy_validator() -> None:
-    """Copy validator from package to problem folder."""
-    package_folder = Paths.instance().dirs['output_dir']
-    problem_folder = Paths.instance().dirs['problem_dir']
-    validator = os.path.join(*[package_folder, 'files', 'validator.cpp'])
-    destination = os.path.join(*[problem_folder, 'src', 'validator.cpp'])
-    shutil.copy(validator, destination)
-
-
-def copy_generator(script) -> None:
+def copy_generator(script: str) -> None:
     """Copy generators from package to problem folder."""
+    info_log("Copying generators.")
     package_folder = Paths.instance().dirs['output_dir']
     problem_folder = Paths.instance().dirs['problem_dir']
-    for file in os.listdir(os.path.join(package_folder, 'files')):
-        if not file.startswith('generator'):
-            continue
-        generator = os.path.join(*[package_folder, 'files', file])
-        destination = os.path.join(*[problem_folder, 'src', file])
-        shutil.copy(generator, destination)
+    generator_list = set()
 
-    if script != '':
+    # Copy script generators
+    if script != '':   
+        script_lines = script.split('\n')
+        for line in script_lines:
+            if line != '':
+                generator_list.add(line.split()[0])
+
+        for file in generator_list:
+            file += '.cpp'
+            generator = os.path.join(*[package_folder, 'files', file])
+            if not os.path.exists(generator):
+                error_log(f"Generator {generator} not found.")
+                continue
+            destination = os.path.join(*[problem_folder, 'src', file])
+            shutil.copy(generator, destination)
+        # Write script
         with open(os.path.join(*[problem_folder, 'src', 'script.sh']), 'w') as f:
             f.write(script)
+
+    # Copy standard DS generator
+    ds_generator = 'generator.cpp'
+    ds_gen_path = os.path.join(package_folder, 'files', ds_generator)
+    if os.path.exists(ds_gen_path) and ds_generator not in generator_list:
+        destination = os.path.join(*[problem_folder, 'src', ds_generator])
+        shutil.copy(ds_gen_path, destination)
 
 
 def copy_source_files(file_name: str) -> None:
     """Copy source files from package to problem folder."""
     package_folder = Paths.instance().dirs['output_dir']
     problem_folder = Paths.instance().dirs['problem_dir']
-    checker = os.path.join(*[package_folder, 'files', file_name])
+    file = os.path.join(*[package_folder, 'files', file_name])
     destination = os.path.join(*[problem_folder, 'src', file_name])
-    shutil.copy(checker, destination)
+    shutil.copy(file, destination)
+
+
+def copy_source_folder() -> None:
+    """Copy source files from package to problem folder."""
+    package_folder = Paths.instance().dirs['output_dir']
+    problem_folder = Paths.instance().dirs['problem_dir']
+    source_folder = os.path.join(package_folder, 'files')
+
+    # Only copy cpp files
+    source_files = [os.path.join(source_folder, x) for x in os.listdir(
+        source_folder) if x.endswith('.cpp')]
+    destination = os.path.join(problem_folder, 'src')
+    for f in source_files:
+        shutil.copy(f, destination)
 
 
 def copy_solutions() -> None:
@@ -167,7 +190,33 @@ def copy_solutions() -> None:
         shutil.copy(f, destination)
 
 
-def verify_interactive(problem_id: str) -> bool:
+def copy_checker(problem_id: str) -> None:
+    content = get_polygon_response(dict(), 'problem.checker', problem_id)
+    content = json.loads(content)
+    copy_source_files(content['result'])
+
+
+def copy_validator(problem_id: str) -> None:
+    content = get_polygon_response(dict(), 'problem.validator', problem_id)
+    content = json.loads(content)
+    copy_source_files(content['result'])
+
+
+def copy_interactor(problem_id: str) -> None:
+    content = get_polygon_response(dict(), 'problem.interactor', problem_id)
+    content = json.loads(content)
+    copy_source_files(content['result'])
+
+
+def get_local_interactive() -> bool:
+    """Get interactive parameter from statement folder."""
+    package_folder = Paths.instance().dirs['output_folder']
+    interactive_path = os.path.join(
+        package_folder, 'statement-sections', 'english', 'interaction.tex')
+    return os.path.exists(interactive_path)
+
+
+def get_remote_interactive(problem_id: str) -> bool:
     content = get_polygon_response(dict(), 'problem.info', problem_id)
     content = json.loads(content)
     return content['result']['interactive']
@@ -311,7 +360,6 @@ def update_problem_metadata(title, solutions, interactive) -> None:
     package_json = parse_json(os.path.join(
         *[package_folder, 'statements', 'english', 'problem-properties.json']))
     problem_metadata = parse_json(json_path)
-    verify_problem_json(problem_metadata)
 
     # Update problem.json
     problem_metadata['problem']['subject'] = tags
@@ -334,7 +382,8 @@ def update_problem_metadata(title, solutions, interactive) -> None:
 def convert_problem(local, problem_id):
     """Convert package from Polygon to DS."""
     xml_data = get_data_xml()
-    interactive = verify_interactive(problem_id)
+    # Polygon packages do not contain the interactive parameter
+    interactive = get_local_interactive() if local else get_remote_interactive(problem_id)
     package_data = get_package_data(interactive)
 
     # Copy data from package to problem folder
@@ -342,14 +391,22 @@ def convert_problem(local, problem_id):
     copy_input_files()
     copy_output_files()
     copy_solutions()
-    copy_source_files('checker.cpp')
-    copy_source_files('validator.cpp')
-    if interactive:
-        copy_source_files('interactor.cpp')
-        copy_interactive_files()
+
+    # In local problems, there is not a way to know the
+    # source files names, so the user has to change it
+    # manually.
+    if local:
+        copy_source_folder()
+        print("Change name of source files to DS standard:\nchecker.cpp | validator.cpp | interactor.cpp")
+    else:
+        copy_checker(problem_id)
+        copy_validator(problem_id)
+        copy_generator(xml_data['script'])
+        if interactive:
+            copy_interactor(problem_id)
+            copy_interactive_files()
 
     write_statement(package_data, interactive)
-    copy_generator(xml_data['script'])
     update_problem_metadata(package_data['title'],
                             xml_data['solutions'], interactive)
     if not local:
@@ -410,11 +467,12 @@ def download_package_polygon(problem_id):
 
 def get_polygon_problem(problem_folder, local):
     """Verify source from problem package and convert it."""
-    problem_id = input('ID: ')
+    problem_id = ""
     if local:
         verify_path(local)
         instance_paths(problem_folder, local)
     else:
+        problem_id = input('ID: ')
         instance_paths(problem_folder, os.path.join(
                        problem_folder, 'temp_package'))
         download_package_polygon(problem_id)
