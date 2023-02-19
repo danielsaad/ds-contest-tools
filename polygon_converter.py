@@ -217,11 +217,17 @@ def copy_interactor(problem_id: str) -> None:
 
 
 def get_local_interactive() -> bool:
-    """Get interactive parameter from statement folder."""
-    package_folder = Paths.instance().dirs['output_dir']
-    interactive_path = os.path.join(
-        package_folder, 'statement-sections', 'english', 'interaction.tex')
-    return os.path.exists(interactive_path)
+    """Get interactive parameter from user."""
+    while True:
+        interactive = input("Is problem interactive? (Y/n) ")
+        if interactive.lower().startswith('y'):
+            return True
+        if interactive.lower().startswith('n'):
+            return False
+    # package_folder = Paths.instance().dirs['output_dir']
+    # interactive_path = os.path.join(
+    #     package_folder, 'statement-sections', 'english', 'interaction.tex')
+    # return os.path.exists(interactive_path)
 
 
 def get_remote_interactive(problem_id: str) -> bool:

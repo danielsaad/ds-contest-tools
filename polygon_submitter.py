@@ -188,28 +188,26 @@ def save_files(solutions: dict) -> list:
             params_list.append(save_solution(solution_path, key))
             solution_files.append(s)
 
-    # Save auxiliar and source files
+    # Save resource, source and aux files
     setters = []
     for file in os.listdir(src_dir):
+        if file == 'testlib.h':
+            continue
         if file in solution_files or file.endswith('.sh'):
             continue
-        elif file.startswith('checker'):
+        if file.endswith('.h'):
             params_list.append(
-                save_file(os.path.join(src_dir, file), 'source'))
+                save_file(os.path.join(src_dir, file), 'resource'))
+            continue
+
+        params_list.append(save_file(os.path.join(src_dir, file), 'source'))
+        if file.startswith('checker'):
             setters.append(set_checker(file))
         elif file.startswith('validator'):
-            params_list.append(
-                save_file(os.path.join(src_dir, file), 'source'))
             setters.append(set_validator(file))
         elif file.startswith('interactor'):
-            params_list.append(
-                save_file(os.path.join(src_dir, file), 'source'))
             setters.append(set_interactor(file))
-        elif file.startswith('generator'):
-            params_list.append(
-                save_file(os.path.join(src_dir, file), 'source'))
-        else:
-            params_list.append(save_file(os.path.join(src_dir, file), 'aux'))
+
     return params_list + setters
 
 
