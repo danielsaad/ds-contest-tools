@@ -457,7 +457,7 @@ def get_polygon_response(params, method, problem_id):
 
     url = 'https://polygon.codeforces.com/api/'
     response = requests.post(url + method, files=params)
-    verify_response(response, method)
+    verify_response(response, method, params)
     return response.content
 
 

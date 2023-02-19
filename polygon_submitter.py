@@ -8,7 +8,7 @@ import hashlib
 import requests
 from metadata import Paths
 from jsonutils import parse_json
-from logger import info_log, error_log
+from logger import info_log, error_log, debug_log
 from fileutils import get_statement_files
 from utils import convert_to_bytes, instance_paths, verify_problem_json, verify_path
 
@@ -348,15 +348,22 @@ def add_requests_info(requests_list) -> list:
     return requests_list
 
 
-def verify_response(response, method) -> None:
+def verify_response(response, method, params) -> None:
     """Verify if the request from Polygon was successfull."""
     if response.status_code == 200:
         info_log(f'Request {method} successfull.')
     else:
         if response.status_code == 400:
             content = json.loads(response.content.decode())
+            parameters = 'Parameters:\n'
+            for key, value in params.items():
+                parameters += f"{key}: {value}\n"
+
             error_log("API status: " + content['status'])
-            error_log(content['comment'])
+            error_log(content['comment'] + 
+                      '\nCheck debug.log for parameters information')
+            debug_log("API status: " + content['status'])
+            debug_log(parameters)
             print(f"Wrong parameter of {method} method.")
         else:
             print("Could not connect to the API.")
@@ -377,4 +384,4 @@ def send_to_polygon(problem_folder) -> None:
     url = 'https://polygon.codeforces.com/api/'
     for method, params in requests_list:
         response = conn.post(url + method, files=params)
-        verify_response(response, method)
+        verify_response(response, method, params)
