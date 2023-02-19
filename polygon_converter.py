@@ -131,7 +131,10 @@ def copy_generator(script: str) -> None:
     generator_list = set()
 
     # Copy script generators
-    if script != '':   
+    if script != '':
+        with open(os.path.join(*[problem_folder, 'src', 'script.sh']), 'w') as f:
+            f.write(script)
+
         script_lines = script.split('\n')
         for line in script_lines:
             if line != '':
@@ -145,9 +148,6 @@ def copy_generator(script: str) -> None:
                 continue
             destination = os.path.join(*[problem_folder, 'src', file])
             shutil.copy(generator, destination)
-        # Write script
-        with open(os.path.join(*[problem_folder, 'src', 'script.sh']), 'w') as f:
-            f.write(script)
 
     # Copy standard DS generator
     ds_generator = 'generator.cpp'
@@ -189,7 +189,7 @@ def copy_solutions() -> None:
     solution_folder = os.path.join(package_folder, 'solutions')
 
     source_files = [os.path.join(solution_folder, x) for x in os.listdir(
-        solution_folder) if not x.endswith('.desc')]
+        solution_folder) if (not x.endswith('.desc') and not x.endswith('.exe') and not x.endswith('.jar'))]
     destination = os.path.join(problem_folder, 'src')
     for f in source_files:
         shutil.copy(f, destination)
@@ -218,7 +218,7 @@ def copy_interactor(problem_id: str) -> None:
 
 def get_local_interactive() -> bool:
     """Get interactive parameter from statement folder."""
-    package_folder = Paths.instance().dirs['output_folder']
+    package_folder = Paths.instance().dirs['output_dir']
     interactive_path = os.path.join(
         package_folder, 'statement-sections', 'english', 'interaction.tex')
     return os.path.exists(interactive_path)
@@ -407,15 +407,15 @@ def convert_problem(local, problem_id):
     # manually.
     if local:
         copy_source_folder()
-        print("Change name of source files to DS standard:\nchecker.cpp | validator.cpp | interactor.cpp")
+        print("Change name of source files to DS standard:\n"
+              "checker.cpp | validator.cpp | interactor.cpp")
     else:
         copy_checker(problem_id)
         copy_validator(problem_id)
-        copy_generator(xml_data['script'])
         if interactive:
             copy_interactor(problem_id)
             copy_interactive_files()
-
+    copy_generator(xml_data['script'])
     write_statement(package_data, interactive)
     update_problem_metadata(package_data['title'],
                             xml_data['solutions'], interactive)
