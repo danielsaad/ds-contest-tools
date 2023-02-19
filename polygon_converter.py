@@ -6,11 +6,11 @@ import zipfile
 import requests
 import xml.etree.ElementTree as ET
 from metadata import Paths
-from utils import instance_paths, verify_problem_json, verify_path
 from jsonutils import parse_json
-from fileutils import get_statement_files
-from polygon_submitter import add_auth_parameters, verify_response
 from logger import info_log, error_log
+from fileutils import get_statement_files
+from utils import instance_paths, verify_path
+from polygon_submitter import add_auth_parameters, verify_response
 
 
 DEFAULT_LANGUAGE = 'english'
@@ -86,6 +86,7 @@ def get_interactive_list() -> list:
 
 def copy_input_files() -> None:
     """Copy input files from the package to the problem folder."""
+    info_log("Copying input files.")
     problem_folder = Paths.instance().dirs['problem_dir']
     file_list = get_input_list()
     destination = os.path.join(problem_folder, 'input')
@@ -96,6 +97,7 @@ def copy_input_files() -> None:
 
 def copy_output_files() -> None:
     """Copy output files from the package to the problem folder."""
+    info_log("Copying output files.")
     problem_folder = Paths.instance().dirs['problem_dir']
     file_list = get_output_list()
     destination = os.path.join(problem_folder, 'output')
@@ -108,6 +110,7 @@ def copy_output_files() -> None:
 
 def copy_interactive_files() -> None:
     """Copy interactive statement files from the package to the problem folder."""
+    info_log("Copying interactive statement files.")
     problem_folder = Paths.instance().dirs['problem_dir']
     file_list = get_interactive_list()
     destination_input = os.path.join(problem_folder, 'input')
@@ -138,7 +141,7 @@ def copy_generator(script: str) -> None:
             file += '.cpp'
             generator = os.path.join(*[package_folder, 'files', file])
             if not os.path.exists(generator):
-                error_log(f"Generator {generator} not found.")
+                error_log(f"Generator {os.path.relpath(generator)} not found.")
                 continue
             destination = os.path.join(*[problem_folder, 'src', file])
             shutil.copy(generator, destination)
@@ -165,6 +168,7 @@ def copy_source_files(file_name: str) -> None:
 
 def copy_source_folder() -> None:
     """Copy source files from package to problem folder."""
+    info_log("Copying source folder")
     package_folder = Paths.instance().dirs['output_dir']
     problem_folder = Paths.instance().dirs['problem_dir']
     source_folder = os.path.join(package_folder, 'files')
@@ -179,6 +183,7 @@ def copy_source_folder() -> None:
 
 def copy_solutions() -> None:
     """Copy solution files from package to problem folder."""
+    info_log("Copying solutions.")
     package_folder = Paths.instance().dirs['output_dir']
     problem_folder = Paths.instance().dirs['problem_dir']
     solution_folder = os.path.join(package_folder, 'solutions')
@@ -191,18 +196,21 @@ def copy_solutions() -> None:
 
 
 def copy_checker(problem_id: str) -> None:
+    info_log("Copying checker.")
     content = get_polygon_response(dict(), 'problem.checker', problem_id)
     content = json.loads(content)
     copy_source_files(content['result'])
 
 
 def copy_validator(problem_id: str) -> None:
+    info_log("Copying validator.")
     content = get_polygon_response(dict(), 'problem.validator', problem_id)
     content = json.loads(content)
     copy_source_files(content['result'])
 
 
 def copy_interactor(problem_id: str) -> None:
+    info_log("Copying interactor.")
     content = get_polygon_response(dict(), 'problem.interactor', problem_id)
     content = json.loads(content)
     copy_source_files(content['result'])
@@ -224,6 +232,7 @@ def get_remote_interactive(problem_id: str) -> bool:
 
 def init_problem(interactive: bool) -> None:
     """Initialize problem folder before the conversion."""
+    info_log("Initializing problem folder.")
     tool_path = os.path.dirname(os.path.abspath(__file__))
     folder = os.path.join(tool_path, 'arquivos')
     problem_folder = Paths.instance().dirs['problem_dir']
@@ -244,6 +253,7 @@ def init_problem(interactive: bool) -> None:
 
 def write_statement(package_data: dict, interactive: bool) -> None:
     """Write statement files in the problem folder."""
+    info_log("Writing statement files.")
     problem_folder = Paths.instance().dirs['problem_dir']
     statement_dir = os.path.join(problem_folder, 'statement')
 
