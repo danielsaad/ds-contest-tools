@@ -27,7 +27,9 @@ class Status(Enum):
     AC_TLE = 7
     TLE_MLE = 8
 
-
+class ProblemAnswer(Enum):
+    CORRECT = True
+    WRONG = False
 
 """ Java definitions """
 JAVA_COMPILER = ['javac']
@@ -201,11 +203,11 @@ def create_thread(binary_file, input_folder, output_folder, input_files: list, p
             process.start()
         for process in processes:
             process.join()
-
         processes = Process(target=write_to_log, args=(output_dict,))
         processes.start()
         solution_status(output_dict, expected_result)
         processes.join()
+
 
 def write_to_log(output_dict):
     for i in range(len(output_dict)):
@@ -227,13 +229,33 @@ def write_to_log(output_dict):
         debug_log(f'Memory: {output_dict[i][2]/1000} KB')
 
 
-def solution_status(output_dict, expected_result):
-    tmp = dict()
-    for test_case, info in output_dict.items():
-        if tmp.get(info[0]) == None:
-            tmp[info[0]] = 1
+def solution_status(output_dict: DictProxy, expected_result: str) -> tuple:
+    test_cases_status = dict()
+    solution_result = ProblemAnswer.WRONG
+    for _, info in output_dict.items():
+        if test_cases_status.get(info[0]) == None:
+            test_cases_status[info[0]] = 1
         else:
-            tmp[info[0]] = tmp[info[0]] + 1
+            test_cases_status[info[0]] = test_cases_status[info[0]] + 1
+    
+    expected_status = {
+        "main-ac" : [Status.AC],
+        "alternative-ac" : [Status.AC],
+        "wrong-anwser" : [Status.WA],
+        "time-limit" : [Status.HARD_TLE, Status.SOFT_TLE],
+        "runtime-error" : [Status.RE],
+        "memory-limit" : [Status.MLE],
+        "presentation-error" : [Status.PE] 
+    }
+
+    for result_status, _ in test_cases_status.items():
+        if result_status in expected_status[expected_result]:
+            solution_result = ProblemAnswer.CORRECT
+        elif result_status not in expected_status[expected_result] and result_status != Status.AC:
+            solution_result = ProblemAnswer.WRONG
+            break
+    
+    return test_cases_status, solution_result
 
     
 def memory_monitor(pid: int, memory_limit: int, event, con) -> None:
