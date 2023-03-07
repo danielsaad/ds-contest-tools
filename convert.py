@@ -12,13 +12,14 @@ import os
 import sys
 import argparse
 from json import dumps
+from getpass import getpass
 from sqtpm import convert_to_sqtpm
 from polygon_submitter import send_to_polygon
 from polygon_converter import get_polygon_problem
 
 
 def create_parser():
-    """Initialize the argparser of the tool."""
+    """Initialize tool parsers."""
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(
         title='list of commands',
@@ -32,11 +33,12 @@ def create_parser():
         'convert', help='Convert DS problem to another format')
     ds_parser.add_argument('format', choices=['BOCA', 'Polygon', 'SQTPM'],
                            help='BOCA: convert problem to BOCA.\n' +
-                           'Polygon: convert problem to Polygon.' + 
+                           'Polygon: convert problem to Polygon.' +
                            'SQTPM: convert problem to SQTPM.')
     ds_parser.add_argument(
         'problem_dir', help='Problem directory')
-    ds_parser.add_argument('output_dir', help='Folder of converted folder or ID of Polygon problem.')
+    ds_parser.add_argument(
+        'output_dir', help='Folder of converted folder or ID of Polygon problem.')
     ds_parser.set_defaults(function=lambda options: start_conversion(options))
 
     polygon_parser = subparsers.add_parser(
@@ -49,8 +51,6 @@ def create_parser():
 
     keys_parser = subparsers.add_parser(
         'change_keys', help='Change Polygon API keys')
-    keys_parser.add_argument('apiKey')
-    keys_parser.add_argument('secret')
     keys_parser.set_defaults(
         function=lambda options: change_polygon_keys(options))
 
@@ -59,13 +59,15 @@ def create_parser():
 
 
 def start_polygon_conversion(options):
+    """Convert problem from Polygon to DS."""
     if not options.local:
         verify_polygon_keys()
-    get_polygon_problem(options.problem_dir, options.problem_id, options.local)
+    get_polygon_problem(options.problem_dir, options.local)
     print('Problem converted successfully.')
 
 
 def start_conversion(options):
+    """Convert problem from DS to Polygon, SQTPM or BOCA."""
     if options.format == 'Polygon':
         verify_polygon_keys()
         send_to_polygon(options.problem_dir)
@@ -78,24 +80,29 @@ def start_conversion(options):
 
 
 def change_polygon_keys(options) -> None:
-    """Create new apiKey and secret file for connection with Polygon API."""
+    """Create or change keys for Polygon API."""
+    apiKey = getpass("apiKey: ")
+    secret = getpass("secret: ")
     keys = {
-        'apiKey': options.apiKey,
-        'secret': options.secret
+        'apiKey': apiKey,
+        'secret': secret
     }
-    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'secrets.json'), 'w') as f:
+    with open(os.path.join(os.path.dirname(
+            os.path.abspath(__file__)), 'secrets.json'), 'w') as f:
         f.write(dumps(keys))
 
-    print('Key saved. They are stored locally in the tool directory.')
+    print('Keys saved. They are stored locally in the tool directory.')
 
 
 def verify_polygon_keys() -> None:
+    """Check if Polygon API keys file is created."""
     tool_path = os.path.dirname(os.path.abspath(__file__))
     secrets_path = os.path.join(tool_path, 'secrets.json')
 
     if not os.path.exists(secrets_path):
         print("Keys are not defined. Use 'change_keys' to define it.")
         sys.exit(1)
+
 
 if __name__ == '__main__':
     create_parser()

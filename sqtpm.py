@@ -1,12 +1,17 @@
-from jsonutils import parse_json
-from metadata import Paths
 import os
+import sys
 import shutil
+from metadata import Paths
+from logger import info_log
 from utils import instance_paths
+from jsonutils import parse_json
 
 
-def create_config(showcases, stkmem, cputime) -> None:
+
+def create_config(showcases: str, stkmem: int, cputime: int) -> None:
+    """Create default config file with problem informations."""
     output_folder = Paths.instance().dirs['output_dir']
+    info_log("Creating config file.")
 
     config_content = f"""description = statement.html
 showcases = {showcases}
@@ -39,9 +44,10 @@ g++-args = -Wall -O3"""
         f.write(config_content)
 
 
-def create_html_statement(pdf_name) -> None:
-    """Create statement file for the problem PDF."""
+def create_html_statement(pdf_name: str) -> None:
+    """Create statement HTML file to show the problem PDF."""
     output_folder = Paths.instance().dirs['output_dir']
+    info_log("Creating HTML statement file.")
     html_content = f"""<object data="{pdf_name}.pdf" type="application/pdf" width="100%" height="500">
     <p>If the PDF was not rendered, use this <a href="{pdf_name}.pdf">to the PDF!</a></p>
 </object>"""
@@ -49,26 +55,19 @@ def create_html_statement(pdf_name) -> None:
         f.write(html_content)
 
 
-def copy_auxiliar_statement() -> None:
+def copy_pdf(pdf_name: str) -> None:
+    """Copy PDF of the problem."""
     problem_folder = Paths.instance().dirs['problem_dir']
     output_folder = Paths.instance().dirs['output_dir']
-    statement_folder = os.path.join(problem_folder, 'statement')
-    for file in os.listdir(statement_folder):
-        if not file.endswith('.tex'):
-            shutil.copy2(os.path.join(statement_folder, file),
-                         os.path.join(output_folder, file))
-
-
-def copy_pdf(pdf_name) -> None:
-    problem_folder = Paths.instance().dirs['problem_dir']
-    output_folder = Paths.instance().dirs['output_dir']
+    info_log("Copying problem PDF file.")
     pdf_name += '.pdf'
     shutil.copy2(os.path.join(problem_folder, pdf_name),
                  os.path.join(output_folder, pdf_name))
 
 
-def copy_source_files(main_solution) -> None:
-    """"""
+def copy_source_files(main_solution: str) -> None:
+    """Copy generators, scripts, checker and main solution
+    to the output folder."""
     problem_folder = Paths.instance().dirs['problem_dir']
     output_folder = Paths.instance().dirs['output_dir']
     script_folder = os.path.join(problem_folder, 'src', 'script.sh')
@@ -91,39 +90,51 @@ def copy_source_files(main_solution) -> None:
             file += '.cpp'
             generator = os.path.join(problem_folder, 'src', file)
             if not os.path.exists(generator):
-                continue
+                print(f"Generator {file} does not exist.")
+                sys.exit(1)
+            info_log(f"Copying {file} file.")
             destination = os.path.join(output_folder, 'src', file)
             shutil.copy(generator, destination)
 
     # Copy standard DS generator
     ds_generator = 'generator.cpp'
     ds_gen_path = os.path.join(problem_folder, 'src', ds_generator)
-    if os.path.exists(ds_gen_path) and ds_generator not in generator_list:
+    if os.path.exists(ds_gen_path):
+        info_log(f"Copying {ds_generator} file.")
         destination = os.path.join(output_folder, 'src', ds_generator)
         shutil.copy(ds_gen_path, destination)
 
     # Copy checker
-    shutil.copy2(os.path.join(problem_folder, 'src', 'checker.cpp'),
-                 os.path.join(output_folder, 'src', 'checker.cpp'))
+    checker = 'checker.cpp'
+    info_log(f"Copying {checker} file.")
+    shutil.copy2(os.path.join(problem_folder, 'src', checker),
+                 os.path.join(output_folder, 'src', checker))
 
     # Copy main solution
+    solution_name = f'main_solution{os.path.splitext(main_solution)[1]}'
+    info_log(f"Copying {main_solution} file.")
     shutil.copy2(os.path.join(problem_folder, 'src', main_solution),
-                 os.path.join(output_folder, 'src', f'main_solution{os.path.splitext(main_solution)[1]}'))
+                 os.path.join(output_folder, 'src', solution_name))
 
     # Copy testlib
+    info_log("Copying testlib.h file.")
     shutil.copy2(os.path.join(problem_folder, 'src', 'testlib.h'),
                  os.path.join(output_folder, 'src', 'testlib.h'))
 
 
 def copy_generator_script() -> None:
+    """Copy script to generate test cases for SQTPM."""
     output_folder = Paths.instance().dirs['output_dir']
+    info_log("Copying genio.sh script file.")
     shutil.copy2(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                              'arquivos', 'sqtpm_io.sh'),
-                 os.path.join(output_folder, 'runner.sh'))
+                              'arquivos', 'sqtpm.sh'),
+                 os.path.join(output_folder, 'genio.sh'))
 
 
-def create_makefile():
+def create_makefile() -> None:
+    """Create Makefile to compile source files for SQTPM."""
     output_folder = Paths.instance().dirs['output_dir']
+    info_log("Creating Makefile.")
     makefile_content = """SRC = $(wildcard *.cpp)
 BIN = $(patsubst %.cpp, %, $(SRC))
 DBG = $(patsubst %.cpp, %, $(SRC))
@@ -167,22 +178,22 @@ clean:
         f.write(makefile_content)
 
 
-def convert_to_sqtpm(problem_dir, output_dir) -> None:
+def convert_to_sqtpm(problem_dir: str, output_dir: str) -> None:
+    """Convert DS problem to SQTPM."""
     instance_paths(problem_dir, output_dir)
-
+    info_log("Starting DS -> SQTPM conversion.")
     problem_folder = Paths.instance().dirs['problem_dir']
     output_folder = Paths.instance().dirs['output_dir']
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
+    pdf_name = os.path.basename(os.path.normpath(problem_folder))
     os.makedirs(os.path.join(output_folder, 'src'), exist_ok=True)
 
-    pdf_name = os.path.basename(os.path.normpath(problem_folder))
     copy_pdf(pdf_name)
-    create_html_statement(pdf_name)
-    copy_auxiliar_statement()
+    copy_generator_script()
+    copy_source_files(problem_metadata['solutions']['main-ac'])
 
     create_makefile()
-    copy_source_files(problem_metadata['solutions']['main-ac'])
-    copy_generator_script()
+    create_html_statement(pdf_name)
     create_config(' '.join([str(x) for x in list(
         range(1, problem_metadata['io_samples'] + 1))]),
         problem_metadata['problem']['memory_limit_mb'],
