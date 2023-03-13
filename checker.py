@@ -98,7 +98,7 @@ def run_binary(binary_file: str, input_folder: str, output_folder: str,
 def run(submission_file: str, input_folder: str, output_folder: str,
         problem_limits: dict, expected_result: str) -> None:
     binary_file, ext = os.path.splitext(submission_file)
-    debug_log('Run binary ' + binary_file)
+    debug_log(f'Run solution {submission_file}')
     problem_folder = os.path.join(
         os.getcwd(), Paths.instance().dirs['problem_dir'])
     binary_file = os.path.join(problem_folder, 'bin', binary_file)
@@ -130,7 +130,8 @@ def run(submission_file: str, input_folder: str, output_folder: str,
     else:
         error_log(f'{submission_file} has an invalid extension')
         sys.exit(1)
-    debug_log('Total time elapsed: {0:.2f}:'.format(end_time - start_time))
+    debug_log(f'Total time elapsed: {end_time - start_time:.2f}\n')
+
     return output_dict
 
 
@@ -179,21 +180,35 @@ def run_solutions(input_folder, problem_metadata, all_solutions: bool) -> None:
                 for submission_file in files:
                     if submission_file:
                         info_log(f'Running {submission_file} solution')
-                        solution_info_dict[submission_file] = run(submission_file, input_folder,
-                                                                tmp_folder, problem_limits, expected_result)
+                        tmp_test_case_info: dict = run(submission_file, input_folder, tmp_folder, problem_limits, expected_result)
+                        tmp_solution_result: dict = solution_status(tmp_test_case_info, expected_result)
+                        solution_info_dict[submission_file] = {
+                            'test-case-info': tmp_test_case_info,
+                            'solution-result': tmp_solution_result
+                        }
+                
             else:
                 submission_file = files
                 info_log(f'Running {submission_file} solution')
-                solution_info_dict[submission_file] = run(submission_file, input_folder, tmp_folder,
-                    problem_limits, expected_result)
+                tmp_test_case_info: dict = run(submission_file, input_folder, tmp_folder, problem_limits, expected_result)
+                tmp_solution_result: dict = solution_status(tmp_test_case_info, expected_result)
+                solution_info_dict[submission_file] = {
+                    'test-case-info': tmp_test_case_info,
+                    'solution-result': tmp_solution_result
+                }
+                
+                
     else:
         expected_result = "main-ac"
         submission_file = solutions[expected_result]
         info_log(f'Running {submission_file} solution')
-        solution_info_dict[submission_file] = run(submission_file, input_folder, tmp_folder,
-            problem_limits, expected_result)
+        tmp_test_case_info: dict = run(submission_file, input_folder, tmp_folder, problem_limits, expected_result)
+        tmp_solution_result: dict = solution_status(tmp_test_case_info, expected_result)
+        solution_info_dict[submission_file] = {
+            'test-case-info': tmp_test_case_info,
+            'solution-result': tmp_solution_result
+        }
     shutil.rmtree(tmp_folder)
-    # TODO: refatorar a função solution status para ser chamada
     
 
 def create_thread(binary_file: str, input_folder: str, output_folder: str, input_files: list, problem_limits: dict, 
@@ -202,7 +217,7 @@ def create_thread(binary_file: str, input_folder: str, output_folder: str, input
     n_threads = 1 if solution_tp else max(cpu_count()//2, 1)
     info_dict = dict()
     with Manager() as manager:
-        output_dict = manager.dict()
+        output_dict: DictProxy = manager.dict()
         processes = [Process(target=run_binary, args=(
             binary_file, input_folder, output_folder, input_files, output_dict, problem_limits, idx, n_threads, interpreter)) for idx in range(n_threads)]
         for process in processes:
@@ -215,6 +230,7 @@ def create_thread(binary_file: str, input_folder: str, output_folder: str, input
         processes.join()
     
     return info_dict
+
 
 def write_to_log(output_dict: DictProxy) -> None:
     for i in range(len(output_dict)):
@@ -231,20 +247,22 @@ def write_to_log(output_dict: DictProxy) -> None:
             debug_log('ML: Memory limit exceeded')
         elif output_dict[i][0] == Status.PE:
             debug_log('PE: Presentation Error')
-        debug_log('Time elapsed: {0:.2f}'.format(
-            output_dict[i][1]) + ' seconds')
+        debug_log(f'Time elapsed: {output_dict[i][1]:.2f} seconds')
         debug_log(f'Memory: {output_dict[i][2]/1000} KB')
 
 
-def solution_status(output_dict: dict, expected_result: str) -> tuple:
-    test_cases_status = dict()
-    solution_result = ProblemAnswer.WRONG
-    for _, info in output_dict.items():
+def solution_status(test_case_info: dict, expected_result: str) -> dict:
+    test_cases_status: dict = dict()
+    solution_result: ProblemAnswer = ProblemAnswer.WRONG
+    solution_info: dict = dict()
+
+    for _, info in test_case_info.items():
         if test_cases_status.get(info[0]) == None:
             test_cases_status[info[0]] = 1
         else:
             test_cases_status[info[0]] = test_cases_status[info[0]] + 1
-    
+    solution_info['test-cases-status'] = test_cases_status
+
     expected_status = {
         "main-ac" : [Status.AC],
         "alternative-ac" : [Status.AC],
@@ -261,8 +279,9 @@ def solution_status(output_dict: dict, expected_result: str) -> tuple:
         elif result_status not in expected_status[expected_result] and result_status != Status.AC:
             solution_result = ProblemAnswer.WRONG
             break
+    solution_info['solution-result'] = solution_result
     
-    return test_cases_status, solution_result
+    return solution_info
 
     
 def memory_monitor(pid: int, memory_limit: int, event: Event, con: Connection) -> None:
