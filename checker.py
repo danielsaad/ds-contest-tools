@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-
 import os
 from signal import SIGKILL
 import subprocess
@@ -164,51 +163,50 @@ def run_checker(ans: str, inf: str, ouf: str) -> Status:
 # TODO - write documentation
 
 
-def run_solutions(input_folder, problem_metadata, all_solutions: bool) -> None:
-    time_limit = problem_metadata["problem"]["time_limit"]
-    memory_limit = problem_metadata["problem"]["memory_limit_mb"] * 2 ** 20
-    problem_limits = {'time_limit': time_limit,
+def run_solutions(input_folder: str, problem_metadata: dict, all_solutions: bool) -> dict:
+    time_limit: float = problem_metadata["problem"]["time_limit"]
+    memory_limit: int = problem_metadata["problem"]["memory_limit_mb"] * 2 ** 20
+    problem_limits: dict = {'time_limit': time_limit,
                       'memory_limit': memory_limit}
-    solutions = problem_metadata['solutions']
-    problem_folder = Paths.instance().dirs["problem_dir"]
-    tmp_folder = os.path.join(os.getcwd(), problem_folder, 'tmp_output')
-    solution_info_dict = dict()
-    os.makedirs(tmp_folder, exist_ok=True)
+    solutions: dict = problem_metadata['solutions']
+    problem_folder: str = Paths.instance().dirs["problem_dir"]
+    tmp_output_folder: str = os.path.join(os.getcwd(), problem_folder, 'tmp_output')
+    solutions_info_dict = dict()
+    os.makedirs(tmp_output_folder, exist_ok=True)
     if all_solutions:
         for expected_result, files in solutions.items():
             if isinstance(files, list):
                 for submission_file in files:
                     if submission_file:
                         info_log(f'Running {submission_file} solution')
-                        tmp_test_case_info: dict = run(submission_file, input_folder, tmp_folder, problem_limits, expected_result)
+                        tmp_test_case_info: dict = run(submission_file, input_folder, tmp_output_folder, problem_limits, expected_result)
                         tmp_solution_result: dict = solution_status(tmp_test_case_info, expected_result)
-                        solution_info_dict[submission_file] = {
+                        solutions_info_dict[submission_file] = {
                             'test-case-info': tmp_test_case_info,
                             'solution-result': tmp_solution_result
-                        }
-                
+                        }            
             else:
                 submission_file = files
                 info_log(f'Running {submission_file} solution')
-                tmp_test_case_info: dict = run(submission_file, input_folder, tmp_folder, problem_limits, expected_result)
+                tmp_test_case_info: dict = run(submission_file, input_folder, tmp_output_folder, problem_limits, expected_result)
                 tmp_solution_result: dict = solution_status(tmp_test_case_info, expected_result)
-                solution_info_dict[submission_file] = {
+                solutions_info_dict[submission_file] = {
                     'test-case-info': tmp_test_case_info,
                     'solution-result': tmp_solution_result
-                }
-                
-                
+                }    
     else:
         expected_result = "main-ac"
         submission_file = solutions[expected_result]
         info_log(f'Running {submission_file} solution')
-        tmp_test_case_info: dict = run(submission_file, input_folder, tmp_folder, problem_limits, expected_result)
+        tmp_test_case_info: dict = run(submission_file, input_folder, tmp_output_folder, problem_limits, expected_result)
         tmp_solution_result: dict = solution_status(tmp_test_case_info, expected_result)
-        solution_info_dict[submission_file] = {
+        solutions_info_dict[submission_file] = {
             'test-case-info': tmp_test_case_info,
             'solution-result': tmp_solution_result
         }
-    shutil.rmtree(tmp_folder)
+    shutil.rmtree(tmp_output_folder)
+
+    return solutions_info_dict
     
 
 def create_thread(binary_file: str, input_folder: str, output_folder: str, input_files: list, problem_limits: dict, 
@@ -257,10 +255,8 @@ def solution_status(test_case_info: dict, expected_result: str) -> dict:
     solution_info: dict = dict()
 
     for _, info in test_case_info.items():
-        if test_cases_status.get(info[0]) == None:
-            test_cases_status[info[0]] = 1
-        else:
-            test_cases_status[info[0]] = test_cases_status[info[0]] + 1
+        test_cases_status[info[0]] = test_cases_status.get(info[0], 0) + 1
+        
     solution_info['test-cases-status'] = test_cases_status
 
     expected_status = {
@@ -280,7 +276,7 @@ def solution_status(test_case_info: dict, expected_result: str) -> dict:
             solution_result = ProblemAnswer.WRONG
             break
     solution_info['solution-result'] = solution_result
-    
+        
     return solution_info
 
     
