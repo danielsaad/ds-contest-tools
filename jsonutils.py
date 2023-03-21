@@ -8,7 +8,7 @@ def parse_json(json_file: str) -> dict:
     json_data = {}
 
     if not os.path.isfile(json_file):
-        print(json_file, 'does not exists.')
+        print(os.path.basename(json_file), 'does not exists.')
         sys.exit(1)
 
     with open(json_file) as f:

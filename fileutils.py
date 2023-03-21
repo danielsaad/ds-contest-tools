@@ -1,9 +1,9 @@
 import os
-import sys
 import shutil
 from json import dumps
 from math import log10, floor
 from logger import info_log
+from utils import verify_path
 
 
 def rename_io(io_folder: str) -> None:
@@ -81,8 +81,5 @@ def get_statement_files(statement_folder: str, interactive=False) -> list:
     statement_files = [os.path.join(statement_folder, file)
                        for file in statement_files]
     # Verify if files exist
-    for file in statement_files:
-        if not os.path.exists(file):
-            print(f'{os.path.basename(file)} does not exist.')
-            sys.exit(0)
+    [verify_path(file) for file in statement_files]
     return statement_files
