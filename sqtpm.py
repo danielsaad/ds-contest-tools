@@ -7,8 +7,7 @@ from utils import instance_paths
 from jsonutils import parse_json
 
 
-
-def create_config(showcases: str, stkmem: int, cputime: int) -> None:
+def create_config(showcases: str, memory_limit: int, cputime: int) -> None:
     """Create default config file with problem informations."""
     output_folder = Paths.instance().dirs['output_dir']
     info_log("Creating config file.")
@@ -16,13 +15,12 @@ def create_config(showcases: str, stkmem: int, cputime: int) -> None:
     config_content = f"""description = statement.html
 showcases = {showcases}
 verifier = @checker
-three-parameters-verifier = on
-stkmem = {stkmem}
 cputime = {cputime}
+virtmem = {memory_limit * 1000}
 """
 
     config_content += """
-# languages = {C CPP Python3}
+# languages = {C C++ Python3 PDF}
 # startup = aaaa/mm/dd hh:mm:ss
 # deadline = aaaa/mm/dd hh:mm:ss
 # penalty = n
@@ -33,7 +31,6 @@ cputime = {cputime}
 # files = n,m
 # filenames = lista
 # backup = {on,off}
-# virtmem = n
 # limits = nome{:[t,v,s]=inteiro}
 
 gcc = /usr/bin/gcc
@@ -44,13 +41,13 @@ g++-args = -Wall -O3"""
         f.write(config_content)
 
 
-def create_html_statement(pdf_name: str) -> None:
+def create_html_statement(problem_name: str, pdf_name: str) -> None:
     """Create statement HTML file to show the problem PDF."""
     output_folder = Paths.instance().dirs['output_dir']
     info_log("Creating HTML statement file.")
-    html_content = f"""<object data="{pdf_name}.pdf" type="application/pdf" width="100%" height="500">
-    <p>If the PDF was not rendered, use this <a href="{pdf_name}.pdf">to the PDF!</a></p>
-</object>"""
+    html_content = f"""<iframe src="{problem_name}/{pdf_name}.pdf" scrolling="auto" width="100%" height="1500" frameborder="0">
+    Se o PDF não renderizou, utilize <a href="{problem_name}/{pdf_name}.pdf"> para o PDF!</a></p>
+</iframe>"""
     with open(os.path.join(output_folder, 'statement.html'), 'w') as f:
         f.write(html_content)
 
@@ -151,7 +148,7 @@ BINARIES = $(basename $(SRC) $(SRC_C) $(SRC_JAVA))
 
 C := gcc
 CPP := g++
-CXX_FLAGS := -Wall -O2
+CXX_FLAGS := -Wall -O2 -static
 JV = javac
 
 .PHONY: all release clean
@@ -193,8 +190,8 @@ def convert_to_sqtpm(problem_dir: str, output_dir: str) -> None:
     copy_source_files(problem_metadata['solutions']['main-ac'])
 
     create_makefile()
-    create_html_statement(pdf_name)
-    create_config(' '.join([str(x) for x in list(
+    create_html_statement(os.path.basename(os.path.normpath(output_folder)), pdf_name)
+    create_config(' '.join([str(x).zfill(3) for x in list(
         range(1, problem_metadata['io_samples'] + 1))]),
         problem_metadata['problem']['memory_limit_mb'],
         problem_metadata['problem']['time_limit'])

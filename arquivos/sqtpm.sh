@@ -49,8 +49,8 @@ tests_path="src/tmp"
 for testcase in $tests_path/*
 do
 	old_name="$(basename $testcase)"
-	new_name=`printf %04d ${old_name}`
-	mv "$tests_path"/"$old_name" "$tests_path"/"$new_name"
+	new_name=`printf %03d ${old_name}`
+	mv "$tests_path"/"$old_name" "$tests_path"/"$new_name" 2>/dev/null
 done
 
 # Move files and rename them
@@ -58,14 +58,14 @@ index=1
 for testcase in $tests_path/*
 do
 	test_name=$(basename $testcase)
-	# Remove leading zeros
-	index=`echo $test_name | awk '{printf "%d\n",$0;}'`
+	zero_index=`printf %03d ${index}`
 	# Check next index not used
-	while [ -f "$index".in ]
+	while [ -f "$zero_index".in ]
 	do
 		((index++))
+		zero_index=`printf %03d ${index}`
 	done
-	mv "$tests_path"/"$test_name" "$index".in
+	mv "$tests_path"/"$test_name" "$zero_index".in
 done
 
 # Generate output of tests
