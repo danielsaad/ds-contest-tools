@@ -5,6 +5,7 @@ from metadata import Paths
 from logger import info_log
 from utils import instance_paths
 from jsonutils import parse_json
+from utils import verify_problem_json, verify_path
 
 
 def create_config(showcases: str, memory_limit: int, cputime: int) -> None:
@@ -34,9 +35,9 @@ virtmem = {memory_limit * 1000}
 # limits = nome{:[t,v,s]=inteiro}
 
 gcc = /usr/bin/gcc
-gcc-args = -Wall -O3
+gcc-args = -Wall -O3 -static
 g++ = /usr/bin/g++
-g++-args = -Wall -O3"""
+g++-args = -Wall -O3 -static"""
     with open(os.path.join(output_folder, 'config'), 'w') as f:
         f.write(config_content)
 
@@ -45,7 +46,7 @@ def create_html_statement(problem_name: str, pdf_name: str) -> None:
     """Create statement HTML file to show the problem PDF."""
     output_folder = Paths.instance().dirs['output_dir']
     info_log("Creating HTML statement file.")
-    html_content = f"""<iframe src="{problem_name}/{pdf_name}.pdf" scrolling="auto" width="100%" height="1500" frameborder="0">
+    html_content = f"""<iframe src="{problem_name}/{pdf_name}.pdf" scrolling="auto" width="100%" height="1000" frameborder="0">
     Se o PDF não renderizou, utilize <a href="{problem_name}/{pdf_name}.pdf"> para o PDF!</a></p>
 </iframe>"""
     with open(os.path.join(output_folder, 'statement.html'), 'w') as f:
@@ -58,6 +59,7 @@ def copy_pdf(pdf_name: str) -> None:
     output_folder = Paths.instance().dirs['output_dir']
     info_log("Copying problem PDF file.")
     pdf_name += '.pdf'
+    verify_path(os.path.join(problem_folder, pdf_name))
     shutil.copy2(os.path.join(problem_folder, pdf_name),
                  os.path.join(output_folder, pdf_name))
 
@@ -103,19 +105,25 @@ def copy_source_files(main_solution: str) -> None:
 
     # Copy checker
     checker = 'checker.cpp'
+    checker_path = os.path.join(problem_folder, 'src', checker)
+    verify_path(checker_path)
     info_log(f"Copying {checker} file.")
-    shutil.copy2(os.path.join(problem_folder, 'src', checker),
+    shutil.copy2(checker_path,
                  os.path.join(output_folder, 'src', checker))
 
     # Copy main solution
     solution_name = f'main_solution{os.path.splitext(main_solution)[1]}'
+    solution_path = os.path.join(problem_folder, 'src', main_solution)
+    verify_path(solution_path)
     info_log(f"Copying {main_solution} file.")
-    shutil.copy2(os.path.join(problem_folder, 'src', main_solution),
+    shutil.copy2(solution_path,
                  os.path.join(output_folder, 'src', solution_name))
 
     # Copy testlib
+    testlib_path = os.path.join(problem_folder, 'src', 'testlib.h')
+    verify_path(testlib_path)
     info_log("Copying testlib.h file.")
-    shutil.copy2(os.path.join(problem_folder, 'src', 'testlib.h'),
+    shutil.copy2(testlib_path,
                  os.path.join(output_folder, 'src', 'testlib.h'))
 
 
@@ -148,7 +156,7 @@ BINARIES = $(basename $(SRC) $(SRC_C) $(SRC_JAVA))
 
 C := gcc
 CPP := g++
-CXX_FLAGS := -Wall -O2 -static
+CXX_FLAGS := -Wall -O3 -static
 JV = javac
 
 .PHONY: all release clean
@@ -182,6 +190,7 @@ def convert_to_sqtpm(problem_dir: str, output_dir: str) -> None:
     problem_folder = Paths.instance().dirs['problem_dir']
     output_folder = Paths.instance().dirs['output_dir']
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
+    verify_problem_json(problem_metadata)
     pdf_name = os.path.basename(os.path.normpath(problem_folder))
     os.makedirs(os.path.join(output_folder, 'src'), exist_ok=True)
 
