@@ -113,9 +113,12 @@ def write_test_cases_tbody(solutions_info_dict: dict, solutions: list, f_out: io
             test_case_info: list = solutions_info_dict[solution
                                                        ]['test-case-info'][i]
             test_color_class, test_status = test_case_status(test_case_info)
+            memo_info: int = test_case_info[2]
+            exec_time: float = test_case_info[1]
             print(
-                f'\t<td class="{test_color_class}">{test_status}</td>', file=f_out)
+                f'\t<td class="{test_color_class}">{test_status} | {memo_info // 1000} | {exec_time:.2f}</td>', file=f_out)
         print(f'</tr>', file=f_out)
+        
     tbody = """
                             </tbody>
                         </table>
@@ -254,4 +257,3 @@ def print_to_html(problem_metadata: str, solutions_info_dict: dict) -> None:
         write_nav_bar(f_out)
         write_main(solutions_info_dict, f_out)
         write_footer(f_out)
-    open_new(html_filepath)
