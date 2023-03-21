@@ -5,15 +5,20 @@ import subprocess
 from metadata import Paths
 from config import custom_key
 from jsonutils import parse_json
-from utils import verify_command
+from utils import verify_command, verify_problem_json, verify_path
 from checker import run_solutions
-from logger import info_log, error_log
+from logger import info_log, error_log, debug_log
+from htmlutils import print_to_html
 
 
 def build_executables() -> None:
     """Run Makefile to create release and debug executables."""
     old_cwd = os.getcwd()
     os.chdir(Paths.instance().dirs["problem_dir"])
+
+    # Verify necessary files
+    verify_path(os.path.join('src', 'testlib.h'))
+    verify_path(os.path.join('src', 'checker.cpp'))
 
     info_log("Compiling executables")
     p = subprocess.run(['make', '-j'],
@@ -31,6 +36,7 @@ def run_programs(all_solutions) -> None:
     os.makedirs(input_folder, exist_ok=True)
     os.makedirs(output_folder, exist_ok=True)
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
+    verify_problem_json(problem_metadata)
 
     old_cwd = os.getcwd()
     os.chdir(input_folder)
@@ -41,28 +47,13 @@ def run_programs(all_solutions) -> None:
     produce_outputs(problem_metadata)
     os.chdir(old_cwd)
     info_log("Running solutions")
-    run_solutions(input_folder, problem_metadata, all_solutions)
+    solutions_info_dict: dict = run_solutions(input_folder, problem_metadata, all_solutions)
+    print_to_html(problem_metadata, solutions_info_dict)
 
 
-def validate_inputs() -> None:
-    """Checks if the input files are correctly formatted 
-    by running the validator file.
-    """
-    input_files = [f for f in os.listdir() if os.path.isfile(f)
-                   and not f.endswith('.interactive')]
-    input_files.sort(key=custom_key)
-    for fname in input_files:
-        with open(fname) as f:
-            p = subprocess.Popen([os.path.join('../bin', 'validator')],
-                                 stdin=f, stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE, text=True)
-            out, err = p.communicate()
-            if (out or err):
-                error_log(out)
-                error_log(err)
-                print("Failed validation on input.", fname)
-                exit(1)
 
+def encode_tests(input_files: list) -> dict:
+    """Generates hash dictionary of the content of input files."""
     tests = dict()
     for fname in input_files:
         with open(fname, 'rb') as f:
@@ -71,11 +62,38 @@ def validate_inputs() -> None:
             tests[encoded].append(fname)
         else:
             tests[encoded] = [fname]
+    return tests
+
+
+def validate_inputs() -> None:
+    """Checks if the input files are correctly formatted 
+    by running the validator file.
+    """
+    validator_path = os.path.join('..', 'bin', 'validator')
+    verify_path(validator_path)
+
+    input_files = [f for f in os.listdir() if os.path.isfile(f)
+                   and not f.endswith('.interactive')]
+    input_files.sort(key=custom_key)
+    for fname in input_files:
+        with open(fname) as f:
+            p = subprocess.Popen([validator_path],
+                                 stdin=f, stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE, text=True)
+            out, err = p.communicate()
+            if (out or err):
+                error_log(out)
+                error_log(err)
+                print("Failed validation on input", fname)
+                exit(1)
+
     equal_tests = 0
-    for key in tests:
-        if len(tests[key]) > 1:
-            equal_tests += len(tests[key])
-            info_log("Testcases " + ', '.join(tests[key]) + " are equal.")
+    encoded_tests = encode_tests(input_files)
+    for key in encoded_tests:
+        if len(encoded_tests[key]) > 1:
+            equal_tests += len(encoded_tests[key])
+            info_log("Testcases " +
+                     ', '.join(encoded_tests[key]) + " are equal.")
 
     if (equal_tests):
         print("All test cases must be different, however there are " +
@@ -87,7 +105,10 @@ def generate_inputs() -> None:
     """Generates input files from the generator file."""
     scripts = []
     ds_generator = True
-    script_path = os.path.join('../src', 'script.sh')
+    script_path = os.path.join('..', 'src', 'script.sh')
+    generator_path = os.path.join('..', 'bin', 'generator')
+
+    # Verify existance of at least one generator
     if os.path.exists(script_path):
         with open(script_path, 'r') as f:
             scripts = f.readlines()
@@ -96,30 +117,46 @@ def generate_inputs() -> None:
             if script.startswith('generator '):
                 ds_generator = False
                 break
+    elif not os.path.exists(generator_path):
+        print("Error. No generators or scripts found.")
+        sys.exit(1)
 
-    if ds_generator:
-        generator_command = os.path.join('../bin', 'generator')
-        info_log('Generating inputs of generator')
-        p = subprocess.run(generator_command, stdout=subprocess.PIPE,
+    # Verify and run a DS generator
+    if ds_generator and os.path.exists(generator_path):
+        info_log("Generating inputs of generator")
+        p = subprocess.run(generator_path, stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE, text=True)
         verify_command(p, "Error generating inputs.")
 
-    index = len(os.listdir()) + 1
-    for script in scripts:
-        info_log(f'Generating {index} testcase from script')
-        
-        script = script.split()
-        generator_path = os.path.join('../bin', script[0])
-        if not os.path.exists(generator_path):
-            print(f'Generator {os.path.basename(generator_path)} does not exist.')
-            sys.exit(1)
+    # Prepare input for script generation
+    input_files = [f for f in os.listdir() if os.path.isfile(f)
+                   and not f.endswith('.interactive')]
+    input_files.sort(key=custom_key)
+    encoded_tests = encode_tests(input_files)
 
-        script[0] = os.path.join('../bin', script[0])
+    index = len(input_files) + 1
+    for script in scripts:
+        debug_log(f"Generating script '{script.rstrip()}'.")
+        script = script.split()
+        generator_path = os.path.join(*['..', 'bin', script[0]])
+        verify_path(generator_path)
+
+        script[0] = generator_path
         p = subprocess.run([*script], stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE, text=True)
+        script_result = p.stdout
+        p.stdout = ""
         verify_command(p, "Error generating inputs.")
+
+        temp_test = hashlib.sha1(script_result.encode()).digest()
+        if temp_test in encoded_tests:
+            debug_log(f"Script generated repeated testcase. Ignoring...")
+            continue
+        encoded_tests[temp_test] = script
+        debug_log(f"Script generated successfully.")
+        info_log(f"Generating testcase {index} from script.")
         with open(str(index), 'w') as input_file:
-            input_file.write(p.stdout)
+            input_file.write(script_result)
         index += 1
 
 
@@ -127,39 +164,41 @@ def produce_outputs(problem_metadata) -> None:
     """Run AC solution on inputs to produce the outputs."""
     info_log("Producing outputs")
     # change cwd to output folder
-    input_files = os.listdir('../input')
+    input_files = [f for f in os.listdir(os.path.join('..', 'input'))
+                   if not f.endswith('.interactive')]
     for fname in input_files:
-        inf_path = os.path.join('../input', fname)
+        inf_path = os.path.join('..', 'input', fname)
         ouf_path = fname
-        with open(os.path.join('../input', fname), 'r') as inf, open(fname, 'w') as ouf:
-            ac_solution = os.path.join('../bin', 'ac')
+        with open(os.path.join('..', 'input', fname), 'r') as inf, open(fname, 'w') as ouf:
+            ac_solution = os.path.join(
+                '..', 'bin', os.path.splitext(problem_metadata["solutions"]["main-ac"])[0])
             if (problem_metadata["problem"]["interactive"]):
-                interactor = os.path.join('../bin/interactor')
-                # TODO: do this in a more pythonic way
-                if (os.path.isfile('tmpfifo')):
-                    print("Removing existant FIFO")
+                interactor = os.path.join('..', 'bin', 'interactor')
+                verify_path(interactor)
+
+                if os.path.exists('tmpfifo'):
+                    info_log("Removing existing FIFO")
                     subprocess.run(['rm', 'tmpfifo'])
                 subprocess.run(['mkfifo', 'tmpfifo'])
-                command = interactor + ' ' + inf_path + ' ' + ouf_path + \
-                    ' < tmpfifo | ' + ac_solution + ' > tmpfifo'
-                p = subprocess.run(command, stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE, shell=True, text=True)
-                p1 = subprocess.run(['rm', 'tmpfifo'], stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE, text=True)
-                verify_command(p1, "Error removing temporary files.")
+
+                command = [interactor, inf_path, ouf_path, '<',
+                           'tmpfifo', '|', ac_solution, '>', 'tmpfifo']
+
+                p = subprocess.run(' '.join(command),
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
+                subprocess.run(['rm', 'tmpfifo'])
             else:
-                p = subprocess.Popen([ac_solution], stdin=inf, stdout=ouf,
-                                     stderr=subprocess.PIPE, text=True, encoding='utf-8')
-                _, err = p.communicate()
-            if (p.returncode):
-                print("Generation of output for input", fname, "failed")
-                sys.exit(1)
+                p = subprocess.run([ac_solution], stdin=inf, stdout=ouf,
+                                   stderr=subprocess.PIPE, text=True, encoding='utf-8')
+            verify_command(p, f"Generation of output failed for input {fname}")
+    info_log("Outputs produced successfully.")
 
 
 def clean_files() -> None:
     """Call Makefile in order to remove executables"""
     old_cwd = os.getcwd()
     os.chdir(Paths.instance().dirs["problem_dir"])
+    verify_path('Makefile')
 
     command = ['make', 'clean']
     p = subprocess.run(command, stdout=subprocess.PIPE,

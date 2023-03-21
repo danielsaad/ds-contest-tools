@@ -3,7 +3,7 @@ import sys
 import shutil
 import subprocess
 from metadata import Paths
-from utils import verify_command
+from utils import verify_command, verify_problem_json
 from jsonutils import parse_json
 from fileutils import recursive_overwrite, rename_io
 
@@ -40,6 +40,7 @@ def boca_pack(problem_folder='') -> None:
     # Get problem metadata
     tl = 0
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
+    verify_problem_json(problem_metadata)
     basename = os.path.basename(os.path.abspath(problem_folder))
     filename = os.path.join(problem_folder, basename)
     boca_description_folder = os.path.join(boca_folder, 'description')
@@ -49,8 +50,8 @@ def boca_pack(problem_folder='') -> None:
         f.write('descfile='+basename+'.pdf\n')
 
     pdf_file = filename+'.pdf'
-    if (not os.path.exists(pdf_file)):
-        print("PDF file of BOCA problem does not exist.")
+    if not os.path.exists(pdf_file):
+        print("Problem PDF doesn't exist.")
         sys.exit(1)
     shutil.copy2(pdf_file, boca_description_folder)
 
