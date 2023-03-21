@@ -8,6 +8,7 @@ from jsonutils import parse_json
 from utils import verify_command, verify_problem_json, verify_path
 from checker import run_solutions
 from logger import info_log, error_log, debug_log
+from htmlutils import print_to_html
 
 
 def build_executables() -> None:
@@ -46,7 +47,9 @@ def run_programs(all_solutions) -> None:
     produce_outputs(problem_metadata)
     os.chdir(old_cwd)
     info_log("Running solutions")
-    run_solutions(input_folder, problem_metadata, all_solutions)
+    solutions_info_dict: dict = run_solutions(input_folder, problem_metadata, all_solutions)
+    print_to_html(problem_metadata, solutions_info_dict)
+
 
 
 def encode_tests(input_files: list) -> dict:
