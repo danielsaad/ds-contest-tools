@@ -8,7 +8,6 @@ from logger import error_log, debug_log
 from subprocess import CompletedProcess
 
 
-
 def convert_idx_to_string(idx: int) -> str:
     """Convert an integer to a string from
     alphabet [A-Z] using radix 26.

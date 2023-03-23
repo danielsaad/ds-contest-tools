@@ -10,8 +10,8 @@ def setup_logger(name: str, log_file: str, level=logging.DEBUG) -> logging.Logge
 
     # Generate log inside problem directory
     if type(Paths().get_problem_dir()) is list:
-        os.makedirs(Paths().get_output_dir, exist_ok=True)
-        os.chdir(Paths().get_output_dir)
+        os.makedirs(Paths().get_output_dir(), exist_ok=True)
+        os.chdir(Paths().get_output_dir())
     else:
         os.makedirs(Paths().get_problem_dir(), exist_ok=True)
         os.chdir(Paths().get_problem_dir())
