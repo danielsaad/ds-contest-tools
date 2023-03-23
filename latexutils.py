@@ -55,7 +55,7 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
     interactive = problem_metadata['problem']['interactive']
     tex_filename = os.path.basename(os.path.abspath(problem_folder))+'.tex'
     tex_filepath = os.path.join(problem_folder, tex_filename)
-    info_log(f"Creating {tex_filepath}")
+    info_log(f"Creating {os.path.basename(tex_filepath)}")
     with open(tex_filepath, 'w') as f_out:
         print("\\documentclass{maratona}", file=f_out)
         print("\\begin{document}\n", file=f_out)
@@ -159,7 +159,7 @@ def print_tutorial_to_latex(problem_folder: str, problem_metadata: dict,
     """Generates '-tutorial.tex' file of a problem."""
     tex_filepath = os.path.join(problem_folder, os.path.basename(
         os.path.abspath(problem_folder)) + '-tutorial.tex')
-    info_log(f"Creating {tex_filepath}")
+    info_log(f"Creating {os.path.basename(tex_filepath)}")
     with open(tex_filepath, 'w') as f_out:
         print("\\documentclass[10pt]{article}", file=f_out)
         print("\\usepackage[utf8]{inputenc}", file=f_out)
