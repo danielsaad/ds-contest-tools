@@ -60,7 +60,7 @@ def build(all_solutions=False) -> None:
 
 def init(interactive=False) -> None:
     """Initialize a competitive problem."""
-    problem_folder = Paths.instance().dirs["problem_dir"]
+    problem_folder = Paths().get_problem_dir()
     if os.path.exists(os.path.join(problem_folder, 'src')):
         print("Problem ID already exists in the directory")
         sys.exit(1)

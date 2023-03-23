@@ -18,7 +18,7 @@ DEFAULT_LANGUAGE = 'english'
 
 def get_text(filename, language=DEFAULT_LANGUAGE):
     """Get statement texts from the Polygon package."""
-    package_folder = Paths.instance().dirs['output_dir']
+    package_folder = Paths().get_output_dir()
     filename = os.path.join(
         *[package_folder, 'statement-sections', language, filename])
     if not os.path.isfile(filename):
@@ -58,7 +58,7 @@ def get_interaction(language=DEFAULT_LANGUAGE):
 
 def get_input_list() -> list:
     """Get list of input files from the package."""
-    package_folder = Paths.instance().dirs['output_dir']
+    package_folder = Paths().get_output_dir()
     input_folder = os.path.join(package_folder, 'tests')
     file_list = [os.path.join(input_folder, x) for x in os.listdir(
         input_folder) if not x.endswith('.a')]
@@ -67,7 +67,7 @@ def get_input_list() -> list:
 
 def get_output_list() -> list:
     """Get list of output files from the package."""
-    package_folder = Paths.instance().dirs['output_dir']
+    package_folder = Paths().get_output_dir()
     output_folder = os.path.join(package_folder, 'tests')
     file_list = [os.path.join(output_folder, x)
                  for x in os.listdir(output_folder) if x.endswith('.a')]
@@ -76,7 +76,7 @@ def get_output_list() -> list:
 
 def get_interactive_list() -> list:
     """Get list of interactive I/O files of the statement from the package."""
-    package_folder = Paths.instance().dirs['output_dir']
+    package_folder = Paths().get_output_dir()
     interactive_folder = os.path.join(
         *[package_folder, 'statements', 'english'])
     file_list = [os.path.join(interactive_folder, x)
@@ -87,7 +87,7 @@ def get_interactive_list() -> list:
 def copy_input_files() -> None:
     """Copy input files from the package to the problem folder."""
     info_log("Copying input files.")
-    problem_folder = Paths.instance().dirs['problem_dir']
+    problem_folder = Paths().get_output_dir()
     file_list = get_input_list()
     destination = os.path.join(problem_folder, 'input')
     for filepath in file_list:
@@ -98,7 +98,7 @@ def copy_input_files() -> None:
 def copy_output_files() -> None:
     """Copy output files from the package to the problem folder."""
     info_log("Copying output files.")
-    problem_folder = Paths.instance().dirs['problem_dir']
+    problem_folder = Paths().get_problem_dir()
     file_list = get_output_list()
     destination = os.path.join(problem_folder, 'output')
     for filepath in file_list:
@@ -111,7 +111,7 @@ def copy_output_files() -> None:
 def copy_interactive_files() -> None:
     """Copy interactive statement files from the package to the problem folder."""
     info_log("Copying interactive statement files.")
-    problem_folder = Paths.instance().dirs['problem_dir']
+    problem_folder = Paths().get_problem_dir()
     file_list = get_interactive_list()
     destination_input = os.path.join(problem_folder, 'input')
     destination_output = os.path.join(problem_folder, 'output')
@@ -126,8 +126,8 @@ def copy_interactive_files() -> None:
 def copy_generator(script: str) -> None:
     """Copy generators from package to problem folder."""
     info_log("Copying generators.")
-    package_folder = Paths.instance().dirs['output_dir']
-    problem_folder = Paths.instance().dirs['problem_dir']
+    package_folder = Paths().get_output_dir()
+    problem_folder = Paths().get_problem_dir()
     generator_list = set()
 
     # Copy script generators
@@ -159,8 +159,8 @@ def copy_generator(script: str) -> None:
 
 def copy_source_files(file_name: str) -> None:
     """Copy source files from package to problem folder."""
-    package_folder = Paths.instance().dirs['output_dir']
-    problem_folder = Paths.instance().dirs['problem_dir']
+    package_folder = Paths().get_output_dir()
+    problem_folder = Paths().get_problem_dir()
     file = os.path.join(*[package_folder, 'files', file_name])
     destination = os.path.join(*[problem_folder, 'src', file_name])
     shutil.copy(file, destination)
@@ -169,8 +169,8 @@ def copy_source_files(file_name: str) -> None:
 def copy_source_folder() -> None:
     """Copy source files from package to problem folder."""
     info_log("Copying source folder")
-    package_folder = Paths.instance().dirs['output_dir']
-    problem_folder = Paths.instance().dirs['problem_dir']
+    package_folder = Paths().get_output_dir()
+    problem_folder = Paths().get_problem_dir()
     source_folder = os.path.join(package_folder, 'files')
 
     # Only copy cpp files
@@ -184,8 +184,8 @@ def copy_source_folder() -> None:
 def copy_solutions() -> None:
     """Copy solution files from package to problem folder."""
     info_log("Copying solutions.")
-    package_folder = Paths.instance().dirs['output_dir']
-    problem_folder = Paths.instance().dirs['problem_dir']
+    package_folder = Paths().get_output_dir()
+    problem_folder = Paths().get_problem_dir()
     solution_folder = os.path.join(package_folder, 'solutions')
 
     source_files = [os.path.join(solution_folder, x) for x in os.listdir(
@@ -224,7 +224,7 @@ def get_local_interactive() -> bool:
             return True
         if interactive.lower().startswith('n'):
             return False
-    # package_folder = Paths.instance().dirs['output_dir']
+    # package_folder = Paths().get_output_dir()
     # interactive_path = os.path.join(
     #     package_folder, 'statement-sections', 'english', 'interaction.tex')
     # return os.path.exists(interactive_path)
@@ -241,7 +241,7 @@ def init_problem(interactive: bool) -> None:
     info_log("Initializing problem folder.")
     tool_path = os.path.dirname(os.path.abspath(__file__))
     folder = os.path.join(tool_path, 'arquivos')
-    problem_folder = Paths.instance().dirs['problem_dir']
+    problem_folder = Paths().get_problem_dir()
 
     shutil.copytree(folder, problem_folder,
                     ignore=shutil.ignore_patterns('boca', 'src'),
@@ -260,7 +260,7 @@ def init_problem(interactive: bool) -> None:
 def write_statement(package_data: dict, interactive: bool) -> None:
     """Write statement files in the problem folder."""
     info_log("Writing statement files.")
-    problem_folder = Paths.instance().dirs['problem_dir']
+    problem_folder = Paths().get_problem_dir()
     statement_dir = os.path.join(problem_folder, 'statement')
 
     statement_files = get_statement_files(statement_dir, interactive)
@@ -345,7 +345,7 @@ def get_solutions_xml(root) -> dict:
 
 def get_data_xml() -> dict:
     """Get scripts and solutions from the package XML file."""
-    package_folder = Paths.instance().dirs['output_dir']
+    package_folder = Paths().get_output_dir()
     tree = ET.parse(os.path.join(package_folder, 'problem.xml'))
     root = tree.getroot()
 
@@ -357,7 +357,7 @@ def get_data_xml() -> dict:
 
 def get_tags() -> dict:
     """Get tags of the problem."""
-    package_folder = Paths.instance().dirs['output_dir']
+    package_folder = Paths().get_output_dir()
     tags = {'en_us': list()}
     with open(os.path.join(package_folder, 'tags'), 'r') as f:
         for line in f.readlines():
@@ -367,8 +367,8 @@ def get_tags() -> dict:
 
 def update_problem_metadata(title, solutions, interactive) -> None:
     """Update problem information from the package"""
-    package_folder = Paths.instance().dirs['output_dir']
-    problem_folder = Paths.instance().dirs['problem_dir']
+    package_folder = Paths().get_output_dir()
+    problem_folder = Paths().get_problem_dir()
 
     # Get informations of the problem
     tags = get_tags()
@@ -426,7 +426,7 @@ def convert_problem(local, problem_id):
     update_problem_metadata(package_data['title'],
                             xml_data['solutions'], interactive)
     if not local:
-        shutil.rmtree(Paths.instance().dirs['output_dir'])
+        shutil.rmtree(Paths().get_output_dir())
 
 
 def get_package_id(packages: dict) -> int:
@@ -477,7 +477,7 @@ def download_package_polygon(problem_id):
 
     # Convert bytes to zip file
     package = zipfile.ZipFile(io.BytesIO(response))
-    package.extractall(Paths.instance().dirs['output_dir'])
+    package.extractall(Paths().get_output_dir())
     package.close()
 
 

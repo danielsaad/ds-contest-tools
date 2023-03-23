@@ -14,7 +14,7 @@ from htmlutils import print_to_html
 def build_executables() -> None:
     """Run Makefile to create release and debug executables."""
     old_cwd = os.getcwd()
-    os.chdir(Paths.instance().dirs["problem_dir"])
+    os.chdir(Paths().get_problem_dir())
 
     # Verify necessary files
     verify_path(os.path.join('src', 'testlib.h'))
@@ -29,7 +29,7 @@ def build_executables() -> None:
 
 def run_programs(all_solutions) -> None:
     """Run the executables to create the problem."""
-    problem_folder = Paths.instance().dirs["problem_dir"]
+    problem_folder = Paths().get_problem_dir()
     input_folder = os.path.join(problem_folder, 'input')
     output_folder = os.path.join(problem_folder, 'output')
 
@@ -197,7 +197,7 @@ def produce_outputs(problem_metadata) -> None:
 def clean_files() -> None:
     """Call Makefile in order to remove executables"""
     old_cwd = os.getcwd()
-    os.chdir(Paths.instance().dirs["problem_dir"])
+    os.chdir(Paths().get_problem_dir())
     verify_path('Makefile')
 
     command = ['make', 'clean']

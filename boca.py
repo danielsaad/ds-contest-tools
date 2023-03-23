@@ -3,6 +3,7 @@ import sys
 import shutil
 import subprocess
 from metadata import Paths
+from typing import Optional
 from utils import verify_command, verify_problem_json
 from jsonutils import parse_json
 from fileutils import recursive_overwrite, rename_io
@@ -27,10 +28,10 @@ def boca_zip(boca_folder: str) -> None:
     os.chdir(old_cwd)
 
 
-def boca_pack(problem_folder='') -> None:
+def boca_pack(problem_folder: Optional[str] = '') -> None:
     """Convert a DS problem to a BOCA problem."""
     if (problem_folder == ''):
-        problem_folder = Paths.instance().dirs["problem_dir"]
+        problem_folder = Paths().get_problem_dir()
 
     boca_template_folder = os.path.join(
         *[os.path.dirname(os.path.abspath(__file__)), 'arquivos', 'boca'])

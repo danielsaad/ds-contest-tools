@@ -42,8 +42,8 @@ def build_contest_pdf() -> None:
 
     problem_pdf_l = []
     tutorial_pdf_l = []
-    problem_folder_l = Paths.instance().dirs["problem_dir"]
-    output_folder = Paths.instance().dirs["output_dir"]
+    problem_folder_l = Paths().get_problem_dir()
+    output_folder = Paths().get_output_dir()
 
     cls_file = os.path.join(os.path.join(os.path.dirname(
         os.path.abspath(__file__)), 'arquivos'), 'maratona.cls')
@@ -83,8 +83,8 @@ def build_contest_pdf() -> None:
 def build_boca_packages() -> None:
     """Build BOCA packages from the list of problems."""
     info_log('Creating BOCA Files')
-    problem_folder_l = Paths.instance().dirs["problem_dir"]
-    output_folder = Paths.instance().dirs["output_dir"]
+    problem_folder_l = Paths().get_problem_dir()
+    output_folder = Paths().get_output_dir()
     for i, folder in enumerate(problem_folder_l):
         label = convert_idx_to_string(i)
         options = {'display_author': False,

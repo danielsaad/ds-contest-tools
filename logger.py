@@ -9,12 +9,12 @@ def setup_logger(name: str, log_file: str, level=logging.DEBUG) -> logging.Logge
     formatter = logging.Formatter('%(levelname)s - %(message)s')
 
     # Generate log inside problem directory
-    if type(Paths.instance().dirs['problem_dir']) is list:
-        os.makedirs(Paths.instance().dirs['output_dir'], exist_ok=True)
-        os.chdir(Paths.instance().dirs['output_dir'])
+    if type(Paths().get_problem_dir()) is list:
+        os.makedirs(Paths().get_output_dir, exist_ok=True)
+        os.chdir(Paths().get_output_dir)
     else:
-        os.makedirs(Paths.instance().dirs['problem_dir'], exist_ok=True)
-        os.chdir(Paths.instance().dirs['problem_dir'])
+        os.makedirs(Paths().get_problem_dir(), exist_ok=True)
+        os.chdir(Paths().get_problem_dir())
 
     # Log configurations
     handler = logging.FileHandler(log_file, mode='w')
