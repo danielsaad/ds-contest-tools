@@ -1,9 +1,10 @@
 import os
+import sys
 import config
 import subprocess
 from metadata import Paths
 from logger import info_log
-from utils import verify_command
+from utils import verify_command, verify_path
 from latexutils import clean_auxiliary_files, print_to_latex
 
 
@@ -36,12 +37,14 @@ def build_pdf(problem_folder='', output_directory='', options=config.DEFAULT_PDF
     """Build problem and tutorial PDFs."""
     info_log('Building PDF')
     if problem_folder == '':
-        problem_folder = Paths.instance().dirs["problem_dir"]
+        problem_folder = Paths().get_problem_dir()
+    verify_path(os.path.join(problem_folder, 'maratona.cls'))
 
     # Generate PDF from tex file
     print_to_latex(problem_folder, options)
-    tex_filename = os.path.basename(problem_folder) + '.tex'
     folder = problem_folder if output_directory == '' else output_directory
+    
+    tex_filename = os.path.basename(problem_folder) + '.tex'
     tex_filepath = os.path.join(problem_folder, tex_filename)
     command = ["pdflatex", '--output-directory', folder, tex_filepath]
     p = subprocess.run(command, stdin=subprocess.PIPE,
@@ -52,7 +55,7 @@ def build_pdf(problem_folder='', output_directory='', options=config.DEFAULT_PDF
     # Generate tutorial PDF from tex file
     tutorial_filename = os.path.basename(problem_folder)+'-tutorial.tex'
     tutorial_filepath = os.path.join(problem_folder, tutorial_filename)
-    if (os.path.isfile(tutorial_filepath)):
+    if os.path.isfile(tutorial_filepath):
         command = ['pdflatex', '--output-directory', folder, tutorial_filepath]
         p = subprocess.run(command, stdin=subprocess.PIPE,
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)

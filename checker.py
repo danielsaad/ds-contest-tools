@@ -47,8 +47,7 @@ def run_binary(binary_file: str, input_folder: str, output_folder: str,
                input_files: list, output_dict, problem_limits: dict,
                begin: int = 0, pace: int = 1, interpreter: str = ""):
     ans_folder = os.path.join(
-        Paths.instance().dirs["problem_dir"], 'output')
-
+        Paths().get_problem_dir(), 'output')
     if interpreter:
         file = interpreter.split(' ')
         file.append(binary_file)
@@ -107,7 +106,7 @@ def run(submission_file: str, input_folder: str, output_folder: str,
     os.makedirs(output_folder, exist_ok=True)
     debug_log(f'Run solution {submission_file}')
     problem_folder = os.path.join(
-        os.getcwd(), Paths.instance().dirs['problem_dir'])
+        os.getcwd(), Paths().get_problem_dir())
     binary_file = os.path.join(problem_folder, 'bin', binary_file)
     start_time = 0.0
     end_time = 0.0
@@ -146,7 +145,7 @@ def run_checker(ans: str, inf: str, ouf: str) -> Status:
     fname = os.path.basename(inf)
     status = Status.AC
     checker_file: str = os.path.join(
-        Paths.instance().dirs["problem_dir"], 'bin/checker')
+        Paths().get_problem_dir(), 'bin/checker')
     if (not os.path.isfile(inf)):
         error_log('Input' + fname + 'not available')
         sys.exit(1)

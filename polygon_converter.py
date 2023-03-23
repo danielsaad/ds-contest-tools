@@ -6,9 +6,10 @@ import zipfile
 import requests
 import xml.etree.ElementTree as ET
 from metadata import Paths
-from utils import instance_paths
 from jsonutils import parse_json
+from logger import info_log, error_log
 from fileutils import get_statement_files
+from utils import instance_paths, verify_path
 from polygon_submitter import add_auth_parameters, verify_response
 
 
@@ -17,7 +18,7 @@ DEFAULT_LANGUAGE = 'english'
 
 def get_text(filename, language=DEFAULT_LANGUAGE):
     """Get statement texts from the Polygon package."""
-    package_folder = Paths.instance().dirs['output_dir']
+    package_folder = Paths().get_output_dir()
     filename = os.path.join(
         *[package_folder, 'statement-sections', language, filename])
     if not os.path.isfile(filename):
@@ -57,7 +58,7 @@ def get_interaction(language=DEFAULT_LANGUAGE):
 
 def get_input_list() -> list:
     """Get list of input files from the package."""
-    package_folder = Paths.instance().dirs['output_dir']
+    package_folder = Paths().get_output_dir()
     input_folder = os.path.join(package_folder, 'tests')
     file_list = [os.path.join(input_folder, x) for x in os.listdir(
         input_folder) if not x.endswith('.a')]
@@ -66,7 +67,7 @@ def get_input_list() -> list:
 
 def get_output_list() -> list:
     """Get list of output files from the package."""
-    package_folder = Paths.instance().dirs['output_dir']
+    package_folder = Paths().get_output_dir()
     output_folder = os.path.join(package_folder, 'tests')
     file_list = [os.path.join(output_folder, x)
                  for x in os.listdir(output_folder) if x.endswith('.a')]
@@ -75,7 +76,7 @@ def get_output_list() -> list:
 
 def get_interactive_list() -> list:
     """Get list of interactive I/O files of the statement from the package."""
-    package_folder = Paths.instance().dirs['output_dir']
+    package_folder = Paths().get_output_dir()
     interactive_folder = os.path.join(
         *[package_folder, 'statements', 'english'])
     file_list = [os.path.join(interactive_folder, x)
@@ -85,7 +86,8 @@ def get_interactive_list() -> list:
 
 def copy_input_files() -> None:
     """Copy input files from the package to the problem folder."""
-    problem_folder = Paths.instance().dirs['problem_dir']
+    info_log("Copying input files.")
+    problem_folder = Paths().get_output_dir()
     file_list = get_input_list()
     destination = os.path.join(problem_folder, 'input')
     for filepath in file_list:
@@ -95,8 +97,8 @@ def copy_input_files() -> None:
 
 def copy_output_files() -> None:
     """Copy output files from the package to the problem folder."""
-    package_folder = Paths.instance().dirs['output_dir']
-    problem_folder = Paths.instance().dirs['problem_dir']
+    info_log("Copying output files.")
+    problem_folder = Paths().get_problem_dir()
     file_list = get_output_list()
     destination = os.path.join(problem_folder, 'output')
     for filepath in file_list:
@@ -108,7 +110,8 @@ def copy_output_files() -> None:
 
 def copy_interactive_files() -> None:
     """Copy interactive statement files from the package to the problem folder."""
-    problem_folder = Paths.instance().dirs['problem_dir']
+    info_log("Copying interactive statement files.")
+    problem_folder = Paths().get_problem_dir()
     file_list = get_interactive_list()
     destination_input = os.path.join(problem_folder, 'input')
     destination_output = os.path.join(problem_folder, 'output')
@@ -120,67 +123,125 @@ def copy_interactive_files() -> None:
         shutil.copy(filepath, os.path.join(destination, new_filename))
 
 
-def copy_validator() -> None:
-    """Copy validator from package to problem folder."""
-    package_folder = Paths.instance().dirs['output_dir']
-    problem_folder = Paths.instance().dirs['problem_dir']
-    validator = os.path.join(*[package_folder, 'files', 'validator.cpp'])
-    destination = os.path.join(*[problem_folder, 'src', 'validator.cpp'])
-    shutil.copy(validator, destination)
-
-
-def copy_generator(script) -> None:
+def copy_generator(script: str) -> None:
     """Copy generators from package to problem folder."""
-    package_folder = Paths.instance().dirs['output_dir']
-    problem_folder = Paths.instance().dirs['problem_dir']
-    for file in os.listdir(os.path.join(package_folder, 'files')):
-        if not file.startswith('generator'):
-            continue
-        generator = os.path.join(*[package_folder, 'files', file])
-        destination = os.path.join(*[problem_folder, 'src', file])
-        shutil.copy(generator, destination)
+    info_log("Copying generators.")
+    package_folder = Paths().get_output_dir()
+    problem_folder = Paths().get_problem_dir()
+    generator_list = set()
 
+    # Copy script generators
     if script != '':
         with open(os.path.join(*[problem_folder, 'src', 'script.sh']), 'w') as f:
             f.write(script)
 
+        script_lines = script.split('\n')
+        for line in script_lines:
+            if line != '':
+                generator_list.add(line.split()[0])
 
-def copy_checker() -> None:
-    """Copy checker from package to problem folder."""
-    package_folder = Paths.instance().dirs['output_dir']
-    problem_folder = Paths.instance().dirs['problem_dir']
-    checker = os.path.join(*[package_folder, 'files', 'checker.cpp'])
-    destination = os.path.join(*[problem_folder, 'src', 'checker.cpp'])
-    shutil.copy(checker, destination)
+        for file in generator_list:
+            file += '.cpp'
+            generator = os.path.join(*[package_folder, 'files', file])
+            if not os.path.exists(generator):
+                error_log(f"Generator {os.path.relpath(generator)} not found.")
+                continue
+            destination = os.path.join(*[problem_folder, 'src', file])
+            shutil.copy(generator, destination)
+
+    # Copy standard DS generator
+    ds_generator = 'generator.cpp'
+    ds_gen_path = os.path.join(package_folder, 'files', ds_generator)
+    if os.path.exists(ds_gen_path) and ds_generator not in generator_list:
+        destination = os.path.join(*[problem_folder, 'src', ds_generator])
+        shutil.copy(ds_gen_path, destination)
 
 
-def copy_testlib() -> None:
-    """Copy generator from package to problem folder."""
-    package_folder = Paths.instance().dirs['output_dir']
-    problem_folder = Paths.instance().dirs['problem_dir']
-    testlib = os.path.join(*[package_folder, 'files', 'testlib.h'])
-    destination = os.path.join(*[problem_folder, 'src', 'testlib.h'])
-    shutil.copy(testlib, destination)
+def copy_source_files(file_name: str) -> None:
+    """Copy source files from package to problem folder."""
+    package_folder = Paths().get_output_dir()
+    problem_folder = Paths().get_problem_dir()
+    file = os.path.join(*[package_folder, 'files', file_name])
+    destination = os.path.join(*[problem_folder, 'src', file_name])
+    shutil.copy(file, destination)
 
 
-def copy_solutions() -> None:
-    """Copy solution files from package to problem folder."""
-    package_folder = Paths.instance().dirs['output_dir']
-    problem_folder = Paths.instance().dirs['problem_dir']
-    solution_folder = os.path.join(package_folder, 'solutions')
+def copy_source_folder() -> None:
+    """Copy source files from package to problem folder."""
+    info_log("Copying source folder")
+    package_folder = Paths().get_output_dir()
+    problem_folder = Paths().get_problem_dir()
+    source_folder = os.path.join(package_folder, 'files')
 
-    source_files = [os.path.join(solution_folder, x) for x in os.listdir(
-        solution_folder) if not x.endswith('.desc')]
+    # Only copy cpp files
+    source_files = [os.path.join(source_folder, x) for x in os.listdir(
+        source_folder) if x.endswith('.cpp')]
     destination = os.path.join(problem_folder, 'src')
     for f in source_files:
         shutil.copy(f, destination)
 
 
+def copy_solutions() -> None:
+    """Copy solution files from package to problem folder."""
+    info_log("Copying solutions.")
+    package_folder = Paths().get_output_dir()
+    problem_folder = Paths().get_problem_dir()
+    solution_folder = os.path.join(package_folder, 'solutions')
+
+    source_files = [os.path.join(solution_folder, x) for x in os.listdir(
+        solution_folder) if (not x.endswith('.desc') and not x.endswith('.exe') and not x.endswith('.jar'))]
+    destination = os.path.join(problem_folder, 'src')
+    for f in source_files:
+        shutil.copy(f, destination)
+
+
+def copy_checker(problem_id: str) -> None:
+    info_log("Copying checker.")
+    content = get_polygon_response(dict(), 'problem.checker', problem_id)
+    content = json.loads(content)
+    copy_source_files(content['result'])
+
+
+def copy_validator(problem_id: str) -> None:
+    info_log("Copying validator.")
+    content = get_polygon_response(dict(), 'problem.validator', problem_id)
+    content = json.loads(content)
+    copy_source_files(content['result'])
+
+
+def copy_interactor(problem_id: str) -> None:
+    info_log("Copying interactor.")
+    content = get_polygon_response(dict(), 'problem.interactor', problem_id)
+    content = json.loads(content)
+    copy_source_files(content['result'])
+
+
+def get_local_interactive() -> bool:
+    """Get interactive parameter from user."""
+    while True:
+        interactive = input("Is problem interactive? (Y/n) ")
+        if interactive.lower().startswith('y'):
+            return True
+        if interactive.lower().startswith('n'):
+            return False
+    # package_folder = Paths().get_output_dir()
+    # interactive_path = os.path.join(
+    #     package_folder, 'statement-sections', 'english', 'interaction.tex')
+    # return os.path.exists(interactive_path)
+
+
+def get_remote_interactive(problem_id: str) -> bool:
+    content = get_polygon_response(dict(), 'problem.info', problem_id)
+    content = json.loads(content)
+    return content['result']['interactive']
+
+
 def init_problem(interactive: bool) -> None:
     """Initialize problem folder before the conversion."""
+    info_log("Initializing problem folder.")
     tool_path = os.path.dirname(os.path.abspath(__file__))
     folder = os.path.join(tool_path, 'arquivos')
-    problem_folder = Paths.instance().dirs['problem_dir']
+    problem_folder = Paths().get_problem_dir()
 
     shutil.copytree(folder, problem_folder,
                     ignore=shutil.ignore_patterns('boca', 'src'),
@@ -188,6 +249,8 @@ def init_problem(interactive: bool) -> None:
     os.makedirs(os.path.join(problem_folder, 'src'), exist_ok=True)
     os.makedirs(os.path.join(problem_folder, 'input'), exist_ok=True)
     os.makedirs(os.path.join(problem_folder, 'output'), exist_ok=True)
+    shutil.copy(os.path.join(*[folder, 'src', 'testlib.h']),
+                os.path.join(problem_folder, 'src'))
     os.remove(os.path.join(problem_folder, 'problem-interactive.json'))
     if not interactive:
         os.remove(os.path.join(
@@ -196,7 +259,8 @@ def init_problem(interactive: bool) -> None:
 
 def write_statement(package_data: dict, interactive: bool) -> None:
     """Write statement files in the problem folder."""
-    problem_folder = Paths.instance().dirs['problem_dir']
+    info_log("Writing statement files.")
+    problem_folder = Paths().get_problem_dir()
     statement_dir = os.path.join(problem_folder, 'statement')
 
     statement_files = get_statement_files(statement_dir, interactive)
@@ -281,7 +345,7 @@ def get_solutions_xml(root) -> dict:
 
 def get_data_xml() -> dict:
     """Get scripts and solutions from the package XML file."""
-    package_folder = Paths.instance().dirs['output_dir']
+    package_folder = Paths().get_output_dir()
     tree = ET.parse(os.path.join(package_folder, 'problem.xml'))
     root = tree.getroot()
 
@@ -293,7 +357,7 @@ def get_data_xml() -> dict:
 
 def get_tags() -> dict:
     """Get tags of the problem."""
-    package_folder = Paths.instance().dirs['output_dir']
+    package_folder = Paths().get_output_dir()
     tags = {'en_us': list()}
     with open(os.path.join(package_folder, 'tags'), 'r') as f:
         for line in f.readlines():
@@ -301,61 +365,68 @@ def get_tags() -> dict:
     return tags
 
 
-def update_problem_json(title, solutions, interactive) -> None:
+def update_problem_metadata(title, solutions, interactive) -> None:
     """Update problem information from the package"""
-    package_folder = Paths.instance().dirs['output_dir']
-    problem_folder = Paths.instance().dirs['problem_dir']
+    package_folder = Paths().get_output_dir()
+    problem_folder = Paths().get_problem_dir()
 
     # Get informations of the problem
     tags = get_tags()
     json_path = os.path.join(problem_folder, 'problem.json')
     package_json = parse_json(os.path.join(
         *[package_folder, 'statements', 'english', 'problem-properties.json']))
-    problem_json = parse_json(json_path)
+    problem_metadata = parse_json(json_path)
 
     # Update problem.json
-    problem_json['problem']['subject'] = tags
-    problem_json['problem']['interactive'] = interactive
-    problem_json['io_samples'] = len(package_json['sampleTests'])
-    problem_json['problem']['title'] = ''.join(title).rstrip()
-    problem_json['problem']['input_file'] = package_json['inputFile']
-    problem_json['problem']['output_file'] = package_json['outputFile']
-    problem_json['problem']['time_limit'] = int(
+    problem_metadata['problem']['subject'] = tags
+    problem_metadata['problem']['interactive'] = interactive
+    problem_metadata['io_samples'] = len(package_json['sampleTests'])
+    problem_metadata['problem']['title'] = ''.join(title).rstrip()
+    problem_metadata['problem']['input_file'] = package_json['inputFile']
+    problem_metadata['problem']['output_file'] = package_json['outputFile']
+    problem_metadata['problem']['time_limit'] = int(
         package_json['timeLimit'] / 1000)
-    problem_json['problem']['memory_limit_mb'] = int(
+    problem_metadata['problem']['memory_limit_mb'] = int(
         (package_json['memoryLimit'] / 1024) / 1024)
     for key in solutions:
-        problem_json['solutions'][key] = solutions[key]
+        problem_metadata['solutions'][key] = solutions[key]
 
     with open(json_path, 'w') as f:
-        f.write(json.dumps(problem_json, ensure_ascii=False))
+        f.write(json.dumps(problem_metadata, ensure_ascii=False))
 
 
 def convert_problem(local, problem_id):
     """Convert package from Polygon to DS."""
     xml_data = get_data_xml()
-    problem_info = json.loads(get_polygon_response(
-        dict(), 'problem.info', problem_id))
-    interactive = problem_info['result']['interactive']
+    # Polygon packages do not contain the interactive parameter
+    interactive = get_local_interactive() if local else get_remote_interactive(problem_id)
     package_data = get_package_data(interactive)
 
     # Copy data from package to problem folder
     init_problem(interactive)
     copy_input_files()
     copy_output_files()
-    copy_testlib()
     copy_solutions()
-    copy_checker()
-    copy_validator()
-    if interactive:
-        copy_interactive_files()
 
-    write_statement(package_data, interactive)
+    # In local problems, there is not a way to know the
+    # source files names, so the user has to change it
+    # manually.
+    if local:
+        copy_source_folder()
+        print("Change name of source files to DS standard:\n"
+              "checker.cpp | validator.cpp | interactor.cpp")
+    else:
+        copy_checker(problem_id)
+        copy_validator(problem_id)
+        if interactive:
+            copy_interactor(problem_id)
+            copy_interactive_files()
     copy_generator(xml_data['script'])
-    update_problem_json(package_data['title'],
-                        xml_data['solutions'], interactive)
+    write_statement(package_data, interactive)
+    update_problem_metadata(package_data['title'],
+                            xml_data['solutions'], interactive)
     if not local:
-        shutil.rmtree(Paths.instance().dirs['output_dir'])
+        shutil.rmtree(Paths().get_output_dir())
 
 
 def get_package_id(packages: dict) -> int:
@@ -386,7 +457,7 @@ def get_polygon_response(params, method, problem_id):
 
     url = 'https://polygon.codeforces.com/api/'
     response = requests.post(url + method, files=params)
-    verify_response(response, method)
+    verify_response(response, method, params)
     return response.content
 
 
@@ -406,19 +477,18 @@ def download_package_polygon(problem_id):
 
     # Convert bytes to zip file
     package = zipfile.ZipFile(io.BytesIO(response))
-    package.extractall(Paths.instance().dirs['output_dir'])
+    package.extractall(Paths().get_output_dir())
     package.close()
 
 
 def get_polygon_problem(problem_folder, local):
     """Verify source from problem package and convert it."""
-    problem_id = input('ID: ')
+    problem_id = ""
     if local:
-        if not os.path.exists(local):
-            print(f"{local} problem does not exist.")
-            exit(1)
+        verify_path(local)
         instance_paths(problem_folder, local)
     else:
+        problem_id = input('ID: ')
         instance_paths(problem_folder, os.path.join(
                        problem_folder, 'temp_package'))
         download_package_polygon(problem_id)

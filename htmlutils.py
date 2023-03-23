@@ -247,7 +247,7 @@ def write_footer(f_out: io.TextIOWrapper) -> None:
 
 
 def print_to_html(problem_metadata: str, solutions_info_dict: dict) -> None:
-    problem_folder: str = Paths.instance().dirs["problem_dir"]
+    problem_folder: str = Paths().get_problem_dir()
     html_filename: str = 'index.html'
     html_filepath: str = os.path.join(problem_folder, html_filename)
     info_log(f'Creating {html_filename}')

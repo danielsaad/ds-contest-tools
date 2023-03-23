@@ -9,7 +9,6 @@ Author:
 
 
 import os
-import sys
 import shutil
 import argparse
 import subprocess
@@ -18,7 +17,7 @@ from metadata import Paths
 from logger import info_log
 from pdfutils import build_pdf, merge_pdfs
 from latexutils import clean_auxiliary_files
-from utils import convert_idx_to_string, verify_command, instance_paths
+from utils import convert_idx_to_string, verify_command, instance_paths, verify_path
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -28,7 +27,7 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument('-b', '--boca', action='store_true',
                         default=False, help='build contest in BOCA format.')
     parser.add_argument('mode', choices=['build', 'genpdf'],
-                        help='build: create a contest.\n' +
+                        help='build: build problems and create contest PDFs.\n' +
                         'genpdf: generates problem and tutorial PDFs.\n')
     parser.add_argument('problem_path', help='path to the problem.',
                         nargs='+')
@@ -43,8 +42,8 @@ def build_contest_pdf() -> None:
 
     problem_pdf_l = []
     tutorial_pdf_l = []
-    problem_folder_l = Paths.instance().dirs["problem_dir"]
-    output_folder = Paths.instance().dirs["output_dir"]
+    problem_folder_l = Paths().get_problem_dir()
+    output_folder = Paths().get_output_dir()
 
     cls_file = os.path.join(os.path.join(os.path.dirname(
         os.path.abspath(__file__)), 'arquivos'), 'maratona.cls')
@@ -57,7 +56,7 @@ def build_contest_pdf() -> None:
         build_pdf(folder, output_folder, options)
         basename = os.path.basename(folder)
         problem_pdf_l.append(os.path.join(output_folder, basename+'.pdf'))
-        if os.path.exists(folder + '-tutorial.pdf'):
+        if os.path.exists(os.path.join(folder, basename+'-tutorial.pdf')):
             tutorial_pdf_l.append(os.path.join(
                 output_folder, basename+'-tutorial.pdf'))
     # Merge PDFs
@@ -67,11 +66,16 @@ def build_contest_pdf() -> None:
     merge_pdfs(problem_pdf_l, merge_pdf)
     if (tutorial_pdf_l):
         merge_pdfs(tutorial_pdf_l, merge_tutorial_pdf)
-    # Remove problems PDFs
+    # Remove problems PDFs and ignore PDFs which are from 
+    # the same folder as the contest.
     for f in problem_pdf_l:
-        os.remove(f)
+        folder_name = os.path.basename(output_folder) + '.pdf'
+        if folder_name != os.path.basename(f):
+            os.remove(f)
     for f in tutorial_pdf_l:
-        os.remove(f)
+        folder_name = os.path.basename(output_folder) + '-tutorial.pdf'
+        if folder_name != os.path.basename(f):
+            os.remove(f)
     if output_folder not in problem_folder_l:
         os.remove(os.path.join(output_folder, 'maratona.cls'))
 
@@ -79,8 +83,8 @@ def build_contest_pdf() -> None:
 def build_boca_packages() -> None:
     """Build BOCA packages from the list of problems."""
     info_log('Creating BOCA Files')
-    problem_folder_l = Paths.instance().dirs["problem_dir"]
-    output_folder = Paths.instance().dirs["output_dir"]
+    problem_folder_l = Paths().get_problem_dir()
+    output_folder = Paths().get_output_dir()
     for i, folder in enumerate(problem_folder_l):
         label = convert_idx_to_string(i)
         options = {'display_author': False,
@@ -96,27 +100,21 @@ def build_boca_packages() -> None:
 
 def verify_problem(problem: str) -> None:
     """Check if the problem is ready to be used"""
-    if not os.path.exists(problem):
-        print(problem, "path doesn't exist.")
-        sys.exit(1)
-    if not os.path.exists(os.path.join(problem, 'statement')):
-        print(problem, "path doesn't have an initialized problem.")
-        sys.exit(1)
+    verify_path(problem)
+    verify_path(os.path.join(problem, 'statement'))
+
     # Verify I/O for statements
     if args.mode == 'genpdf':
-        if not os.path.exists(os.path.join(problem, 'input')):
-            print(problem, "path doesn't have an input folder.")
-            sys.exit(1)
-        if not os.path.exists(os.path.join(problem, 'output')):
-            print(problem, "path doesn't have an output folder.")
-            sys.exit(1)
+        verify_path(os.path.join(problem, 'input'))
+        verify_path(os.path.join(problem, 'output'))
+
     # Build problem if it is only initialized
     elif args.mode == 'build' and not os.path.exists(os.path.join(problem, 'bin')):
         command = ['python3', os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                            'build.py'), 'build', problem]
         p = subprocess.run(command, stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE, text=True)
-        verify_command(p, "Error building problem.")
+        verify_command(p, f"Error building problem {problem}.")
 
 
 if __name__ == '__main__':
