@@ -47,7 +47,7 @@ def save_statement(name: str, interactive: bool) -> tuple:
               "Manual insertion will be needed.")
 
     statement_dir = os.path.join(
-        Paths.instance().dirs['problem_dir'], 'statement')
+        Paths().get_problem_dir(), 'statement')
 
     statement_files = get_statement_files(statement_dir)
     with open(statement_files[0], 'r') as f:
@@ -76,7 +76,7 @@ def save_statement(name: str, interactive: bool) -> tuple:
 def save_statement_resources() -> list:
     """Get statement resource files of the problem, for example, images."""
     statement_dir = os.path.join(
-        Paths.instance().dirs['problem_dir'], 'statement')
+        Paths().get_problem_dir(), 'statement')
 
     params_list = []
     for file in os.listdir(statement_dir):
@@ -94,7 +94,7 @@ def save_statement_resources() -> list:
 
 def save_script():
     """Verify if script exists and save it."""
-    problem_folder = Paths.instance().dirs['problem_dir']
+    problem_folder = Paths().get_problem_dir()
     script_path = os.path.join(*[problem_folder, 'src', 'script.sh'])
     if not os.path.exists(script_path):
         return None
@@ -171,7 +171,7 @@ def save_solution(file_path: str, tag: str) -> tuple:
 
 def save_files(solutions: dict) -> list:
     """Save auxiliar, source and solution files of a problem."""
-    src_dir = os.path.join(Paths.instance().dirs['problem_dir'], 'src')
+    src_dir = os.path.join(Paths().get_problem_dir(), 'src')
 
     # Save solution files and store them in a list
     params_list = []
@@ -220,7 +220,7 @@ def save_tags(tag_list: list) -> tuple:
 
 def save_test(tests_in_statement: int, interactive: bool) -> tuple:
     """Get input files of the problem."""
-    problem_folder = Paths.instance().dirs['problem_dir']
+    problem_folder = Paths().get_problem_dir()
     input_folder = os.path.join(problem_folder, 'input')
     output_folder = os.path.join(problem_folder, 'output')
     verify_path(input_folder)
@@ -316,7 +316,7 @@ def add_auth_parameters(method: str, params: dict, problem_id: str, keys: dict) 
 def get_requests_list() -> list:
     """Get each request needed to convert the problem to Polygon."""
     path_json = os.path.join(
-        Paths.instance().dirs['problem_dir'], 'problem.json')
+        Paths().get_problem_dir(), 'problem.json')
     problem_metadata = parse_json(path_json)
     verify_problem_json(problem_metadata)
 

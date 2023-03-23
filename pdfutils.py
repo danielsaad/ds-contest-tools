@@ -37,7 +37,7 @@ def build_pdf(problem_folder='', output_directory='', options=config.DEFAULT_PDF
     """Build problem and tutorial PDFs."""
     info_log('Building PDF')
     if problem_folder == '':
-        problem_folder = Paths.instance().dirs["problem_dir"]
+        problem_folder = Paths().get_problem_dir()
     verify_path(os.path.join(problem_folder, 'maratona.cls'))
 
     # Generate PDF from tex file

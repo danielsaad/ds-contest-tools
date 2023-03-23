@@ -1,6 +1,7 @@
 import os
 import sys
 from operator import mod
+from typing import Union, Optional
 from metadata import Paths
 from logger import setup_logger
 from logger import error_log, debug_log
@@ -42,14 +43,14 @@ def verify_command(p: CompletedProcess, message: str) -> None:
         debug_log(p.stderr)
 
 
-def instance_paths(problem_dir, output_dir='') -> None:
+def instance_paths(problem_dir: Union[str, list], output_dir: Optional[str] = '') -> None:
     """Initialize metadata dictionary and logs."""
     if (type(problem_dir) is list):
         problem_dir = [os.path.abspath(s) for s in problem_dir]
     else:
         problem_dir = os.path.abspath(problem_dir)
     output_dir = os.path.abspath(output_dir)
-    Paths.instance(problem_dir, output_dir)
+    Paths(problem_dir, output_dir)
     setup_logger('tool', 'tool.log')
     setup_logger('debug', 'debug.log')
 
@@ -59,7 +60,7 @@ def verify_problem_json(problem_json: dict) -> None:
 
     # Verify solution paths
     solutions_dict = problem_json['solutions']
-    problem_folder = Paths.instance().dirs["problem_dir"]
+    problem_folder = Paths().get_problem_dir()
     for key, solutions in solutions_dict.items():
         # Ignore verification due to creation of contest
         if isinstance(problem_folder, list):
