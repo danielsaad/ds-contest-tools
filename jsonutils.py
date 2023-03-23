@@ -1,6 +1,6 @@
 import json
-import sys
 import os
+import sys
 
 
 def parse_json(json_file: str) -> dict:

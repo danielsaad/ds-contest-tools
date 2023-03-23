@@ -1,6 +1,6 @@
+import argparse
 import os
 import sys
-import argparse
 
 
 def create_parser() -> argparse.ArgumentParser:

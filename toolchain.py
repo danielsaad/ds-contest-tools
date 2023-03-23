@@ -1,14 +1,15 @@
-import os
-import sys
 import hashlib
+import os
 import subprocess
-from metadata import Paths
-from config import custom_key
-from jsonutils import parse_json
-from utils import verify_command, verify_problem_json, verify_path
+import sys
+
 from checker import run_solutions
-from logger import info_log, error_log, debug_log
+from config import custom_key
 from htmlutils import print_to_html
+from jsonutils import parse_json
+from logger import debug_log, error_log, info_log
+from metadata import Paths
+from utils import verify_command, verify_path, verify_problem_json
 
 
 def build_executables() -> None:

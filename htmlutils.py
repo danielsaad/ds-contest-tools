@@ -1,9 +1,10 @@
 import io
 import os
 from webbrowser import open_new
+
+from checker import ProblemAnswer, Status
 from logger import info_log
 from metadata import Paths
-from checker import Status, ProblemAnswer
 
 
 def write_head(problem_name: str, f_out: io.TextIOWrapper) -> None:

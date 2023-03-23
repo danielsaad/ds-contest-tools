@@ -1,7 +1,8 @@
 import os
 import shutil
 from json import dumps
-from math import log10, floor
+from math import floor, log10
+
 from logger import info_log
 from utils import verify_path
 

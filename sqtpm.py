@@ -1,11 +1,11 @@
 import os
-import sys
 import shutil
-from metadata import Paths
-from logger import info_log
-from utils import instance_paths
+import sys
+
 from jsonutils import parse_json
-from utils import verify_problem_json, verify_path
+from logger import info_log
+from metadata import Paths
+from utils import instance_paths, verify_path, verify_problem_json
 
 
 def create_config(showcases: str, memory_limit: int, cputime: int) -> None:

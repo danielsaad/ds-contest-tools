@@ -8,14 +8,15 @@ Author:
 """
 
 
+import argparse
 import os
 import sys
-import argparse
-from json import dumps
 from getpass import getpass
-from sqtpm import convert_to_sqtpm
-from polygon_submitter import send_to_polygon
+from json import dumps
+
 from polygon_converter import get_polygon_problem
+from polygon_submitter import send_to_polygon
+from sqtpm import convert_to_sqtpm
 
 
 def create_parser():

@@ -1,12 +1,13 @@
-import os
 import io
+import os
 import re
 import sys
+
 import config
-from logger import info_log
-from jsonutils import parse_json
-from utils import verify_problem_json, verify_path
 from fileutils import get_statement_files
+from jsonutils import parse_json
+from logger import info_log
+from utils import verify_path, verify_problem_json
 
 
 def print_line(line: str, f_out: io.TextIOWrapper) -> None:

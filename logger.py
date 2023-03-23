@@ -1,5 +1,6 @@
-import os
 import logging
+import os
+
 from metadata import Paths
 
 

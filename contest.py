@@ -8,16 +8,18 @@ Author:
 """
 
 
+import argparse
 import os
 import shutil
-import argparse
 import subprocess
+
 from boca import boca_pack
-from metadata import Paths
-from logger import info_log
-from pdfutils import build_pdf, merge_pdfs
 from latexutils import clean_auxiliary_files
-from utils import convert_idx_to_string, verify_command, instance_paths, verify_path
+from logger import info_log
+from metadata import Paths
+from pdfutils import build_pdf, merge_pdfs
+from utils import (convert_idx_to_string, instance_paths, verify_command,
+                   verify_path)
 
 
 def create_parser() -> argparse.ArgumentParser:

@@ -1,18 +1,20 @@
 #!/usr/bin/python3
 
 import os
-from signal import SIGKILL
 import subprocess
 import sys
 import time
 from datetime import datetime
-import psutil
 from enum import Enum
-from multiprocessing import Process, cpu_count, Manager, Event, Pipe
-from metadata import Paths
-from logger import info_log, debug_log, error_log
-from multiprocessing.managers import DictProxy
+from multiprocessing import Event, Manager, Pipe, Process, cpu_count
 from multiprocessing.connection import Connection
+from multiprocessing.managers import DictProxy
+from signal import SIGKILL
+
+import psutil
+
+from logger import debug_log, error_log, info_log
+from metadata import Paths
 
 
 class Status(Enum):

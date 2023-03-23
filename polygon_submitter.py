@@ -1,17 +1,19 @@
-import os
-import sys
-import time
+import hashlib
 import json
+import os
 import random
 import string
-import hashlib
-import requests
-from metadata import Paths
-from jsonutils import parse_json
-from logger import info_log, error_log, debug_log
-from fileutils import get_statement_files
-from utils import convert_to_bytes, instance_paths, verify_problem_json, verify_path
+import sys
+import time
 
+import requests
+
+from fileutils import get_statement_files
+from jsonutils import parse_json
+from logger import debug_log, error_log, info_log
+from metadata import Paths
+from utils import (convert_to_bytes, instance_paths, verify_path,
+                   verify_problem_json)
 
 LANGUAGE = 'english'
 ENCONDING = 'utf-8'

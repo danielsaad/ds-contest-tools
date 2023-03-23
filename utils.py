@@ -1,11 +1,11 @@
 import os
 import sys
 from operator import mod
-from typing import Union, Optional
-from metadata import Paths
-from logger import setup_logger
-from logger import error_log, debug_log
 from subprocess import CompletedProcess
+from typing import Optional, Union
+
+from logger import debug_log, error_log, setup_logger
+from metadata import Paths
 
 
 def convert_idx_to_string(idx: int) -> str:

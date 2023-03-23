@@ -1,17 +1,18 @@
 import io
-import os
 import json
+import os
 import shutil
-import zipfile
-import requests
 import xml.etree.ElementTree as ET
-from metadata import Paths
-from jsonutils import parse_json
-from logger import info_log, error_log
-from fileutils import get_statement_files
-from utils import instance_paths, verify_path
-from polygon_submitter import add_auth_parameters, verify_response
+import zipfile
 
+import requests
+
+from fileutils import get_statement_files
+from jsonutils import parse_json
+from logger import error_log, info_log
+from metadata import Paths
+from polygon_submitter import add_auth_parameters, verify_response
+from utils import instance_paths, verify_path
 
 DEFAULT_LANGUAGE = 'english'
 
