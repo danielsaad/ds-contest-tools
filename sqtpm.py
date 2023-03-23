@@ -10,7 +10,7 @@ from utils import verify_problem_json, verify_path
 
 def create_config(showcases: str, memory_limit: int, cputime: int) -> None:
     """Create default config file with problem informations."""
-    output_folder = Paths.instance().dirs['output_dir']
+    output_folder = Paths().get_output_dir()
     info_log("Creating config file.")
 
     config_content = f"""description = statement.html
@@ -44,7 +44,7 @@ g++-args = -Wall -O3 -static"""
 
 def create_html_statement(problem_name: str, pdf_name: str) -> None:
     """Create statement HTML file to show the problem PDF."""
-    output_folder = Paths.instance().dirs['output_dir']
+    output_folder = Paths().get_output_dir()
     info_log("Creating HTML statement file.")
     html_content = f"""<iframe src="{problem_name}/{pdf_name}.pdf" scrolling="auto" width="100%" height="1000" frameborder="0">
     Se o PDF não renderizou, utilize <a href="{problem_name}/{pdf_name}.pdf"> para o PDF!</a></p>
@@ -55,8 +55,8 @@ def create_html_statement(problem_name: str, pdf_name: str) -> None:
 
 def copy_pdf(pdf_name: str) -> None:
     """Copy PDF of the problem."""
-    problem_folder = Paths.instance().dirs['problem_dir']
-    output_folder = Paths.instance().dirs['output_dir']
+    problem_folder = Paths().get_problem_dir()
+    output_folder = Paths().get_output_dir()
     info_log("Copying problem PDF file.")
     pdf_name += '.pdf'
     verify_path(os.path.join(problem_folder, pdf_name))
@@ -67,8 +67,8 @@ def copy_pdf(pdf_name: str) -> None:
 def copy_source_files(main_solution: str) -> None:
     """Copy generators, scripts, checker and main solution
     to the output folder."""
-    problem_folder = Paths.instance().dirs['problem_dir']
-    output_folder = Paths.instance().dirs['output_dir']
+    problem_folder = Paths().get_problem_dir()
+    output_folder = Paths().get_output_dir()
     script_folder = os.path.join(problem_folder, 'src', 'script.sh')
     generator_list = set()
 
@@ -129,7 +129,7 @@ def copy_source_files(main_solution: str) -> None:
 
 def copy_generator_script() -> None:
     """Copy script to generate test cases for SQTPM."""
-    output_folder = Paths.instance().dirs['output_dir']
+    output_folder = Paths().get_output_dir()
     info_log("Copying genio.sh script file.")
     shutil.copy2(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               'arquivos', 'sqtpm.sh'),
@@ -138,7 +138,7 @@ def copy_generator_script() -> None:
 
 def create_makefile() -> None:
     """Create Makefile to compile source files for SQTPM."""
-    output_folder = Paths.instance().dirs['output_dir']
+    output_folder = Paths().get_output_dir()
     info_log("Creating Makefile.")
     makefile_content = """SRC = $(wildcard *.cpp)
 BIN = $(patsubst %.cpp, %, $(SRC))
@@ -187,8 +187,8 @@ def convert_to_sqtpm(problem_dir: str, output_dir: str) -> None:
     """Convert DS problem to SQTPM."""
     instance_paths(problem_dir, output_dir)
     info_log("Starting DS -> SQTPM conversion.")
-    problem_folder = Paths.instance().dirs['problem_dir']
-    output_folder = Paths.instance().dirs['output_dir']
+    problem_folder = Paths().get_problem_dir()
+    output_folder = Paths().get_output_dir()
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
     verify_problem_json(problem_metadata)
     pdf_name = os.path.basename(os.path.normpath(problem_folder))
