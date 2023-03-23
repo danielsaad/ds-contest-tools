@@ -1,7 +1,7 @@
 """Tool to convert problems into DS, BOCA, Polygon or SQTPM format.
 
 Usage:
-    python3 convert.py [flags] [initial_format] [final_format] [problem_folder]
+    python3 convert.py <command> [<flags>]
 
 Author:
     Daniel Saad Nogueira Nunes
@@ -9,72 +9,106 @@ Author:
 
 
 import os
+import sys
 import argparse
 from json import dumps
-from logger import info_log
 from getpass import getpass
-from jsonutils import parse_json
-from fileutils import write_secrets
+from sqtpm import convert_to_sqtpm
 from polygon_submitter import send_to_polygon
 from polygon_converter import get_polygon_problem
 
 
-def create_parser() -> argparse.ArgumentParser:
-    """Initialize the argparser of the tool."""
+def create_parser():
+    """Initialize tool parsers."""
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('-l', '--local', help='Convert local Polygon problem.')
-    parser.add_argument('-c', '--change-keys',
-                        help='Change Polygon API keys.', action='store_true')
-    parser.add_argument('reader', choices=['BOCA', 'DS', 'Polygon'],
-                        help='Input problem format.')
-    parser.add_argument('writer', choices=['BOCA', 'DS', 'Polygon', 'SQTPM'],
-                        help='Output problem format.')
-    parser.add_argument('problem_dir', help='Path to the problem.')
-    return parser
+    subparsers = parser.add_subparsers(
+        title='list of commands',
+        description='',
+        help='DESCRIPTION',
+        metavar='COMMAND',
+        required=True
+    )
+
+    ds_parser = subparsers.add_parser(
+        'convert', help='Convert DS problem to another format.')
+    ds_parser.add_argument('format', choices=['BOCA', 'Polygon', 'SQTPM'],
+                           help='Format to convert the problem.')
+    ds_parser.add_argument(
+        'problem_dir', help='Path to the problem directory.')
+    ds_parser.add_argument(
+        'output_dir', help='Output directory of the converted problem or ID of the Polygon problem.')
+    ds_parser.set_defaults(function=lambda options: start_conversion(
+        options.problem_dir, options.output_dir, options.format))
+
+    polygon_parser = subparsers.add_parser(
+        'convert_polygon', help='Convert problem from Polygon.')
+    polygon_parser.add_argument(
+        'problem_id', help='Polygon problem ID or directory if local.')
+    polygon_parser.add_argument('-l', '--local', action='store_true')
+    polygon_parser.set_defaults(
+        function=lambda options: start_polygon_conversion(options.problem_dir, options.local))
+
+    keys_parser = subparsers.add_parser(
+        'change_keys', help='Change Polygon API keys.')
+    keys_parser.set_defaults(
+        function=lambda _: change_polygon_keys())
+
+    options = parser.parse_args()
+    options.function(options)
 
 
-def change_polygon_keys(secrets_path: str) -> None:
-    """Create new apiKey and secret file for connection with Polygon API."""
-    print('Define the keys used by Polygon API.' +
-          'They will be stored locally in the tool directory.')
+def start_polygon_conversion(problem_dir: str, local: str) -> None:
+    """Convert problem from Polygon to DS."""
+    if not local:
+        verify_polygon_keys()
+    get_polygon_problem(problem_dir, local)
+    print('Problem converted successfully.')
 
-    write_secrets()
-    keys = parse_json(secrets_path)
-    keys["apikey"] = getpass('apiKey: ')
-    keys["secret"] = getpass('secret: ')
-    with open(secrets_path, 'w') as f:
+
+def start_conversion(problem_dir: str, output_dir: str, problem_format: str) -> None:
+    """Convert problem from DS to Polygon, SQTPM or BOCA."""
+    if problem_format == 'Polygon':
+        verify_polygon_keys()
+        send_to_polygon(problem_dir)
+    elif problem_format == 'SQTPM':
+        convert_to_sqtpm(problem_dir, output_dir)
+    else:
+        print('Not implemented yet.')
+        sys.exit(0)
+    print('Problem converted successfully.')
+
+
+def change_polygon_keys() -> None:
+    """Create or change keys for Polygon API."""
+    api_key = getpass("apiKey: ")
+    if not api_key:
+        print("API Key cannot be empty.")
+        sys.exit(1)
+    secret = getpass("secret: ")
+    if not secret:
+        print("API Secret cannot be empty.")
+        sys.exit(1)
+    keys = {
+        'apiKey': api_key,
+        'secret': secret
+    }
+    with open(os.path.join(os.path.dirname(
+            os.path.abspath(__file__)), 'secrets.json'), 'w') as f:
         f.write(dumps(keys))
-    info_log("Keys defined.")
+
+    print('Keys saved. They are locally stored in the tool directory.')
 
 
-if __name__ == '__main__':
-    parser = create_parser()
-    args = parser.parse_args()
-
+def verify_polygon_keys() -> None:
+    """Check if Polygon API keys file is created."""
     tool_path = os.path.dirname(os.path.abspath(__file__))
     secrets_path = os.path.join(tool_path, 'secrets.json')
 
-    if args.reader == 'Polygon' or args.writer == 'Polygon':
-        if args.change_keys or not os.path.exists(secrets_path):
-            change_polygon_keys(secrets_path)
+    if not os.path.exists(secrets_path):
+        print("Keys are not defined. Use 'change_keys' to define it.")
+        sys.exit(1)
 
-    if (args.reader == 'Polygon'):
-        if (args.writer == 'DS'):
-            get_polygon_problem(args.problem_dir, args.local)
-            print('Problem converted successfully.')
-        else:
-            print("Not implemented yet.")
-            pass
 
-    elif (args.reader == 'DS'):
-        if (args.writer == 'Polygon'):
-            send_to_polygon(args.problem_dir)
-            print('Problem sent successfully.')
-        else:
-            print("Not implemented yet.")
-            pass
-
-    elif (args.reader == 'BOCA'):
-        print("Not implemented yet.")
-        pass
+if __name__ == '__main__':
+    create_parser()
