@@ -7,7 +7,7 @@ import config
 from fileutils import get_statement_files
 from jsonutils import parse_json
 from logger import info_log
-from utils import verify_path, verify_problem_json
+from utils import verify_path, check_problem_metadata
 
 
 def print_line(line: str, f_out: io.TextIOWrapper) -> None:
@@ -48,7 +48,7 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
     input_folder = os.path.join(problem_folder, 'input')
     output_folder = os.path.join(problem_folder, 'output')
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
-    verify_problem_json(problem_metadata)
+    check_problem_metadata(problem_metadata)
 
     statement_folder = os.path.join(problem_folder, 'statement')
     verify_path(statement_folder)

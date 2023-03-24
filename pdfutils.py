@@ -6,7 +6,7 @@ import config
 from latexutils import clean_auxiliary_files, print_to_latex
 from logger import info_log
 from metadata import Paths
-from utils import verify_command, verify_path
+from utils import check_subprocess_output, verify_path
 
 MERGE_TOOL = 'pdfjam'
 
@@ -29,7 +29,7 @@ def merge_pdfs(pdf_list: list, output_file: str) -> None:
     command = build_merge_command(pdf_list, output_file)
     p = subprocess.run(command, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE, text=True)
-    verify_command(p, "Error merging PDFs.")
+    check_subprocess_output(p, "Error merging PDFs.")
     info_log("PDFs Merged")
 
 
@@ -49,7 +49,7 @@ def build_pdf(problem_folder='', output_directory='', options=config.DEFAULT_PDF
     command = ["pdflatex", '--output-directory', folder, tex_filepath]
     p = subprocess.run(command, stdin=subprocess.PIPE,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    verify_command(p, "Generation of problem file failed.")
+    check_subprocess_output(p, "Generation of problem file failed.")
     clean_auxiliary_files(folder)
 
     # Generate tutorial PDF from tex file
@@ -59,5 +59,5 @@ def build_pdf(problem_folder='', output_directory='', options=config.DEFAULT_PDF
         command = ['pdflatex', '--output-directory', folder, tutorial_filepath]
         p = subprocess.run(command, stdin=subprocess.PIPE,
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        verify_command(p, "Generation of tutorial file failed.")
+        check_subprocess_output(p, "Generation of tutorial file failed.")
         clean_auxiliary_files(folder)

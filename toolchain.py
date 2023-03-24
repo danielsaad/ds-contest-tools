@@ -9,7 +9,7 @@ from htmlutils import print_to_html
 from jsonutils import parse_json
 from logger import debug_log, error_log, info_log
 from metadata import Paths
-from utils import verify_command, verify_path, verify_problem_json
+from utils import check_subprocess_output, verify_path, check_problem_metadata
 
 
 def build_executables() -> None:
@@ -24,7 +24,7 @@ def build_executables() -> None:
     info_log("Compiling executables")
     p = subprocess.run(['make', '-j'],
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    verify_command(p, "Makefile failed.")
+    check_subprocess_output(p, "Makefile failed.")
     os.chdir(old_cwd)
 
 
@@ -37,7 +37,7 @@ def run_programs(all_solutions) -> None:
     os.makedirs(input_folder, exist_ok=True)
     os.makedirs(output_folder, exist_ok=True)
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
-    verify_problem_json(problem_metadata)
+    check_problem_metadata(problem_metadata)
 
     old_cwd = os.getcwd()
     os.chdir(input_folder)
@@ -127,7 +127,7 @@ def generate_inputs() -> None:
         info_log("Generating inputs of generator")
         p = subprocess.run(generator_path, stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE, text=True)
-        verify_command(p, "Error generating inputs.")
+        check_subprocess_output(p, "Error generating inputs.")
 
     # Prepare input for script generation
     input_files = [f for f in os.listdir() if os.path.isfile(f)
@@ -147,7 +147,7 @@ def generate_inputs() -> None:
                            stderr=subprocess.PIPE, text=True)
         script_result = p.stdout
         p.stdout = ""
-        verify_command(p, "Error generating inputs.")
+        check_subprocess_output(p, "Error generating inputs.")
 
         temp_test = hashlib.sha1(script_result.encode()).digest()
         if temp_test in encoded_tests:
@@ -191,12 +191,14 @@ def produce_outputs(problem_metadata) -> None:
             else:
                 p = subprocess.run([ac_solution], stdin=inf, stdout=ouf,
                                    stderr=subprocess.PIPE, text=True, encoding='utf-8')
-            verify_command(p, f"Generation of output failed for input {fname}")
+            check_subprocess_output(p, f"Generation of output failed for input {fname}")
     info_log("Outputs produced successfully.")
 
 
 def clean_files() -> None:
-    """Call Makefile in order to remove executables"""
+    """
+    Call Makefile in order to remove executables
+    """
     old_cwd = os.getcwd()
     os.chdir(Paths().get_problem_dir())
     verify_path('Makefile')
@@ -204,6 +206,6 @@ def clean_files() -> None:
     command = ['make', 'clean']
     p = subprocess.run(command, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE, text=True)
-    verify_command(p, "Error cleaning executables.")
+    check_subprocess_output(p, "Error cleaning executables.")
 
     os.chdir(old_cwd)

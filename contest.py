@@ -18,7 +18,7 @@ from latexutils import clean_auxiliary_files
 from logger import info_log
 from metadata import Paths
 from pdfutils import build_pdf, merge_pdfs
-from utils import (convert_idx_to_string, instance_paths, verify_command,
+from utils import (convert_idx_to_string, instance_paths, check_subprocess_output,
                    verify_path)
 
 
@@ -116,7 +116,7 @@ def verify_problem(problem: str) -> None:
                                            'build.py'), 'build', problem]
         p = subprocess.run(command, stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE, text=True)
-        verify_command(p, f"Error building problem {problem}.")
+        check_subprocess_output(p, f"Error building problem {problem}.")
 
 
 if __name__ == '__main__':

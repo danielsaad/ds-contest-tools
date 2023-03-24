@@ -5,7 +5,7 @@ import sys
 from jsonutils import parse_json
 from logger import info_log
 from metadata import Paths
-from utils import instance_paths, verify_path, verify_problem_json
+from utils import instance_paths, verify_path, check_problem_metadata
 
 
 def create_config(showcases: str, memory_limit: int, cputime: int) -> None:
@@ -190,7 +190,7 @@ def convert_to_sqtpm(problem_dir: str, output_dir: str) -> None:
     problem_folder = Paths.instance().dirs['problem_dir']
     output_folder = Paths.instance().dirs['output_dir']
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
-    verify_problem_json(problem_metadata)
+    check_problem_metadata(problem_metadata)
     pdf_name = os.path.basename(os.path.normpath(problem_folder))
     os.makedirs(os.path.join(output_folder, 'src'), exist_ok=True)
 

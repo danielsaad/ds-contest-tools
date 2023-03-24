@@ -13,7 +13,7 @@ from jsonutils import parse_json
 from logger import debug_log, error_log, info_log
 from metadata import Paths
 from utils import (convert_to_bytes, instance_paths, verify_path,
-                   verify_problem_json)
+                   check_problem_metadata)
 
 LANGUAGE = 'english'
 ENCONDING = 'utf-8'
@@ -320,7 +320,7 @@ def get_requests_list() -> list:
     path_json = os.path.join(
         Paths().get_problem_dir(), 'problem.json')
     problem_metadata = parse_json(path_json)
-    verify_problem_json(problem_metadata)
+    check_problem_metadata(problem_metadata)
 
     requests_list = []
     interactive = problem_metadata['problem']['interactive']
