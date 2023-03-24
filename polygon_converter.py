@@ -88,7 +88,7 @@ def get_interactive_list() -> list:
 def copy_input_files() -> None:
     """Copy input files from the package to the problem folder."""
     info_log("Copying input files.")
-    problem_folder = Paths().get_output_dir()
+    problem_folder = Paths().get_problem_dir()
     file_list = get_input_list()
     destination = os.path.join(problem_folder, 'input')
     for filepath in file_list:

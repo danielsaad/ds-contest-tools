@@ -45,7 +45,7 @@ def create_parser():
     polygon_parser = subparsers.add_parser(
         'convert_polygon', help='Convert problem from Polygon.')
     polygon_parser.add_argument(
-        'problem_id', help='Polygon problem ID or directory if local.')
+        'problem_dir', help='Problem directory.')
     polygon_parser.add_argument('-l', '--local', action='store_true')
     polygon_parser.set_defaults(
         function=lambda options: start_polygon_conversion(options.problem_dir, options.local))

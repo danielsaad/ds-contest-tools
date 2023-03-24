@@ -28,8 +28,13 @@ def build_executables() -> None:
     os.chdir(old_cwd)
 
 
-def run_programs(all_solutions) -> None:
-    """Run the executables to create the problem."""
+def run_programs(all_solutions: bool) -> None:
+    """
+    Run the executables to create the problem.
+    
+    Args:
+        all_solutions (bool): Boolean indicating whether to run all solution files or not
+    """
     problem_folder = Paths().get_problem_dir()
     input_folder = os.path.join(problem_folder, 'input')
     output_folder = os.path.join(problem_folder, 'output')
@@ -54,25 +59,26 @@ def run_programs(all_solutions) -> None:
 
 
 def encode_tests(input_files: list) -> dict:
-    """Generates hash dictionary of the content of input files."""
+    """
+    Generates a dictionary of SHA-1 hash values of input file.
+    
+    Args:
+        input_files (list): List containing paths to input files.
+    """
     tests = dict()
     for fname in input_files:
         with open(fname, 'rb') as f:
             encoded = (hashlib.sha1(f.read())).digest()
-        if encoded in tests:
-            tests[encoded].append(fname)
-        else:
-            tests[encoded] = [fname]
+            tests.setdefault(encoded, []).append(fname)
     return tests
 
 
 def validate_inputs() -> None:
-    """Checks if the input files are correctly formatted 
-    by running the validator file.
-    """
+    """Validate input files by running the validator file."""
     validator_path = os.path.join('..', 'bin', 'validator')
     verify_path(validator_path)
 
+    # Check each input file with the validator
     input_files = [f for f in os.listdir() if os.path.isfile(f)
                    and not f.endswith('.interactive')]
     input_files.sort(key=custom_key)
@@ -86,8 +92,9 @@ def validate_inputs() -> None:
                 error_log(out)
                 error_log(err)
                 print("Failed validation on input", fname)
-                exit(1)
+                sys.exit(1)
 
+    # Check for equal test cases
     equal_tests = 0
     encoded_tests = encode_tests(input_files)
     for key in encoded_tests:
@@ -95,8 +102,7 @@ def validate_inputs() -> None:
             equal_tests += len(encoded_tests[key])
             info_log("Testcases " +
                      ', '.join(encoded_tests[key]) + " are equal.")
-
-    if (equal_tests):
+    if equal_tests:
         print("All test cases must be different, however there are " +
               f"{equal_tests} equal tests.")
         sys.exit(0)
@@ -161,10 +167,14 @@ def generate_inputs() -> None:
         index += 1
 
 
-def produce_outputs(problem_metadata) -> None:
-    """Run AC solution on inputs to produce the outputs."""
+def produce_outputs(problem_metadata: dict) -> None:
+    """
+    Run main solution on inputs to produce the outputs.
+    
+    Args:
+        problem_metadata (dict): Dictionary containing the values of problem.json.
+    """
     info_log("Producing outputs")
-    # change cwd to output folder
     input_files = [f for f in os.listdir(os.path.join('..', 'input'))
                    if not f.endswith('.interactive')]
     for fname in input_files:
@@ -196,9 +206,7 @@ def produce_outputs(problem_metadata) -> None:
 
 
 def clean_files() -> None:
-    """
-    Call Makefile in order to remove executables
-    """
+    """Call Makefile in order to remove executables."""
     old_cwd = os.getcwd()
     os.chdir(Paths().get_problem_dir())
     verify_path('Makefile')
