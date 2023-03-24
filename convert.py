@@ -71,7 +71,7 @@ def start_conversion(problem_dir: str, output_dir: str, problem_format: str) -> 
     """Convert problem from DS to Polygon, SQTPM or BOCA."""
     if problem_format == 'Polygon':
         verify_polygon_keys()
-        send_to_polygon(problem_dir)
+        send_to_polygon(problem_dir, output_dir)
     elif problem_format == 'SQTPM':
         convert_to_sqtpm(problem_dir, output_dir)
     else:

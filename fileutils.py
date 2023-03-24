@@ -2,6 +2,7 @@ import os
 import shutil
 from json import dumps
 from math import floor, log10
+from typing import Optional
 
 from logger import info_log
 from utils import verify_path
@@ -73,14 +74,25 @@ def write_secrets() -> None:
         f.write(dumps(secrets))
 
 
-def get_statement_files(statement_folder: str, interactive=False) -> list:
-    """Return list of needed statement files."""
-    statement_files = ['description.tex', 'input.tex',
-                       'output.tex', 'notes.tex', 'tutorial.tex']
+def get_statement_files(statement_folder: str, interactive: Optional[bool] = False) -> list:
+    """Return list of statement files of the problem.
+
+    Args:
+        statement_folder: Path to the statement folder.
+        interactive : Wheter the problem is interactive. Defaults to False.
+
+    Returns:
+        A list containing the absolute path to the statement files.
+    """
+    statement_files = ['description.tex', 
+                       'input.tex',
+                       'output.tex', 
+                       'notes.tex', 
+                       'tutorial.tex']
     if interactive:
         statement_files.append('interactor.tex')
-    statement_files = [os.path.join(statement_folder, file)
+
+    statement_files = [os.path.join(statement_folder, file) 
                        for file in statement_files]
-    # Verify if files exist
     [verify_path(file) for file in statement_files]
     return statement_files
