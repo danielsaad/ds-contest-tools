@@ -5,13 +5,22 @@ from metadata import Paths
 
 
 def setup_logger(name: str, log_file: str, level=logging.DEBUG) -> logging.Logger:
-    """Setup as many loggers as needed"""
+    """Setup a logger with the specified name, log file, and logging level.
+
+    Args:
+        name: The name of the logger.
+        log_file: The path to the log file.
+        level: The logging level. Defaults to logging.DEBUG.
+
+    Returns:
+        A logger object with the specified configurations.
+    """
     old_cwd = os.getcwd()
     formatter = logging.Formatter('%(levelname)s - %(message)s')
 
     # Generate log inside problem/contest directory
     directory = Paths().get_problem_dir()
-    if type(Paths().get_problem_dir()) is list:
+    if isinstance(directory, list):
         directory = Paths().get_output_dir()
     os.makedirs(directory, exist_ok=True)
     os.chdir(directory)
@@ -28,21 +37,33 @@ def setup_logger(name: str, log_file: str, level=logging.DEBUG) -> logging.Logge
 
 
 def info_log(text: str) -> None:
-    """Print informations of the tool to a log."""
+    """Logs information about the tool.
+
+    Args:
+        text: The information to be logged.
+    """
     tool = logging.getLogger('tool')
     if text is not None and text.rstrip() != '':
         tool.info(text.rstrip())
 
 
 def debug_log(text: str) -> None:
-    """Print debug informations of the tool to a log."""
+    """Logs debug information about the tool.
+
+    Args:
+        text: The debug information to be logged.
+    """
     debug = logging.getLogger('debug')
     if text is not None and text.rstrip() != '':
         debug.debug(text.rstrip())
 
 
 def error_log(text: str) -> None:
-    """Print errors of the tool to a log."""
+    """Logs errors that occur during tool execution.
+
+    Args:
+        text: The error information to be logged.
+    """
     tool = logging.getLogger('tool')
     if text is not None and text.rstrip() != '':
         tool.error(text.rstrip())
