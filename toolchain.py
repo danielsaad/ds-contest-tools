@@ -9,7 +9,7 @@ from htmlutils import print_to_html
 from jsonutils import parse_json
 from logger import debug_log, error_log, info_log
 from metadata import Paths
-from utils import check_subprocess_output, verify_path, check_problem_metadata
+from utils import check_problem_metadata, check_subprocess_output, verify_path
 
 
 def build_executables() -> None:

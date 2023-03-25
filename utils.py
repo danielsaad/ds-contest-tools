@@ -4,7 +4,7 @@ from operator import mod
 from subprocess import CompletedProcess
 from typing import Optional, Union
 
-from logger import debug_log, error_log, setup_logger, info_log
+from logger import debug_log, error_log, info_log, setup_logger
 from metadata import Paths
 
 

@@ -7,7 +7,7 @@ from typing import Optional
 from fileutils import recursive_overwrite, rename_io
 from jsonutils import parse_json
 from metadata import Paths
-from utils import check_subprocess_output, check_problem_metadata
+from utils import check_problem_metadata, check_subprocess_output
 
 
 class default_boca_limits:

@@ -5,7 +5,7 @@ import sys
 from jsonutils import parse_json
 from logger import info_log
 from metadata import Paths
-from utils import instance_paths, verify_path, check_problem_metadata
+from utils import check_problem_metadata, instance_paths, verify_path
 
 
 def create_config(showcases: str, memory_limit: int, cputime: int) -> None:
