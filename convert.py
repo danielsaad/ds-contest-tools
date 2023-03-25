@@ -4,6 +4,7 @@ import sys
 from getpass import getpass
 from json import dumps
 
+from fileutils import check_interactive_problem
 from polygon_converter import get_polygon_problem
 from polygon_submitter import send_to_polygon
 from sqtpm import convert_to_sqtpm
@@ -62,6 +63,11 @@ def start_polygon_conversion(problem_dir: str, local: bool, problem_id: str) -> 
 
 def start_conversion(problem_dir: str, output_dir: str, problem_format: str) -> None:
     """Convert problem from DS to Polygon, SQTPM or BOCA."""
+    interactive = check_interactive_problem()
+    if problem_format != 'Polygon' and interactive:
+        print(f'Interactive problems are not supported by {problem_format} format.')
+        sys.exit(0)
+
     if problem_format == 'Polygon':
         verify_polygon_keys()
         send_to_polygon(problem_dir, output_dir)

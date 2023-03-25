@@ -3,7 +3,9 @@ import shutil
 from math import floor, log10
 from typing import Optional
 
-from utils import verify_path
+from jsonutils import parse_json
+from metadata import Paths
+from utils import check_problem_metadata, verify_path
 
 
 def rename_io(io_folder: str) -> None:
@@ -99,3 +101,19 @@ def get_statement_files(statement_folder: str, interactive: Optional[bool] = Fal
                        for file in statement_files]
     [verify_path(file) for file in statement_files]
     return statement_files
+
+
+def check_interactive_problem() -> bool:
+    """Checks whether the problem is interactive based on the metadata.
+
+    Returns:
+        True if the problem is interactive, False otherwise.
+    """
+    problem_folder = Paths.get_problem_dir()
+    metadata_path = os.path.join(problem_folder, 'problem.json')
+    verify_path(metadata_path)
+
+    problem_metadata = parse_json(metadata_path)
+    check_problem_metadata(problem_metadata)
+
+    return problem_metadata['problem']['interactive']
