@@ -74,7 +74,7 @@ def start_conversion(problem_dir: str, output_dir: str, problem_format: str) -> 
 
 
 def change_polygon_keys() -> None:
-    """Create or change keys for Polygon API."""
+    """Prompts the user to enter their Polygon API keys and saves them to a local file."""
     api_key = getpass("apiKey: ")
     if not api_key:
         print("API Key cannot be empty.")
@@ -95,7 +95,11 @@ def change_polygon_keys() -> None:
 
 
 def verify_polygon_keys() -> None:
-    """Check if Polygon API keys file is created."""
+    """Check if the Polygon API keys file has been created and is accessible.
+
+    The function checks whether the `secrets.json` file that contains the 
+    Polygon API keys exists in the directory of this script.
+    """
     tool_path = os.path.dirname(os.path.abspath(__file__))
     secrets_path = os.path.join(tool_path, 'secrets.json')
 
