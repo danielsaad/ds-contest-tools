@@ -1,13 +1,3 @@
-"""Tool to create a contest by merging competitive problems.
-
-Usage:
-    python3 contest.py [flags] [mode] [problem_list] [output_folder]
-
-Author:
-    Daniel Saad Nogueira Nunes
-"""
-
-
 import argparse
 import os
 import shutil
