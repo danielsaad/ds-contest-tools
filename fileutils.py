@@ -1,16 +1,17 @@
 import os
 import shutil
-from json import dumps
 from math import floor, log10
 from typing import Optional
 
-from logger import info_log
 from utils import verify_path
 
 
 def rename_io(io_folder: str) -> None:
-    """Receive a list of files and add leading zeros 
-    to the name of each one.
+    """Renames files in the given directory by adding leading zeros to 
+    the filenames for numerical sorting purposes.
+
+    Args:
+        io_folder: The path of the directory to rename files in.
     """
     if os.path.isdir(io_folder):
         files = os.listdir(io_folder)
@@ -25,8 +26,16 @@ def rename_io(io_folder: str) -> None:
 
 
 def recursive_overwrite(src: str, dest: str, ignore=None) -> None:
-    """Recursively creates folders to 'dest' path and
-    copy files of 'src' to it."""
+    """Recursively creates folders to 'dest' path and copies files 
+    from 'src' to 'dest'.
+
+    Args:
+        src: The path to the source file or directory.
+        dest: The path to the destination directory.
+        ignore: A function that takes two arguments: the directory being visited, 
+                                     and a list of its contents, and returns a set of the files and/or 
+                                     directories to ignore. Default is None.
+    """
     if os.path.isdir(src):
         if not os.path.isdir(dest):
             os.makedirs(dest)
@@ -45,7 +54,14 @@ def recursive_overwrite(src: str, dest: str, ignore=None) -> None:
 
 
 def copy_directory(source: str, dest: str) -> None:
-    """Copy a directory structure overwriting existing files"""
+    """Recursively copies the directory structure and files 
+    from the source directory to the destination directory,
+    overwriting existing files.
+
+    Args:
+        source: The path to the source directory.
+        dest: The path to the destination directory.
+    """
     for root, dirs, files in os.walk(source):
         if not os.path.isdir(root):
             os.makedirs(root)
@@ -61,19 +77,6 @@ def copy_directory(source: str, dest: str) -> None:
                                 os.path.join(dest_path, file))
 
 
-def write_secrets() -> None:
-    """Write file to store sensitive information used by the tools."""
-    info_log("Writing secrets file.")
-
-    tool_path = os.path.dirname(os.path.abspath(__file__))
-    secrets = {
-        "apikey": "",
-        "secret": "",
-    }
-    with open(os.path.join(tool_path, 'secrets.json'), 'w') as f:
-        f.write(dumps(secrets))
-
-
 def get_statement_files(statement_folder: str, interactive: Optional[bool] = False) -> list:
     """Return list of statement files of the problem.
 
@@ -84,15 +87,15 @@ def get_statement_files(statement_folder: str, interactive: Optional[bool] = Fal
     Returns:
         A list containing the absolute path to the statement files.
     """
-    statement_files = ['description.tex', 
+    statement_files = ['description.tex',
                        'input.tex',
-                       'output.tex', 
-                       'notes.tex', 
+                       'output.tex',
+                       'notes.tex',
                        'tutorial.tex']
     if interactive:
         statement_files.append('interactor.tex')
 
-    statement_files = [os.path.join(statement_folder, file) 
+    statement_files = [os.path.join(statement_folder, file)
                        for file in statement_files]
     [verify_path(file) for file in statement_files]
     return statement_files
