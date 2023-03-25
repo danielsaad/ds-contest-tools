@@ -1,20 +1,12 @@
-import hashlib
-import json
 import os
-import random
-import string
 import sys
-import time
 from typing import Dict, List, Tuple
-
-import requests
 
 from fileutils import get_statement_files
 from jsonutils import parse_json
-from logger import debug_log, error_log, info_log
 from metadata import Paths
-from utils import (check_problem_metadata, convert_to_bytes, instance_paths,
-                   verify_path)
+from polygon_connection import add_requests_info, submit_requests_list
+from utils import check_problem_metadata, instance_paths, verify_path
 
 LANGUAGE = 'english'
 ENCODING = 'utf-8'
@@ -384,59 +376,6 @@ def save_test(tests_in_statement: int, interactive: bool) -> Tuple[list, bool]:
     return (parameters_list, script_saved)
 
 
-def get_apisig(method_name: str, secret: str, params: dict) -> bytes:
-    """Generate 'apiSig' value for the API authorization.
-
-    Args:
-        method_name: The method which will be called.
-        secret: Secret key used to make the connection.
-        params: Parameters of the method.
-
-    Returns:
-        Return the API signature value in bytes.
-    """
-    rand: str = ''.join(random.choices(
-        string.ascii_lowercase + string.digits, k=6))
-    rand: bytes = convert_to_bytes(rand)
-
-    param_list: dict = [(convert_to_bytes(key), params[key]) for key in params]
-    param_list.sort()
-
-    apisig: bytes = rand + b'/' + convert_to_bytes(method_name) + b'?'
-    apisig += b'&'.join([param[0] + b'=' + param[1] for param in param_list])
-    apisig += b'#' + convert_to_bytes(secret)
-
-    hash_sig: bytes = convert_to_bytes(hashlib.sha512(apisig).hexdigest())
-    return rand + hash_sig
-
-
-def add_auth_parameters(method: str, params: Dict[str, bytes], problem_id: str, api_key: str, secret_key: str) -> Dict[str, bytes]:
-    """Add authentication parameters in request for Polygon API connection.
-
-    Args:
-        method: The method which will be called.
-        params: Parameters of the method.
-        problem_id: ID of the Polygon problem.
-        api_key: API key used to make the connection.
-        secret_key: Secret key used to make the connection.
-
-    Returns:
-        A dictionary containing the methods and parameters.
-    """
-    auth_params: dict = {
-        'apiKey': api_key,
-        'time': int(time.time()),
-        'problemId': problem_id,
-    }
-    auth_params.update(params)
-
-    for key in auth_params:
-        auth_params[key] = convert_to_bytes(auth_params[key])
-    auth_params['apiSig'] = get_apisig(method, secret_key, auth_params)
-
-    return auth_params
-
-
 def get_requests_list() -> List[Tuple[str, dict]]:
     """Get each request needed to convert the problem to Polygon.
 
@@ -480,71 +419,17 @@ def get_requests_list() -> List[Tuple[str, dict]]:
     return requests_list
 
 
-def add_requests_info(problem_id: str, requests_list: List[Tuple[str, dict]]) -> List[Tuple[str, dict]]:
-    """Add authentication parameters to the Polygon request.
-
-    Args:
-        requests_list: List of requests for Polygon.
-
-    Returns:
-        The updated list with authentication parameters.
-    """
-    tool_path: str = os.path.dirname(os.path.abspath(__file__))
-    keys: dict = parse_json(os.path.join(tool_path, 'secrets.json'))
-
-    updated_requests_list: list = []
-    for method, params in requests_list:
-        method_params = add_auth_parameters(
-            method, params, problem_id, keys['apikey'], keys['secret'])
-        updated_requests_list.append((method, method_params))
-
-    return updated_requests_list
-
-
-def verify_response(response: requests.Response, method: str, params: Dict[str, List[bytes]]) -> None:
-    """Verify if the request from Polygon was successful.
-
-    Args:
-        response: Response object returned from the request.
-        method: The method used in the request.
-        params: Parameters used in the request.
-    """
-    if response.status_code == requests.codes.ok:
-        info_log(f'Request {method} successfull.')
-    elif response.status_code == requests.codes.bad_request:
-        content = json.loads(response.content.decode())
-        parameters = 'Parameters:\n'
-        for key, value in params.items():
-            parameters += f"{key}: {str(value)}\n"
-
-        error_log(f"API status: {content['status']}")
-        error_log(f"Comment: {content['comment']}")
-        error_log('Check debug.log for parameters information')
-        debug_log("API status: " + content['status'])
-        debug_log(parameters)
-        print(f"Wrong parameter of {method} method.")
-        sys.exit(1)
-    else:
-        print("Could not connect to the API.")
-        sys.exit(1)
-
-
 def send_to_polygon(problem_folder: str, problem_id: str) -> None:
     """Send problem to Polygon.
 
     Args:
         problem_folder: Path to the problem folder.
+        problem_id: ID of the Polygon problem.
     """
     verify_path(problem_folder)
     instance_paths(problem_folder)
 
-    # Get list of requests to Polygon
     requests_list: List[Tuple[str, dict]] = get_requests_list()
     requests_list = add_requests_info(problem_id, requests_list)
 
-    # Make persistent connection with Polygon and send all requests
-    conn = requests.Session()
-    url: str = 'https://polygon.codeforces.com/api/'
-    for method, params in requests_list:
-        response = conn.post(url + method, files=params)
-        verify_response(response, method, params)
+    submit_requests_list(requests_list)

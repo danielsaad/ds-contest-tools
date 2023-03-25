@@ -75,6 +75,7 @@ def init(interactive=False) -> None:
     interactive_json = os.path.join(problem_folder, 'problem-interactive.json')
     interactor_tex = os.path.join(
         *[problem_folder, 'statement', 'interactor.tex'])
+    os.remove(os.path.join(problem_folder, 'sqtpm.sh'))
     if (interactive):
         shutil.move(interactive_json, os.path.join(
             problem_folder, 'problem.json'))

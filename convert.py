@@ -1,13 +1,3 @@
-"""Tool to convert problems into DS, BOCA, Polygon or SQTPM format.
-
-Usage:
-    python3 convert.py <command> [<flags>]
-
-Author:
-    Daniel Saad Nogueira Nunes
-"""
-
-
 import argparse
 import os
 import sys
@@ -46,9 +36,12 @@ def create_parser():
         'convert_polygon', help='Convert problem from Polygon.')
     polygon_parser.add_argument(
         'problem_dir', help='Problem directory.')
+
+    polygon_parser.add_argument(
+        'problem_id', help='Polygon Problem ID or local directory.')
     polygon_parser.add_argument('-l', '--local', action='store_true')
     polygon_parser.set_defaults(
-        function=lambda options: start_polygon_conversion(options.problem_dir, options.local))
+        function=lambda options: start_polygon_conversion(options.problem_dir, options.local, options.problem_id))
 
     keys_parser = subparsers.add_parser(
         'change_keys', help='Change Polygon API keys.')
@@ -59,11 +52,11 @@ def create_parser():
     options.function(options)
 
 
-def start_polygon_conversion(problem_dir: str, local: str) -> None:
+def start_polygon_conversion(problem_dir: str, local: bool, problem_id: str) -> None:
     """Convert problem from Polygon to DS."""
     if not local:
         verify_polygon_keys()
-    get_polygon_problem(problem_dir, local)
+    get_polygon_problem(problem_dir, problem_id, local)
     print('Problem converted successfully.')
 
 
