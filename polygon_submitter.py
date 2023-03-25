@@ -296,7 +296,7 @@ def save_tags(tag_list: List[str]) -> Tuple[str, dict]:
     return ('problem.saveTags', params)
 
 
-def save_test(tests_in_statement: int, interactive: bool) -> Tuple[list, bool]:
+def save_test(tests_in_statement: int, interactive: bool) -> list:
     """
     Generate a list of requests to save input and output files for a problem.
 
@@ -326,7 +326,6 @@ def save_test(tests_in_statement: int, interactive: bool) -> Tuple[list, bool]:
             total_inputs -= total_scripts
 
     parameters_list: list = []
-    script_saved: bool = False
     for input_file in os.listdir(input_folder):
         if input_file.endswith('.interactive'):
             continue
@@ -348,15 +347,8 @@ def save_test(tests_in_statement: int, interactive: bool) -> Tuple[list, bool]:
             'testUseInStatements': str(test_use_in_statements).lower()
         }
 
+        # Save interactive test and its unique input/output statement
         if interactive and test_use_in_statements:
-            # Save script in Polygon
-            if not script_saved:
-                script = save_script()
-                if script is not None:
-                    parameters_list.append(script)
-                script_saved = True
-
-            # Save '.interactive' test input
             input_path += '.interactive'
             output_path = os.path.join(
                 output_folder, input_file + '.interactive')
@@ -370,10 +362,9 @@ def save_test(tests_in_statement: int, interactive: bool) -> Tuple[list, bool]:
 
             params['testInputForStatements'] = test_input_statement
             params['testOutputForStatements'] = test_output_statement
-            params.pop('testInput')
 
         parameters_list.append(('problem.saveTest', params))
-    return (parameters_list, script_saved)
+    return parameters_list
 
 
 def get_requests_list() -> List[Tuple[str, dict]]:
@@ -408,12 +399,11 @@ def get_requests_list() -> List[Tuple[str, dict]]:
     requests_list += save_files(problem_metadata['solutions'])
 
     # Get test parameters of the problem
-    test_results = save_test(problem_metadata['io_samples'], interactive)
-    requests_list = requests_list + test_results[0]
+    requests_list += save_test(problem_metadata['io_samples'], interactive)
 
     # Get script parameters of the problem
     if script := save_script():
-        if not test_results[1] and script is not None:
+        if script is not None:
             requests_list.append(script)
 
     return requests_list
