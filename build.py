@@ -17,7 +17,7 @@ from boca import boca_pack
 from metadata import Paths
 from logger import info_log
 from pdfutils import build_pdf
-from utils import instance_paths
+from utils import instance_paths, verify_path
 from toolchain import build_executables, run_programs, clean_files
 
 
@@ -26,7 +26,7 @@ def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-i', '--interactive', action='store_true',
-                        default=False, help='set problem to interative on init')
+                        default=False, help='init interactive problem')
     parser.add_argument('-a', '--all', action='store_true',
                         default=False, help='run all the solutions')
     parser.add_argument(
@@ -37,7 +37,6 @@ def create_parser() -> argparse.ArgumentParser:
         'pack2boca: pack a problem to BOCA format.\n' +
         'clean: remove executables of a DS problem.\n')
     parser.add_argument('problem_id', nargs='?')
-
     return parser
 
 
@@ -61,8 +60,8 @@ def build(all_solutions=False) -> None:
 
 def init(interactive=False) -> None:
     """Initialize a competitive problem."""
-    problem_folder = Paths.instance().dirs["problem_dir"]
-    if (os.path.exists(os.path.join(problem_folder, 'src'))):
+    problem_folder = Paths().get_problem_dir()
+    if os.path.exists(os.path.join(problem_folder, 'src')):
         print("Problem ID already exists in the directory")
         sys.exit(1)
 
@@ -78,6 +77,13 @@ def init(interactive=False) -> None:
     if (interactive):
         shutil.move(interactive_json, os.path.join(
             problem_folder, 'problem.json'))
+        # Create .interactive files for statement
+        os.makedirs(os.path.join(problem_folder, 'input'))
+        os.makedirs(os.path.join(problem_folder, 'output'))
+        open(os.path.join(
+            *[problem_folder, 'input', '1.interactive']), 'w').close()
+        open(os.path.join(
+            *[problem_folder, 'output', '1.interactive']), 'w').close()
     else:
         os.remove(interactor_tex)
         os.remove(interactive_json)
@@ -91,18 +97,19 @@ def pack2boca() -> None:
 
 def clean() -> None:
     """Call functions to clean executables"""
-    if (not os.path.exists(Paths.instance().dirs["problem_dir"])):
-        print("Path to problem does not exists.")
-        sys.exit(1)
     clean_files()
 
 
 if __name__ == "__main__":
     parser = create_parser()
     args = parser.parse_args()
+
     if not args.problem_id:
         parser.error(args.mode + ' mode requires a problem id. Usage: ' +
                      sys.argv[0] + ' ' + args.mode + ' <problem ID>')
+    if args.mode != 'init':
+        verify_path(args.problem_id)
+        
     instance_paths(args.problem_id)
     if (args.mode == 'init'):
         info_log('Initializing problem ' + args.problem_id)
@@ -119,8 +126,9 @@ if __name__ == "__main__":
         genpdf()
         print("PDFs generated.")
     elif (args.mode == 'genio'):
+        info_log("Generating input and output.")
         genio(args.all)
-        print("Input and Output generated.")
+        print("Input and output generated.")
     elif (args.mode == 'clean'):
         clean()
         print('Files removed successfully.')
