@@ -1,12 +1,13 @@
 import os
-import sys
 import shutil
 import subprocess
-from metadata import Paths
+import sys
 from typing import Optional
-from utils import verify_command, verify_problem_json
-from jsonutils import parse_json
+
 from fileutils import recursive_overwrite, rename_io
+from jsonutils import parse_json
+from metadata import Paths
+from utils import check_problem_metadata, check_subprocess_output
 
 
 class default_boca_limits:
@@ -23,7 +24,7 @@ def boca_zip(boca_folder: str) -> None:
     zip_filename = os.path.basename(boca_folder)+'.zip'
     p = subprocess.run('zip'+' -r ' + zip_filename + ' . ', shell=True,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    verify_command(p, "Error ziping boca file.")
+    check_subprocess_output(p, "Error ziping boca file.")
     os.rename(zip_filename, os.path.join('..', zip_filename))
     os.chdir(old_cwd)
 
@@ -41,7 +42,7 @@ def boca_pack(problem_folder: Optional[str] = '') -> None:
     # Get problem metadata
     tl = 0
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
-    verify_problem_json(problem_metadata)
+    check_problem_metadata(problem_metadata)
     basename = os.path.basename(os.path.abspath(problem_folder))
     filename = os.path.join(problem_folder, basename)
     boca_description_folder = os.path.join(boca_folder, 'description')

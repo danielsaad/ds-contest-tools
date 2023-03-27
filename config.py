@@ -5,7 +5,12 @@ DEFAULT_PDF_OPTIONS = {
 
 
 def custom_key(str: str) -> tuple:
-    """Sorting function. Firstly sort by lenght and 
-    secondly by lexicographical order.
+    """Sorts a string by its length and lexicographical order.
+
+    Args:
+        str: A string to be sorted.
+
+    Returns:
+        A tuple consisting of the length of the string and the string in lowercase.
     """
     return +len(str), str.lower()

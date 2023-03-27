@@ -1,37 +1,62 @@
-import os
 import io
+import os
 import re
-import sys
+
 import config
-from logger import info_log
-from jsonutils import parse_json
-from utils import verify_problem_json, verify_path
 from fileutils import get_statement_files
+from jsonutils import parse_json
+from logger import info_log
+from utils import check_problem_metadata, verify_path
 
 
 def print_line(line: str, f_out: io.TextIOWrapper) -> None:
-    """Prints 'line' on a file."""
+    """Writes a line to a file.
+
+    Args:
+        line: The line to be written to the file.
+        f_out: The file to which the line will be written.
+    """
     print(line, file=f_out, end='')
 
 
 def multiple_replace(patterns: dict, text: str) -> str:
-    """Replace key characters in patterns with their values."""
+    """Performs multiple string replacements on a given text.
+
+    This function replaces all occurrences of keys in the given `patterns`
+    dictionary with their corresponding values in the given `text`.
+
+    Args:
+        patterns: A dictionary of patterns to be replaced in the text.
+        text: The text on which to perform the replacements.
+
+    Returns:
+        The modified text with all the patterns replaced.
+    """
     regex = re.compile("(%s)" % "|".join(map(re.escape, patterns.keys())))
     return regex.sub(lambda mo: patterns[mo.string[mo.start():mo.end()]], text)
 
 
 def get_io(io_folder: str, problem_metadata: dict) -> list:
-    """Returns I/O lines for the examples of the PDF."""
+    """Return input/output examples for the problem from the given folder.
+
+    Args:
+        io_folder: The path to the directory containing the input/output files.
+        problem_metadata: A dictionary containing metadata about the problem.
+
+    Returns:
+        A list of input/output examples to be used in the PDF.
+    """
     l = []
     io_samples = problem_metadata["io_samples"]
     interactive = problem_metadata['problem']['interactive']
 
-    if (interactive):
+    if interactive:
         io_files = [os.path.join(io_folder, str(f)+'.interactive')
                     for f in range(1, io_samples+1)]
     else:
         io_files = [os.path.join(io_folder, str(f))
                     for f in range(1, io_samples+1)]
+        
     for f in io_files:
         verify_path(f)
         tc_io = []
@@ -43,11 +68,19 @@ def get_io(io_folder: str, problem_metadata: dict) -> list:
 
 
 def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
-    """Generates '.tex' file of a problem."""
+    """Generates a '.tex' file of a problem from the given problem folder path.
+    
+    Args:
+        problem_folder: The path of the problem folder.
+        options: The dictionary with optional configuration for PDF file generation.
+            This dictionary contains the following keys:
+            - display_author (bool): Whether to include the author's name in the problem description. Default is True.
+            - problem_label (str): The label to identify the problem. Default is an empty string.
+    """
     input_folder = os.path.join(problem_folder, 'input')
     output_folder = os.path.join(problem_folder, 'output')
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
-    verify_problem_json(problem_metadata)
+    check_problem_metadata(problem_metadata)
 
     statement_folder = os.path.join(problem_folder, 'statement')
     verify_path(statement_folder)
@@ -156,7 +189,13 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
 
 def print_tutorial_to_latex(problem_folder: str, problem_metadata: dict,
                             tutorial_lines: list) -> None:
-    """Generates '-tutorial.tex' file of a problem."""
+    """Generates the LaTeX file for the tutorial of a problem.
+
+    Args:
+        problem_folder: The path to the problem directory.
+        problem_metadata: The dictionary containing the problem metadata.
+        tutorial_lines: A list of strings containing the tutorial lines.
+    """
     tex_filepath = os.path.join(problem_folder, os.path.basename(
         os.path.abspath(problem_folder)) + '-tutorial.tex')
     info_log(f"Creating {os.path.basename(tex_filepath)}")
@@ -178,10 +217,18 @@ def print_tutorial_to_latex(problem_folder: str, problem_metadata: dict,
         print("\\end{document}", file=f_out)
 
 
-def clean_auxiliary_files(folder: str) -> None:
-    """Remove files created after running the command 'pdflatex'."""
-    files = [os.path.join(folder, x) for x in os.listdir(folder) if x.endswith(
-        '.aux') or (x.endswith('.log') and not x == 'tool.log' and not
-                    x == 'debug.log') or x.endswith('.out')]
-    for f in files:
-        os.remove(f)
+def clean_auxiliary_files(folder: str, extensions: list = None) -> None:
+    """Remove files with specified extensions from a given directory.
+
+    Args:
+        folder: The directory to clean up.
+        extensions: A list of file extensions to remove.
+    """
+    if extensions is None:
+        extensions = ['.aux', '.log', '.out']
+    
+    for root, _, files in os.walk(folder):
+        for f in files:
+            ext = os.path.splitext(f)[1]
+            if ext in extensions and f not in ['tool.log', 'debug.log']:
+                os.remove(os.path.join(root, f))
