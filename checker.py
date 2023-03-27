@@ -34,6 +34,7 @@ class ProblemAnswer(Enum):
 
 """ Java definitions """
 JAVA_INTERPRETER = 'java'
+JAVA_FLAG = '-classpath'
 
 """ Python3 definitions """
 PYTHON3_INTERPRETER = 'python3'
@@ -76,7 +77,6 @@ def run_binary(binary_file: str, input_folder: str, output_folder: str,
                 _, stderr = p.communicate(
                     timeout=2*problem_limits['time_limit'])
                 if p.returncode < 0 or stderr:
-                    print(stderr, file=ouf)
                     status = Status.RE
             except subprocess.TimeoutExpired:
                 status = Status.HARD_TLE
@@ -121,7 +121,7 @@ def run(submission_file: str, input_folder: str, output_folder: str,
     elif (ext == '.java'):
         problem_id = os.path.join(problem_folder, 'bin')
         binary_file: str = os.path.basename(binary_file)
-        interpreter: str = f'{JAVA_INTERPRETER} -classpath {problem_id}'
+        interpreter: str = f'{JAVA_INTERPRETER} {JAVA_FLAG} {problem_id}'
         start_time = time.perf_counter()
         output_dict = create_thread(binary_file, input_folder,
                                     output_folder, input_files, problem_limits, expected_result, interpreter)
@@ -316,3 +316,4 @@ def memory_monitor(pid: int, memory_limit: int, event: Event, con: Connection) -
         return
     finally:
         con.send((mem_usage, status))
+        con.close()
