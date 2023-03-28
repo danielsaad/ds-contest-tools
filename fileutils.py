@@ -109,7 +109,7 @@ def check_interactive_problem() -> bool:
     Returns:
         True if the problem is interactive, False otherwise.
     """
-    problem_folder = Paths.get_problem_dir()
+    problem_folder = Paths().get_problem_dir()
     metadata_path = os.path.join(problem_folder, 'problem.json')
     verify_path(metadata_path)
 

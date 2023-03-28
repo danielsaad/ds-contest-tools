@@ -67,7 +67,7 @@ def init(interactive=False) -> None:
         sys.exit(1)
 
     folder = os.path.join(os.path.dirname(
-        os.path.abspath(__file__)), 'arquivos')
+        os.path.abspath(__file__)), 'files')
     shutil.copytree(folder, problem_folder,
                     ignore=shutil.ignore_patterns('boca'), dirs_exist_ok=True)
     # Rename files and folders if the problem is interactive

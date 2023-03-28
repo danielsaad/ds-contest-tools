@@ -252,7 +252,7 @@ def init_problem(interactive: bool) -> None:
     """
     info_log("Initializing problem folder.")
     tool_path = os.path.dirname(os.path.abspath(__file__))
-    source_folder = os.path.join(tool_path, 'arquivos')
+    source_folder = os.path.join(tool_path, 'files')
     problem_folder = Paths().get_problem_dir()
 
     # Create necessary directories

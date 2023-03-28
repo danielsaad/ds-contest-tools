@@ -35,7 +35,7 @@ def boca_pack(problem_folder: Optional[str] = '') -> None:
         problem_folder = Paths().get_problem_dir()
 
     boca_template_folder = os.path.join(
-        *[os.path.dirname(os.path.abspath(__file__)), 'arquivos', 'boca'])
+        *[os.path.dirname(os.path.abspath(__file__)), 'files', 'boca'])
     boca_folder = os.path.join(*[problem_folder, 'boca'])
     # Copy template files
     recursive_overwrite(boca_template_folder, boca_folder)

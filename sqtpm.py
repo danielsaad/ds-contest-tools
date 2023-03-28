@@ -132,7 +132,7 @@ def copy_generator_script() -> None:
     output_folder = Paths().get_output_dir()
     info_log("Copying genio.sh script file.")
     shutil.copy2(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                              'arquivos', 'sqtpm.sh'),
+                              'files', 'sqtpm.sh'),
                  os.path.join(output_folder, 'genio.sh'))
 
 
