@@ -46,17 +46,16 @@ def write_file(statement_file: str, statement: io.TextIOWrapper) -> str:
 def convert_statement() -> None:
     """Create statement directory and its files."""
     problem_path = Paths().get_problem_dir()
-    if not os.path.join(problem_path, 'statement.md'):
+    statement_dir = os.path.join(problem_path, 'statement')
+    statement_path = os.path.join(problem_path, 'statement.md')
+    if not os.path.exists(statement_path):
         return
 
     info_log('Converting statement.md to TeX files.')
-    statement_dir = os.path.join(problem_path, 'statement')
-    statement_path = os.path.join(problem_path, 'statement.md')
     os.makedirs(statement_dir, exist_ok=True)
-
     with open(statement_path, 'r') as statement:
         statement.readline()
-
+        
         files = {
             'description': 'description',
             'input': 'input',
@@ -123,8 +122,10 @@ def convert_problem_json() -> None:
         for subkey, subvalue in value.items():
             new_problem_metadata[key][subkey] = subvalue
 
-    del new_problem_metadata['problem']['id']
-    del new_problem_metadata['problem']['label']
+    if 'id' in new_problem_metadata['problem']:
+        del new_problem_metadata['problem']['id']
+    if 'label' in new_problem_metadata['problem']:
+        del new_problem_metadata['problem']['label']
 
     with open(metadata_path, 'w') as f:
         f.write(json.dumps(new_problem_metadata, ensure_ascii=False))
