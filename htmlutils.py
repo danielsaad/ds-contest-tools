@@ -25,7 +25,7 @@ def write_head(problem_name: str, f_out: io.TextIOWrapper) -> None:
 def write_nav_bar(f_out: io.TextIOWrapper) -> None:
     nav_bar: str = """
     <body>
-    <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-body-tertiary bg-dark" data-bs-theme="dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-body-tertiary bg-dark" data-bs-theme="dark">
         <div class="container">
             <a class="navbar-brand h1 mb-0" href="./index.html">DS-CONTEST-TOOL</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -35,13 +35,7 @@ def write_nav_bar(f_out: io.TextIOWrapper) -> None:
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#">Resultado</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Uso de memória</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Tempo de Execução</a>
+                            <a class="nav-link active" aria-current="page" href="./index.html">Relatório</a>
                         </li>
                     </ul>
                 </div>
@@ -84,7 +78,7 @@ def solutions_list(solutions_info_dict: dict) -> list:
 def write_test_case_table(solutions_info_dict: dict, solutions: list, f_out: io.TextIOWrapper) -> None:
     thead: str = """
     <table class="table table-hover table-bordered border-secondary">
-        <thead class="table-secondary">
+        <thead class="table-secondary sticky-top">
             <tr class="text-center">
                 <th>#</th>
     """
@@ -107,8 +101,8 @@ def write_test_cases_tbody(solutions_info_dict: dict, solutions: list, f_out: io
     n_test_cases: int = len(
         solutions_info_dict[solutions[0]]['test-case-info'])
     for i in range(n_test_cases):
-        print(f'<tr class="text-center">\n', file=f_out)
-        print(f'\t<td class="text-start">{i + 1}</td>', file=f_out)
+        print(f'<tr class="text-center">', file=f_out)
+        print(f'\t<td class="fw-bolder">{i + 1}</td>', file=f_out)
         for solution in solutions:
             test_case_info: list = solutions_info_dict[solution
                                                        ]['test-case-info'][i]
@@ -116,9 +110,9 @@ def write_test_cases_tbody(solutions_info_dict: dict, solutions: list, f_out: io
             memo_info: int = test_case_info[2]
             exec_time: float = test_case_info[1]
             print(
-                f'\t<td class="{test_color_class}">{test_status} | {memo_info // 1000} | {exec_time:.2f}</td>', file=f_out)
+                f'\t<td class="{test_color_class}"><a href="./assets/test-case-info.html?id={i + 1}&solution={solution}">{test_status} </a> <br>{exec_time:.2f} / {(memo_info // 1000000):.1f} </td>', file=f_out)
         print(f'</tr>', file=f_out)
-        
+
     tbody = """
                             </tbody>
                         </table>
@@ -161,27 +155,27 @@ def write_auxiliary_table(solutions_info_dict, f_out) -> None:
                     <th>Resultado</th>
                 </tr>
             </thead>
-             <tbody>
+             <tbody>\
     """
     print(table_init, file=f_out)
     write_aux_trow(solutions_info_dict, f_out)
     table_end = """
             </tbody>
         </table>
-    </div>
+    </div>\
     """
     print(table_end, file=f_out)
 
 
 def write_aux_trow(solutions_info_dict: dict, f_out: io.TextIOWrapper) -> None:
     for solution, solution_info in solutions_info_dict.items():
-        print('<tr>\n', file=f_out)
+        print('<tr>', file=f_out)
         row_color, solution_result_symbol = solution_status(
             solution_info['solution-result']['solution-result'])
-        print(f'\t<td>{solution}</td>\n', file=f_out)
+        print(f'\t<td>{solution}</td>', file=f_out)
         print(
-            f'\t<td class="{row_color}">{solution_result_symbol}</td>\n', file=f_out)
-        print('</tr>\n', file=f_out)
+            f'\t<td class="{row_color}">{solution_result_symbol}</td>', file=f_out)
+        print('</tr>', file=f_out)
 
 
 def solution_status(result: ProblemAnswer) -> str:
@@ -199,15 +193,14 @@ def solution_status(result: ProblemAnswer) -> str:
 
 def write_footer(f_out: io.TextIOWrapper) -> None:
     footer = """
-     <footer class="bg-dark text-white pt-4 pb-4">
+     <footer class="bg-dark text-white pt-4 pb-4 position-absolute bottom-0">
         <div class="container text-center text-md-left">
             <div class="row text-center text-md-left">
                 <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
                     <h5 class="text-uppercase mb-4 font-weight-bold text-warning">DS CONTEST TOOL</h5>
                     <p>
-                        Lorem ipsum, dolor sit amet consectetur adipisicing elit. Soluta modi ad aut fuga libero asperiores
-                        minus! Sunt facilis illo ipsum delectus tempora consequatur nam dolorum. Temporibus facere expedita
-                        dolores consectetur?
+                        Essa ferramenta de preparação de competições de progamação competitiva objetiva facilitar e
+						simplificar a formatação de problemas para a criação de <span class="fst-italic">contests</span>.
                     </p>
                 </div>
                 <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mt-3">
@@ -215,32 +208,29 @@ def write_footer(f_out: io.TextIOWrapper) -> None:
                     <p>
                         <a href="https://github.com/danielsaad/ds-contest-tools" class="text-white" style="text-decoration: none;" target="_blank">GitHub</a>
                     </p>
-    
-                    
                     <p>
-                        <a href="#" class="text-white" style="text-decoration: none;">Source Files</a>
-                    </p>
-                    <p>
-                        <a href="#" class="text-white" style="text-decoration: none;">BootStrap 5</a>
-                    </p>
-                    <p>
-                        <a href="#" class="text-white" style="text-decoration: none;">BootStrap 5</a>
-                    </p>
-
+						<a href="https://www.ifb.edu.br/taguatinga/pagina-inicial" class="text-white"
+							style="text-decoration: none;" target="_blank">Instituto Federal de Brasília - Campus
+							Taguatinga</a>
+					</p>                
                 </div>
                 <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mt-3">
                     <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Contact</h5>
                     <p>
-                        <i class="fas fa-home mr-3"></i> Brasília, DF, BR
-                    </p>
+						<a href="https://goo.gl/maps/BKp6Yg7mjcz4ZWhL9" class="text-white"
+							style="text-decoration: none;" target="_blank">
+							<i class="fas fa-home mr-3">
+								Instituto Federal de Brasília - Campus Taguatinga <br>
+								QNM 40, Área Especial 01, às margens da BR 070. Taguatinga/DF.
+							</i>
+						</a>
+					</p>
                 </div>        
-
             </div>
         </div>
     </footer>
 
 </body>
-
 </html>
     """
     print(footer, file=f_out)
