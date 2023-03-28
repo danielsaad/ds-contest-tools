@@ -9,16 +9,17 @@ Author:
 """
 
 
-import os
-import sys
-import shutil
 import argparse
+import os
+import shutil
+import sys
+
 from boca import boca_pack
-from metadata import Paths
 from logger import info_log
+from metadata import Paths
 from pdfutils import build_pdf
+from toolchain import build_executables, clean_files, run_programs
 from utils import instance_paths, verify_path
-from toolchain import build_executables, run_programs, clean_files
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -74,6 +75,7 @@ def init(interactive=False) -> None:
     interactive_json = os.path.join(problem_folder, 'problem-interactive.json')
     interactor_tex = os.path.join(
         *[problem_folder, 'statement', 'interactor.tex'])
+    os.remove(os.path.join(problem_folder, 'sqtpm.sh'))
     if (interactive):
         shutil.move(interactive_json, os.path.join(
             problem_folder, 'problem.json'))

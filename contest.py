@@ -1,23 +1,15 @@
-"""Tool to create a contest by merging competitive problems.
-
-Usage:
-    python3 contest.py [flags] [mode] [problem_list] [output_folder]
-
-Author:
-    Daniel Saad Nogueira Nunes
-"""
-
-
+import argparse
 import os
 import shutil
-import argparse
 import subprocess
+
 from boca import boca_pack
-from metadata import Paths
-from logger import info_log
-from pdfutils import build_pdf, merge_pdfs
 from latexutils import clean_auxiliary_files
-from utils import convert_idx_to_string, verify_command, instance_paths, verify_path
+from logger import info_log
+from metadata import Paths
+from pdfutils import build_pdf, merge_pdfs
+from utils import (check_subprocess_output, convert_idx_to_string,
+                   instance_paths, verify_path)
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -114,7 +106,7 @@ def verify_problem(problem: str) -> None:
                                            'build.py'), 'build', problem]
         p = subprocess.run(command, stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE, text=True)
-        verify_command(p, f"Error building problem {problem}.")
+        check_subprocess_output(p, f"Error building problem {problem}.")
 
 
 if __name__ == '__main__':

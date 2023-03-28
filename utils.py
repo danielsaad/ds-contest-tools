@@ -1,20 +1,26 @@
 import os
 import sys
 from operator import mod
-from typing import Union, Optional
-from metadata import Paths
-from logger import setup_logger
-from logger import error_log, debug_log
 from subprocess import CompletedProcess
+from typing import Optional, Union
+
+from logger import debug_log, error_log, info_log, setup_logger
+from metadata import Paths
 
 
 def convert_idx_to_string(idx: int) -> str:
-    """Convert an integer to a string from
-    alphabet [A-Z] using radix 26.
     """
-    ans = ''
+    Convert an integer to a string from alphabet [A-Z] using radix 26.
+
+    Args:
+        idx (int): The integer to be converted.
+
+    Returns:
+        str: The string representing the integer in base 26.
+    """
+    ans: str = ''
     while True:
-        rem = mod(idx, 26)
+        rem: int = mod(idx, 26)
         ans += chr(ord('A')+rem)
         idx //= 26
         if idx == 0:
@@ -23,14 +29,28 @@ def convert_idx_to_string(idx: int) -> str:
 
 
 def convert_to_bytes(x) -> bytes:
-    """Convert a string to bytes."""
+    """
+    Convert a string to bytes.
+
+    Args:
+        x: The string to be converted.
+
+    Returns:
+        bytes: The bytes representation of the string.
+    """
     if isinstance(x, bytes):
         return x
     return bytes(str(x), 'utf8')
 
 
-def verify_command(p: CompletedProcess, message: str) -> None:
-    """Check if the output of the function 'subprocess.run' is ok."""
+def check_subprocess_output(p: CompletedProcess, message: str) -> None:
+    """
+    Check if the output of the function 'subprocess.run' is ok.
+
+    Args:
+        p (CompletedProcess): The completed process returned by the 'subprocess.run' function.
+        message (str): The message to be printed in case of an error.
+    """
     if p.returncode:
         error_log(p.stdout)
         error_log(p.stderr)
@@ -44,24 +64,33 @@ def verify_command(p: CompletedProcess, message: str) -> None:
 
 
 def instance_paths(problem_dir: Union[str, list], output_dir: Optional[str] = '') -> None:
-    """Initialize metadata dictionary and logs."""
-    if (type(problem_dir) is list):
+    """
+    Initialize metadata dictionary and logs.
+
+    Args:
+        problem_dir (Union[str, list]): The path(s) to the problem directory(ies).
+        output_dir (Optional[str]): The path to the output directory.
+    """
+    if isinstance(problem_dir, list):
         problem_dir = [os.path.abspath(s) for s in problem_dir]
     else:
         problem_dir = os.path.abspath(problem_dir)
-    output_dir = os.path.abspath(output_dir)
+    output_dir = os.path.abspath(output_dir) if output_dir else ''
+
     Paths(problem_dir, output_dir)
     setup_logger('tool', 'tool.log')
     setup_logger('debug', 'debug.log')
 
 
-def verify_problem_json(problem_json: dict) -> None:
-    """Verify values in problem.json."""
+def verify_solutions(solutions_dict: dict) -> None:
+    """
+    Verify if solutions exists in the src folder.
 
-    # Verify solution paths
-    solutions_dict = problem_json['solutions']
-    problem_folder = Paths().get_problem_dir()
-    for key, solutions in solutions_dict.items():
+    Args:
+        solutions_dict (dict): Dictionary containing the solutions of the problem.
+    """
+    problem_folder: Union[list, str] = Paths().get_problem_dir()
+    for _, solutions in solutions_dict.items():
         # Ignore verification due to creation of contest
         if isinstance(problem_folder, list):
             break
@@ -73,22 +102,46 @@ def verify_problem_json(problem_json: dict) -> None:
         for file in solutions:
             verify_path(os.path.join(problem_folder, 'src', file))
 
-    # Verify instance of variables
-    if not isinstance(problem_json['problem']['time_limit'], int):
-        print("Variable 'time-limit' in problem.json is invalid.")
-    elif not isinstance(problem_json['problem']['memory_limit_mb'], int):
-        print("Variable 'memory-limit' in problem.json is invalid.")
-    elif not isinstance(problem_json['io_samples'], int):
-        print("Variable 'io_samples' in problem.json is invalid.")
-    elif not isinstance(problem_json['problem']['interactive'], bool):
-        print("Variable 'interactive' in problem.json is invalid.")
-    else:
-        return
-    sys.exit(1)
+
+def check_problem_metadata(problem_metadata: dict) -> None:
+    """
+    Check variables inside problem.json for type errors.
+
+    Args:
+        problem_metadata (dict): The problem.json file as a dictionary.
+    """
+    info_log("Check problem.json for type errors")
+    verify_solutions(problem_metadata['solutions'])
+
+    expected_types = {
+        'problem': {'time_limit': int, 'memory_limit_mb': int, 'interactive': bool},
+        'io_samples': int
+    }
+    for key in expected_types:
+        if key not in problem_metadata:
+            print(f"Variable {key} is not defined in problem.json.")
+            sys.exit(1)
+        
+        if key == 'io_samples':
+            if not isinstance(problem_metadata[key], expected_types[key]):
+                print(f"Variable '{key}' is not a(n) {expected_types[key].__name__}.")
+                sys.exit(1)
+            continue
+
+        for subkey, expected_type in expected_types[key].items():
+            value = problem_metadata[key].get(subkey)
+            if not isinstance(value, expected_type):
+                print(f"Variable '{subkey}' in '{key}' is not a(n) {expected_type.__name__}.")
+                sys.exit(1)
 
 
 def verify_path(path: str) -> None:
-    """Verify if path exists in folder"""
+    """
+    Verify if path exists in folder.
+
+    Args:
+        path (str): Path to the file.
+    """
     if not os.path.exists(path):
         print(f'{os.path.relpath(path)} does not exist.')
         sys.exit(1)

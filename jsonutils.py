@@ -1,10 +1,17 @@
 import json
-import sys
 import os
+import sys
 
 
 def parse_json(json_file: str) -> dict:
-    """Receives a path to a '.json' file and converts it to a dict."""
+    """Converts a JSON file to a Python dictionary.
+
+    Args:
+        json_file: The path to the JSON file.
+
+    Returns:
+        dict: The contents of the JSON file as a dictionary.
+    """
     json_data = {}
 
     if not os.path.isfile(json_file):
@@ -13,4 +20,5 @@ def parse_json(json_file: str) -> dict:
 
     with open(json_file) as f:
         json_data = json.load(f)
+
     return json_data

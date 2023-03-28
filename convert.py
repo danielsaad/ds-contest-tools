@@ -1,21 +1,13 @@
-"""Tool to convert problems into DS, BOCA, Polygon or SQTPM format.
-
-Usage:
-    python3 convert.py <command> [<flags>]
-
-Author:
-    Daniel Saad Nogueira Nunes
-"""
-
-
+import argparse
 import os
 import sys
-import argparse
-from json import dumps
 from getpass import getpass
-from sqtpm import convert_to_sqtpm
-from polygon_submitter import send_to_polygon
+from json import dumps
+
+from fileutils import check_interactive_problem
 from polygon_converter import get_polygon_problem
+from polygon_submitter import send_to_polygon
+from sqtpm import convert_to_sqtpm
 
 
 def create_parser():
@@ -44,10 +36,13 @@ def create_parser():
     polygon_parser = subparsers.add_parser(
         'convert_polygon', help='Convert problem from Polygon.')
     polygon_parser.add_argument(
-        'problem_id', help='Polygon problem ID or directory if local.')
+        'problem_dir', help='Problem directory.')
+
+    polygon_parser.add_argument(
+        'problem_id', help='Polygon Problem ID or local directory.')
     polygon_parser.add_argument('-l', '--local', action='store_true')
     polygon_parser.set_defaults(
-        function=lambda options: start_polygon_conversion(options.problem_dir, options.local))
+        function=lambda options: start_polygon_conversion(options.problem_dir, options.local, options.problem_id))
 
     keys_parser = subparsers.add_parser(
         'change_keys', help='Change Polygon API keys.')
@@ -58,19 +53,24 @@ def create_parser():
     options.function(options)
 
 
-def start_polygon_conversion(problem_dir: str, local: str) -> None:
+def start_polygon_conversion(problem_dir: str, local: bool, problem_id: str) -> None:
     """Convert problem from Polygon to DS."""
     if not local:
         verify_polygon_keys()
-    get_polygon_problem(problem_dir, local)
+    get_polygon_problem(problem_dir, problem_id, local)
     print('Problem converted successfully.')
 
 
 def start_conversion(problem_dir: str, output_dir: str, problem_format: str) -> None:
     """Convert problem from DS to Polygon, SQTPM or BOCA."""
+    interactive = check_interactive_problem()
+    if problem_format != 'Polygon' and interactive:
+        print(f'Interactive problems are not supported by {problem_format} format.')
+        sys.exit(0)
+
     if problem_format == 'Polygon':
         verify_polygon_keys()
-        send_to_polygon(problem_dir)
+        send_to_polygon(problem_dir, output_dir)
     elif problem_format == 'SQTPM':
         convert_to_sqtpm(problem_dir, output_dir)
     else:
@@ -80,7 +80,7 @@ def start_conversion(problem_dir: str, output_dir: str, problem_format: str) -> 
 
 
 def change_polygon_keys() -> None:
-    """Create or change keys for Polygon API."""
+    """Prompts the user to enter their Polygon API keys and saves them to a local file."""
     api_key = getpass("apiKey: ")
     if not api_key:
         print("API Key cannot be empty.")
@@ -101,7 +101,11 @@ def change_polygon_keys() -> None:
 
 
 def verify_polygon_keys() -> None:
-    """Check if Polygon API keys file is created."""
+    """Check if the Polygon API keys file has been created and is accessible.
+
+    The function checks whether the `secrets.json` file that contains the 
+    Polygon API keys exists in the directory of this script.
+    """
     tool_path = os.path.dirname(os.path.abspath(__file__))
     secrets_path = os.path.join(tool_path, 'secrets.json')
 
