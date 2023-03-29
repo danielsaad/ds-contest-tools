@@ -17,13 +17,13 @@ Options:
 
 ### build
 
-Builds the problem with the main solution only.
+Builds the problem with only the main solution.
 
 Usage: `python3 build.py build [-a] <problem_id>`
 
 Options: 
 - **-a**: Builds problem with all solutions.
-- **-s**: (Not implemented yet) Builds problem with specific solution only.
+- **-s**: Builds problem with only the specific solution.
 
 ### pack2boca
 
