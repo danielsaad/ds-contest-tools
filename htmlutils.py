@@ -194,43 +194,64 @@ def solution_status(result: ProblemAnswer) -> str:
 
 def write_footer(f_out: io.TextIOWrapper) -> None:
     footer = """
-     <footer class="bg-dark text-white pt-4 pb-4 position-absolute bottom-0">
+     	<footer class="col-md-12 col-lg-12 col-xl-12 bg-dark text-white pt-4 pb-4 bottom-0">
         <div class="container text-center text-md-left">
             <div class="row text-center text-md-left">
                 <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
-                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">DS CONTEST TOOL</h5>
+                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">DS CONTEST TOOL
+                    </h5>
                     <p>
-                        Essa ferramenta de preparação de competições de progamação competitiva objetiva facilitar e
-						simplificar a formatação de problemas para a criação de <span class="fst-italic">contests</span>.
+                        Essa ferramenta de preparação de competições de progamação competitiva
+                        objetiva facilitar e
+                        simplificar
+                        a formatação de problemas para a criação de <i>contests</i>.
                     </p>
                 </div>
                 <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mt-3">
                     <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Useful links</h5>
                     <p>
-                        <a href="https://github.com/danielsaad/ds-contest-tools" class="text-white" style="text-decoration: none;" target="_blank">GitHub</a>
+                        <a href="https://github.com/danielsaad/ds-contest-tools" class="text-white"
+                            style="text-decoration: none;" target="_blank">GitHub</a>
                     </p>
                     <p>
-						<a href="https://www.ifb.edu.br/taguatinga/pagina-inicial" class="text-white"
-							style="text-decoration: none;" target="_blank">Instituto Federal de Brasília - Campus
-							Taguatinga</a>
-					</p>                
+                        <a href="https://www.ifb.edu.br/taguatinga/pagina-inicial" class="text-white"
+                            style="text-decoration: none;" target="_blank">Instituto Federal de Brasília - Campus
+                            Taguatinga</a>
+                    </p>
                 </div>
                 <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mt-3">
                     <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Contact</h5>
-                    <p>
-						<a href="https://goo.gl/maps/BKp6Yg7mjcz4ZWhL9" class="text-white"
-							style="text-decoration: none;" target="_blank">
-							<i class="fas fa-home mr-3">
-								Instituto Federal de Brasília - Campus Taguatinga <br>
-								QNM 40, Área Especial 01, às margens da BR 070. Taguatinga/DF.
-							</i>
-						</a>
+					<p>
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+							class="bi bi-envelope-at" viewBox="0 0 16 16">
+							<path
+								d="M2 2a2 2 0 0 0-2 2v8.01A2 2 0 0 0 2 14h5.5a.5.5 0 0 0 0-1H2a1 1 0 0 1-.966-.741l5.64-3.471L8 9.583l7-4.2V8.5a.5.5 0 0 0 1 0V4a2 2 0 0 0-2-2H2Zm3.708 6.208L1 11.105V5.383l4.708 2.825ZM1 4.217V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v.217l-7 4.2-7-4.2Z" />
+							<path
+								d="M14.247 14.269c1.01 0 1.587-.857 1.587-2.025v-.21C15.834 10.43 14.64 9 12.52 9h-.035C10.42 9 9 10.36 9 12.432v.214C9 14.82 10.438 16 12.358 16h.044c.594 0 1.018-.074 1.237-.175v-.73c-.245.11-.673.18-1.18.18h-.044c-1.334 0-2.571-.788-2.571-2.655v-.157c0-1.657 1.058-2.724 2.64-2.724h.04c1.535 0 2.484 1.05 2.484 2.326v.118c0 .975-.324 1.39-.639 1.39-.232 0-.41-.148-.41-.42v-2.19h-.906v.569h-.03c-.084-.298-.368-.63-.954-.63-.778 0-1.259.555-1.259 1.4v.528c0 .892.49 1.434 1.26 1.434.471 0 .896-.227 1.014-.643h.043c.118.42.617.648 1.12.648Zm-2.453-1.588v-.227c0-.546.227-.791.573-.791.297 0 .572.192.572.708v.367c0 .573-.253.744-.564.744-.354 0-.581-.215-.581-.8Z" />
+						</svg> daniel.nunes@ifb.edu.br
 					</p>
-                </div>        
+					<p>
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+							class="bi bi-envelope-at" viewBox="0 0 16 16">
+							<path
+								d="M2 2a2 2 0 0 0-2 2v8.01A2 2 0 0 0 2 14h5.5a.5.5 0 0 0 0-1H2a1 1 0 0 1-.966-.741l5.64-3.471L8 9.583l7-4.2V8.5a.5.5 0 0 0 1 0V4a2 2 0 0 0-2-2H2Zm3.708 6.208L1 11.105V5.383l4.708 2.825ZM1 4.217V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v.217l-7 4.2-7-4.2Z" />
+							<path
+								d="M14.247 14.269c1.01 0 1.587-.857 1.587-2.025v-.21C15.834 10.43 14.64 9 12.52 9h-.035C10.42 9 9 10.36 9 12.432v.214C9 14.82 10.438 16 12.358 16h.044c.594 0 1.018-.074 1.237-.175v-.73c-.245.11-.673.18-1.18.18h-.044c-1.334 0-2.571-.788-2.571-2.655v-.157c0-1.657 1.058-2.724 2.64-2.724h.04c1.535 0 2.484 1.05 2.484 2.326v.118c0 .975-.324 1.39-.639 1.39-.232 0-.41-.148-.41-.42v-2.19h-.906v.569h-.03c-.084-.298-.368-.63-.954-.63-.778 0-1.259.555-1.259 1.4v.528c0 .892.49 1.434 1.26 1.434.471 0 .896-.227 1.014-.643h.043c.118.42.617.648 1.12.648Zm-2.453-1.588v-.227c0-.546.227-.791.573-.791.297 0 .572.192.572.708v.367c0 .573-.253.744-.564.744-.354 0-.581-.215-.581-.8Z" />
+						</svg> matheus.silva18@estudante.ifb.edu.br
+					</p>
+					<p>
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+							class="bi bi-envelope-at" viewBox="0 0 16 16">
+							<path
+								d="M2 2a2 2 0 0 0-2 2v8.01A2 2 0 0 0 2 14h5.5a.5.5 0 0 0 0-1H2a1 1 0 0 1-.966-.741l5.64-3.471L8 9.583l7-4.2V8.5a.5.5 0 0 0 1 0V4a2 2 0 0 0-2-2H2Zm3.708 6.208L1 11.105V5.383l4.708 2.825ZM1 4.217V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v.217l-7 4.2-7-4.2Z" />
+							<path
+								d="M14.247 14.269c1.01 0 1.587-.857 1.587-2.025v-.21C15.834 10.43 14.64 9 12.52 9h-.035C10.42 9 9 10.36 9 12.432v.214C9 14.82 10.438 16 12.358 16h.044c.594 0 1.018-.074 1.237-.175v-.73c-.245.11-.673.18-1.18.18h-.044c-1.334 0-2.571-.788-2.571-2.655v-.157c0-1.657 1.058-2.724 2.64-2.724h.04c1.535 0 2.484 1.05 2.484 2.326v.118c0 .975-.324 1.39-.639 1.39-.232 0-.41-.148-.41-.42v-2.19h-.906v.569h-.03c-.084-.298-.368-.63-.954-.63-.778 0-1.259.555-1.259 1.4v.528c0 .892.49 1.434 1.26 1.434.471 0 .896-.227 1.014-.643h.043c.118.42.617.648 1.12.648Zm-2.453-1.588v-.227c0-.546.227-.791.573-.791.297 0 .572.192.572.708v.367c0 .573-.253.744-.564.744-.354 0-.581-.215-.581-.8Z" />
+						</svg> leonam.knupp@estudante.ifb.edu.br
+					</p>
+                </div>
             </div>
         </div>
     </footer>
-
 </body>
 </html>
     """
