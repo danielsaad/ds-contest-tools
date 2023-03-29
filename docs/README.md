@@ -13,16 +13,17 @@ Initializes a problem with the necessary files and directories.
 Usage: `python3 build.py init [-i] <problem_id>`
 
 Options:
-- **-i**: Initializes an interactive problem with interactive files for statement inputs/outputs.
+- **-i**: Initializes an interactive problem. In interactive problems, the example tests are the input/output files ending with '.interactive'.
 
 ### build
 
-Builds the main solution of a problem.
+Builds the problem with the main solution only.
 
 Usage: `python3 build.py build [-a] <problem_id>`
 
 Options: 
-- **-a**: Builds all the solutions of a problem.
+- **-a**: Builds problem with all solutions.
+- **-s**: (Not implemented yet) Builds problem with specific solution only.
 
 ### pack2boca
 
@@ -32,19 +33,19 @@ Usage: `python3 build.py pack2boca <problem_id>`
 
 ### genpdf
 
-Generates a PDF file of the problem statement.
+Generates a PDF of the problem statement.
 
 Usage: `python build.py genpdf <problem_id>`
 
 ### genio
 
-enerates input and output files for the problem.
+Generates input and output files of the problem.
 
 Usage: `python build.py genio <problem_id>`
 
 ### clean
 
-Removes executables (bin/ folder) of the problem.
+Removes executables created after building the problem.
 
 Usage: `python build.py clean <problem_id>`
 
@@ -58,15 +59,17 @@ Converts a problem to one of the following formats:
 
 - *BOCA*: Not implemented. Use pack2boca from build.py.
 - *SQTPM*: Convert problem to SQTPM in a new folder. 
-- *Polygon*: Send problem to Polygon. Many requests are made in order to convert the problem. The requests to Polygon make these changes:
-    - General information and statement text change.
-    - Source, resource and auxiliar, testcases, script and solution files are replaced with files which have the same name as them. If not, the files remain in stored in Polygon 
+- *Polygon*: Send problem to Polygon. Inumerous requests are made in order to convert the problem. These changes are made during the conversion to Polygon:
+    - General info and statement texts are changed.
+    - Source, resource, auxiliar and solution files with the same name as the new ones will be overwritten.
+    - Testcases with the same index as the new ones will be overwritten.
+    - Script will be overwritten if a script request was made.
 
 Usage: `python3 convert.py convert <format> <problem_id> <output_folder_or_polygon_id>`
 
 ### convert_polygon
 
-Converts problem from Polygon. Downloads the latest ready linux package from Polygon in the problem folder and use it to convert the problem. More requests are made to the API in order to find the name of the source files.
+Converts problem from Polygon. Downloads the latest ready linux package from Polygon in the problem folder and use it to convert the problem. Aditional requests are made to the API in order to find the name of the source files and the type of the problem.
 
 Usage: `python3 convert.py convert_polygon [-l] <problem_id> <package_folder_or_polygon_id`
 
