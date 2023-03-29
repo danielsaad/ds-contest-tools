@@ -1,14 +1,3 @@
-#!/usr/bin/python3
-"""Tool to initialize, build and convert a competitive problem.
-
-Usage:
-    ./build.py [mode] [ID]
-
-Author:
-    Daniel Saad Nogueira Nunes
-"""
-
-
 import argparse
 import os
 import shutil
@@ -29,7 +18,9 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument('-i', '--interactive', action='store_true',
                         default=False, help='init interactive problem')
     parser.add_argument('-a', '--all', action='store_true',
-                        default=False, help='run all the solutions')
+                        default=False, help='buil problem with all solutions')
+    parser.add_argument('-s', '--specific',
+                        help='build problem with specific solution')
     parser.add_argument(
         'mode', choices=['init', 'build', 'genio', 'genpdf', 'pack2boca', 'clean'],
         help='init: init a problem.\nbuild: build a problem.\n' +
@@ -52,10 +43,15 @@ def genpdf() -> None:
     build_pdf()
 
 
-def build(all_solutions=False) -> None:
+def build(all_solutions=False, specific_solution: str = '') -> None:
     """Call functions to build a problem."""
     build_executables()
-    run_programs(all_solutions)
+    if all_solutions:
+        run_programs(all_solutions=all_solutions)
+    elif specific_solution:
+        run_programs(specific_solution=specific_solution)
+    else:
+        run_programs()
     genpdf()
 
 
@@ -111,7 +107,7 @@ if __name__ == "__main__":
                      sys.argv[0] + ' ' + args.mode + ' <problem ID>')
     if args.mode != 'init':
         verify_path(args.problem_id)
-        
+
     instance_paths(args.problem_id)
     if (args.mode == 'init'):
         info_log('Initializing problem ' + args.problem_id)
@@ -119,7 +115,7 @@ if __name__ == "__main__":
         print('Problem', args.problem_id, 'initialized.')
     elif (args.mode == 'build'):
         info_log("Building problem " + args.problem_id)
-        build(args.all)
+        build(args.all, args.specific)
         print("Problem " + args.problem_id + " built.")
     elif (args.mode == 'pack2boca'):
         pack2boca()

@@ -172,7 +172,7 @@ def run_checker(ans: str, inf: str, ouf: str) -> Status:
 # TODO - write documentation
 
 
-def run_solutions(input_folder: str, problem_metadata: dict, all_solutions: bool) -> dict:
+def run_solutions(input_folder: str, problem_metadata: dict, all_solutions: bool, specific_solution: dict) -> dict:
     time_limit: float = problem_metadata["problem"]["time_limit"]
     memory_limit: int = problem_metadata["problem"]["memory_limit_mb"] * 2 ** 20
     problem_limits: dict = {'time_limit': time_limit,
@@ -214,8 +214,12 @@ def run_solutions(input_folder: str, problem_metadata: dict, all_solutions: bool
                     'solution-result': tmp_solution_result
                 }
     else:
-        expected_result = "main-ac"
-        submission_file = solutions[expected_result]
+        if specific_solution['expected_result']:
+            expected_result = specific_solution['expected_result']
+            submission_file = specific_solution['solution_name']
+        else:
+            expected_result = "main-ac"
+            submission_file = solutions[expected_result]
         running: str = f'Running {submission_file} solution'
         info_log(running)
         print(running)
@@ -284,7 +288,7 @@ def solution_status(test_case_info: dict, expected_result: str) -> dict:
     expected_status = {
         "main-ac": [Status.AC],
         "alternative-ac": [Status.AC],
-        "wrong-anwser": [Status.WA],
+        "wrong-answer": [Status.WA],
         "time-limit": [Status.HARD_TLE, Status.SOFT_TLE],
         "runtime-error": [Status.RE],
         "memory-limit": [Status.MLE],
