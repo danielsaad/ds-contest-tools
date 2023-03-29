@@ -88,11 +88,10 @@ def update_testlib() -> None:
     """Move updated testlib to src folder and remove the old one."""
     problem_dir = Paths().get_problem_dir()
     tool_folder = os.path.dirname(os.path.abspath(__file__))
-    testlib_path = os.path.join(problem_dir, 'include', 'testlib.h')
+    testlib_folder = os.path.join(problem_dir, 'include')
 
-    if os.path.exists(testlib_path):
-        shutil.move(testlib_path, os.path.join(problem_dir, 'src'))
-        os.rmdir(os.path.dirname(testlib_path))
+    if os.path.exists(testlib_folder):
+        shutil.rmtree(testlib_folder)
 
     info_log('Moving testlib.h')
     shutil.copy2(os.path.join(tool_folder, 'files', 'src', 'testlib.h'),
