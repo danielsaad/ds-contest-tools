@@ -22,3 +22,14 @@ def parse_json(json_file: str) -> dict:
         json_data = json.load(f)
 
     return json_data
+
+
+def write_to_json(path: str, content: dict) -> None:
+    """Write dictionary content to a JSON file.
+
+    Args:
+        path: Path of the JSON file to be written.
+        content: Dictionary containing the keys and values to be written.
+    """
+    with open(path, 'w') as f:
+        f.write(json.dumps(content, ensure_ascii=False))

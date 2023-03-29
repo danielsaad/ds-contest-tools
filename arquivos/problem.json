@@ -40,5 +40,8 @@
         "memory-limit" : [""],
         "presentation-error" : [""],
         "runtime-error" : [""]
+    },
+    "polygon_config" : {
+        "id" : ""
     }
 }

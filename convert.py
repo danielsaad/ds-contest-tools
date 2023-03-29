@@ -2,9 +2,10 @@ import argparse
 import os
 import sys
 from getpass import getpass
-from json import dumps
+from typing import Union
 
 from fileutils import check_interactive_problem
+from jsonutils import write_to_json
 from polygon_converter import get_polygon_problem
 from polygon_submitter import send_to_polygon
 from sqtpm import convert_to_sqtpm
@@ -29,7 +30,7 @@ def create_parser():
     ds_parser.add_argument(
         'problem_dir', help='Path to the problem directory.')
     ds_parser.add_argument(
-        'output_dir', help='Output directory of the converted problem or ID of the Polygon problem.')
+        '-o', '--output_dir', help='Output directory of the converted problem or ID of the Polygon problem.')
     ds_parser.set_defaults(function=lambda options: start_conversion(
         options.problem_dir, options.output_dir, options.format))
 
@@ -37,7 +38,6 @@ def create_parser():
         'convert_polygon', help='Convert problem from Polygon.')
     polygon_parser.add_argument(
         'problem_dir', help='Problem directory.')
-
     polygon_parser.add_argument(
         'problem_id', help='Polygon Problem ID or local directory.')
     polygon_parser.add_argument('-l', '--local', action='store_true')
@@ -61,11 +61,12 @@ def start_polygon_conversion(problem_dir: str, local: bool, problem_id: str) -> 
     print('Problem converted successfully.')
 
 
-def start_conversion(problem_dir: str, output_dir: str, problem_format: str) -> None:
+def start_conversion(problem_dir: str, output_dir: Union[str, None], problem_format: str) -> None:
     """Convert problem from DS to Polygon, SQTPM or BOCA."""
-    interactive = check_interactive_problem()
+    interactive = check_interactive_problem(problem_dir)
     if problem_format != 'Polygon' and interactive:
-        print(f'Interactive problems are not supported by {problem_format} format.')
+        print(
+            f'Interactive problems are not supported by {problem_format} format.')
         sys.exit(0)
 
     if problem_format == 'Polygon':
@@ -93,10 +94,8 @@ def change_polygon_keys() -> None:
         'apiKey': api_key,
         'secret': secret
     }
-    with open(os.path.join(os.path.dirname(
-            os.path.abspath(__file__)), 'secrets.json'), 'w') as f:
-        f.write(dumps(keys))
-
+    write_to_json(os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), 'secrets.json'), keys)
     print('Keys saved. They are locally stored in the tool directory.')
 
 
