@@ -38,7 +38,7 @@ def build_contest_pdf() -> None:
     output_folder = Paths().get_output_dir()
 
     cls_file = os.path.join(os.path.join(os.path.dirname(
-        os.path.abspath(__file__)), 'arquivos'), 'maratona.cls')
+        os.path.abspath(__file__)), 'files'), 'maratona.cls')
     shutil.copy(cls_file, output_folder)
     # Generate problems PDFs
     for i, folder in enumerate(problem_folder_l):
