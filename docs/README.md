@@ -65,10 +65,10 @@ Converts a problem to one of the following formats:
     - Testcases with the same index as the new ones will be overwritten.
     - Script will be overwritten if a script request was made.
 
-Usage: `python3 convert.py convert <format> <problem_id> <output_folder_or_polygon_id>`
+Usage: `python3 convert.py convert <format> <problem_id>`
 
 Options:
-- **-o**: Define a output directory for the problem. In case of a Polygon conversion, defines the ID of the problem in the file problem.json.
+- **-o**: Define a output directory for the problem. In case of a Polygon conversion, defines the ID of the problem in the file problem.json for future uses.
 
 ### convert_polygon
 
