@@ -67,6 +67,9 @@ Converts a problem to one of the following formats:
 
 Usage: `python3 convert.py convert <format> <problem_id> <output_folder_or_polygon_id>`
 
+Options:
+- **-o**: Define a output directory for the problem. In case of a Polygon conversion, defines the ID of the problem in the file problem.json.
+
 ### convert_polygon
 
 Converts problem from Polygon. Downloads the latest ready linux package from Polygon in the problem folder and use it to convert the problem. Aditional requests are made to the API in order to find the name of the source files and the type of the problem.
