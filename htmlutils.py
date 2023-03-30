@@ -36,7 +36,7 @@ def write_nav_bar(f_out: io.TextIOWrapper) -> None:
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="./index.html">Relatório</a>
+                            <a class="nav-link active" aria-current="page" href="./index.html">Report</a>
                         </li>
                     </ul>
                 </div>
@@ -152,8 +152,8 @@ def write_auxiliary_table(solutions_info_dict, f_out) -> None:
         <table class="table table-hover table-bordered">
             <thead class="table-dark">
                 <tr>
-                    <th>Soluções</th>
-                    <th>Resultado</th>
+                    <th>Solutions</th>
+                    <th>Result</th>
                 </tr>
             </thead>
              <tbody>\
@@ -201,10 +201,9 @@ def write_footer(f_out: io.TextIOWrapper) -> None:
                     <h5 class="text-uppercase mb-4 font-weight-bold text-warning">DS CONTEST TOOL
                     </h5>
                     <p>
-                        Essa ferramenta de preparação de competições de progamação competitiva
-                        objetiva facilitar e
-                        simplificar
-                        a formatação de problemas para a criação de <i>contests</i>.
+                        This tool for preparing competitive programming competitions aims 
+                        to facilitate and simplify the formatting of problems for creating 
+                        <i>contests</i>.
                     </p>
                 </div>
                 <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mt-3">
@@ -212,6 +211,10 @@ def write_footer(f_out: io.TextIOWrapper) -> None:
                     <p>
                         <a href="https://github.com/danielsaad/ds-contest-tools" class="text-white"
                             style="text-decoration: none;" target="_blank">GitHub</a>
+                    </p>
+                    <p>
+                        <a href="https://danielsaad.com/" class="text-white"
+                            style="text-decoration: none;" target="_blank">Daniel Saad</a>
                     </p>
                     <p>
                         <a href="https://www.ifb.edu.br/taguatinga/pagina-inicial" class="text-white"
