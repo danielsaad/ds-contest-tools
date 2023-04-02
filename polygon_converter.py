@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 from typing import Optional
 
 from fileutils import get_statement_files
-from jsonutils import parse_json
+from jsonutils import parse_json, write_to_json
 from logger import error_log, info_log
 from metadata import Paths
 from polygon_connection import download_package_polygon, make_api_request
@@ -252,7 +252,7 @@ def init_problem(interactive: bool) -> None:
     """
     info_log("Initializing problem folder.")
     tool_path = os.path.dirname(os.path.abspath(__file__))
-    source_folder = os.path.join(tool_path, 'arquivos')
+    source_folder = os.path.join(tool_path, 'files')
     problem_folder = Paths().get_problem_dir()
 
     # Create necessary directories
@@ -412,13 +412,14 @@ def get_tags() -> dict:
     return tags
 
 
-def update_problem_metadata(title: str, solutions: dict, interactive: bool) -> None:
+def update_problem_metadata(title: str, solutions: dict, interactive: bool, problem_id: str) -> None:
     """Update problem information in problem.json file.
 
     Args:
         title: Name of the problem.
         solutions: Dictionary containing the solutions.
         interactive: Whether the problem is interactive.
+        problem_id: Problem ID.
     """
     package_folder = Paths().get_output_dir()
     problem_folder = Paths().get_problem_dir()
@@ -444,12 +445,12 @@ def update_problem_metadata(title: str, solutions: dict, interactive: bool) -> N
         package_json['timeLimit'] / 1000)
     problem_metadata['problem']['memory_limit_mb'] = int(
         (package_json['memoryLimit'] / 1024) / 1024)
+    problem_metadata['polygon_config']['id'] = problem_id
     for key in solutions:
         problem_metadata['solutions'][key] = solutions[key]
 
     # Write updated problem metadata to file
-    with open(json_path, 'w') as f:
-        f.write(json.dumps(problem_metadata, ensure_ascii=False))
+    write_to_json(json_path, problem_metadata)
 
 
 def convert_problem(local: bool, problem_id: Optional[str] = '') -> None:
@@ -489,7 +490,7 @@ def convert_problem(local: bool, problem_id: Optional[str] = '') -> None:
     copy_generator(xml_data['script'])
     write_statement(package_data, interactive)
     update_problem_metadata(''.join(package_data['title']),
-                            xml_data['solutions'], interactive)
+                            xml_data['solutions'], interactive, problem_id)
     # Clean up temporary package folder
     if not local:
         shutil.rmtree(Paths().get_output_dir())

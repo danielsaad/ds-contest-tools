@@ -1,6 +1,7 @@
 import os
 import shutil
 import sys
+from typing import Union
 
 from jsonutils import parse_json
 from logger import info_log
@@ -132,7 +133,7 @@ def copy_generator_script() -> None:
     output_folder = Paths().get_output_dir()
     info_log("Copying genio.sh script file.")
     shutil.copy2(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                              'arquivos', 'sqtpm.sh'),
+                              'files', 'sqtpm.sh'),
                  os.path.join(output_folder, 'genio.sh'))
 
 
@@ -183,8 +184,10 @@ clean:
         f.write(makefile_content)
 
 
-def convert_to_sqtpm(problem_dir: str, output_dir: str) -> None:
+def convert_to_sqtpm(problem_dir: str, output_dir: Union[str, None]) -> None:
     """Convert DS problem to SQTPM."""
+    if not output_dir:
+        output_dir = os.path.join(problem_dir, 'sqtpm')
     instance_paths(problem_dir, output_dir)
     info_log("Starting DS -> SQTPM conversion.")
     problem_folder = Paths().get_problem_dir()

@@ -28,12 +28,13 @@ def build_executables() -> None:
     os.chdir(old_cwd)
 
 
-def run_programs(all_solutions: bool) -> None:
+def run_programs(all_solutions: bool = False, specific_solution: str = '') -> None:
     """
     Run the executables to create the problem.
 
     Args:
-        all_solutions (bool): Boolean indicating whether to run all solution files or not
+        all_solutions: Boolean indicating whether to run all solution files.
+        specific_solution: String containing name of the solution to run.
     """
     problem_folder = Paths().get_problem_dir()
     input_folder = os.path.join(problem_folder, 'input')
@@ -52,9 +53,31 @@ def run_programs(all_solutions: bool) -> None:
     os.chdir(output_folder)
     produce_outputs(problem_metadata)
     os.chdir(old_cwd)
+
     info_log("Running solutions")
+    specific_solution_info: dict = {
+        'expected_result': '',
+        'solution_name': ''
+    }
+    if specific_solution:
+        for key, values in problem_metadata['solutions'].items():
+            if isinstance(values, str) and specific_solution == values:
+                specific_solution_info['expected_result'] = key
+                specific_solution_info['solution_name'] = values
+                break
+            elif isinstance(values, str):
+                continue
+
+            for solution_name in values:
+                if solution_name == specific_solution:
+                    specific_solution_info['expected_result'] = key
+                    specific_solution_info['solution_name'] = solution_name
+        if not specific_solution_info['expected_result']:
+            print(f'Solution {specific_solution} not found.')
+            sys.exit(0)
+        
     solutions_info_dict: dict = run_solutions(
-        input_folder, problem_metadata, all_solutions)
+        input_folder, problem_metadata, all_solutions, specific_solution_info)
     print_to_html(problem_metadata, solutions_info_dict)
 
 

@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 from math import floor, log10
 from typing import Optional
 
@@ -103,17 +104,19 @@ def get_statement_files(statement_folder: str, interactive: Optional[bool] = Fal
     return statement_files
 
 
-def check_interactive_problem() -> bool:
+def check_interactive_problem(problem_dir: str) -> bool:
     """Checks whether the problem is interactive based on the metadata.
 
+    Args:
+        problem_dir: Path to the problem directory.
+    
     Returns:
         True if the problem is interactive, False otherwise.
     """
-    problem_folder = Paths.get_problem_dir()
-    metadata_path = os.path.join(problem_folder, 'problem.json')
+    metadata_path = os.path.join(problem_dir, 'problem.json')
     verify_path(metadata_path)
-
     problem_metadata = parse_json(metadata_path)
-    check_problem_metadata(problem_metadata)
-
+    if 'problem' not in problem_metadata or 'interactive' not in problem_metadata['problem']:
+        print("Interactive value in problem.json is not defined.")
+        sys.exit(0)
     return problem_metadata['problem']['interactive']

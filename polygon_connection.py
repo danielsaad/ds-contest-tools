@@ -7,14 +7,14 @@ import string
 import sys
 import time
 import zipfile
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import requests
 
-from jsonutils import parse_json
+from jsonutils import parse_json, write_to_json
 from logger import debug_log, error_log, info_log
 from metadata import Paths
-from utils import convert_to_bytes
+from utils import convert_to_bytes, verify_path
 
 URL = 'https://polygon.codeforces.com/api/'
 
@@ -80,6 +80,35 @@ def download_package_polygon(problem_id: str) -> None:
     package = zipfile.ZipFile(io.BytesIO(response))
     package.extractall(Paths().get_output_dir())
     package.close()
+
+
+def check_polygon_id(problem_id: Union[str, None]) -> str:
+    """Check if the problem ID is already defined in metadata file.
+
+    Args:
+        problem_id: User input of the problem ID.
+
+    Returns:
+        The ID of the problem, if it is defined.
+    """
+    metadata_path = os.path.join(Paths().get_problem_dir(), 'problem.json')
+    verify_path(metadata_path)
+    problem_metadata = parse_json(metadata_path)
+
+    if problem_id:
+        problem_metadata['polygon_config']['id'] = problem_id
+        write_to_json(metadata_path, problem_metadata)
+        return problem_id
+
+    if 'polygon_config' not in problem_metadata.keys():
+        print('File problem.json does not have "polygon_config" key.')
+        sys.exit(0)
+
+    if not problem_metadata['polygon_config']['id']:
+        print('Problem ID is not defined. Specify it in the command line or in problem.json.')
+        sys.exit(0)
+
+    return problem_metadata['polygon_config']['id']
 
 
 def add_requests_info(problem_id: str, requests_list: List[Tuple[str, dict]]) -> List[Tuple[str, dict]]:
@@ -178,7 +207,7 @@ def verify_response(response: requests.Response, method: str, params: Dict[str, 
 
         debug_log("API status: " + content['status'])
         debug_log(parameters)
-        
+
         print(f"Wrong parameter of {method} method.")
         sys.exit(1)
     else:
