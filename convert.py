@@ -82,21 +82,21 @@ def start_conversion(problem_dir: str, output_dir: Union[str, None], problem_for
 
 def change_polygon_keys() -> None:
     """Prompts the user to enter their Polygon API keys and saves them to a local file."""
-    api_key = getpass("apiKey: ")
+    api_key = getpass("API key: ")
     if not api_key:
-        print("API Key cannot be empty.")
+        print("API key cannot be empty.")
         sys.exit(1)
-    secret = getpass("secret: ")
+    secret = getpass("API secret: ")
     if not secret:
-        print("API Secret cannot be empty.")
+        print("API secret cannot be empty.")
         sys.exit(1)
     keys = {
-        'apiKey': api_key,
+        'apikey': api_key,
         'secret': secret
     }
     write_to_json(os.path.join(os.path.dirname(
         os.path.abspath(__file__)), 'secrets.json'), keys)
-    print('Keys saved. They are locally stored in the tool directory.')
+    print('Keys saved. They are stored locally in the tool directory.')
 
 
 def verify_polygon_keys() -> None:
