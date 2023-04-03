@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import datetime
 from operator import mod
 from subprocess import CompletedProcess
 from typing import Optional, Union
@@ -121,17 +122,19 @@ def check_problem_metadata(problem_metadata: dict) -> None:
         if key not in problem_metadata:
             print(f"Variable {key} is not defined in problem.json.")
             sys.exit(1)
-        
+
         if key == 'io_samples':
             if not isinstance(problem_metadata[key], expected_types[key]):
-                print(f"Variable '{key}' is not a(n) {expected_types[key].__name__}.")
+                print(
+                    f"Variable '{key}' is not a(n) {expected_types[key].__name__}.")
                 sys.exit(1)
             continue
 
         for subkey, expected_type in expected_types[key].items():
             value = problem_metadata[key].get(subkey)
             if not isinstance(value, expected_type):
-                print(f"Variable '{subkey}' in '{key}' is not a(n) {expected_type.__name__}.")
+                print(
+                    f"Variable '{subkey}' in '{key}' is not a(n) {expected_type.__name__}.")
                 sys.exit(1)
 
 
@@ -145,3 +148,15 @@ def verify_path(path: str) -> None:
     if not os.path.exists(path):
         print(f'{os.path.relpath(path)} does not exist.')
         sys.exit(1)
+
+
+def generate_timestamp() -> str:
+    """
+    Generate a timestamp in the format (Day-Month-Year-Hour:Minute:Seconds)
+
+    Returns:
+        str: The string representing the timestamp.
+    """
+    current_time: datetime = datetime.fromtimestamp(datetime.now().timestamp())
+    timestamp: str = current_time.strftime('%d-%m-%Y-%H:%M:%S')
+    return timestamp

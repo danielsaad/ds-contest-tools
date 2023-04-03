@@ -27,6 +27,7 @@ class Status(Enum):
     PE = 6
     AC_TLE = 7
     TLE_MLE = 8
+    FAIL = 9
 
 
 class ProblemAnswer(Enum):
@@ -165,6 +166,7 @@ def run_checker(ans: str, inf: str, ouf: str) -> Status:
     elif (checker_output.startswith('FAIL')):
         error_log('Input ' + fname +
                   ': FAIL: maybe the jury solution or the checker are not correct')
+        status = Status.FAIL
     else:
         status = Status.PE
     return status
@@ -271,6 +273,9 @@ def write_to_log(output_dict: DictProxy) -> None:
             debug_log('ML: Memory limit exceeded')
         elif output_dict[i][0] == Status.PE:
             debug_log('PE: Presentation Error')
+        elif output_dict[i][0] == Status.FAIL:
+            debug_log(
+                'FAIL: maybe the jury solution or the checker are not correct')
         debug_log(f'Time elapsed: {output_dict[i][1]:.2f} seconds')
         debug_log(f'Memory: {output_dict[i][2] // 1000} KB')
 
