@@ -245,22 +245,19 @@ def create_thread(binary_file: str, input_folder: str, output_folder: str, input
         monitor_process = Process(target=memory_monitor, args=(
             pids, problem_limits['memory_limit'], stop_monitor))
         monitor_process.start()
-        try:
-            processes = [Process(target=run_binary, args=(
-                binary_file, input_folder, output_folder, input_files, output_dict, problem_limits, pids, idx, n_threads, interpreter)) for idx in range(n_threads)]
-            for process in processes:
-                process.start()
-            for process in processes:
-                process.join()
-            stop_monitor.set()
-        except:
-            stop_monitor.set()
-        finally:
-            processes = Process(target=write_to_log, args=(output_dict,))
-            processes.start()
-            monitor_process.join()
-            info_dict = dict(output_dict)
-            processes.join()
+
+        processes = [Process(target=run_binary, args=(
+            binary_file, input_folder, output_folder, input_files, output_dict, problem_limits, pids, idx, n_threads, interpreter)) for idx in range(n_threads)]
+        for process in processes:
+            process.start()
+        for process in processes:
+            process.join()
+        stop_monitor.set()
+        processes = Process(target=write_to_log, args=(output_dict,))
+        processes.start()
+        monitor_process.join()
+        info_dict = dict(output_dict)
+        processes.join()
 
     return info_dict
 
