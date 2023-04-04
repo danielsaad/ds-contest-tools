@@ -105,7 +105,8 @@ def check_polygon_id(problem_id: Union[str, None]) -> str:
         sys.exit(0)
 
     if not problem_metadata['polygon_config']['id']:
-        print('Problem ID is not defined. Specify it in the command line or in problem.json.')
+        print(
+            'Problem ID is not defined. Specify it in the command line or in problem.json.')
         sys.exit(0)
 
     return problem_metadata['polygon_config']['id']
@@ -248,9 +249,9 @@ def make_api_connection(method: str, request_params: dict, session: Optional[req
         The response object from the API.
     """
     if session == None:
-        session = requests.Session()
-
-    response = session.post(URL + method, files=request_params)
+        response = requests.post(URL + method, files=request_params)
+    else:
+        response = session.post(URL + method, files=request_params)
     verify_response(response, method, request_params)
 
     return response

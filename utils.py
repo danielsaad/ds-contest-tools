@@ -155,8 +155,8 @@ def generate_timestamp() -> str:
     Generate a timestamp in the format (Day-Month-Year-Hour:Minute:Seconds)
 
     Returns:
-        str: The string representing the timestamp.
+        The string representing the timestamp.
     """
     current_time: datetime = datetime.fromtimestamp(datetime.now().timestamp())
-    timestamp: str = current_time.strftime('%d-%m-%Y-%H:%M:%S')
+    timestamp: str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
     return timestamp
