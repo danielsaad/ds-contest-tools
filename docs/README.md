@@ -53,7 +53,7 @@ Usage: `python build.py clean <problem_id>`
 
 The convert.py tool provides several options for converting problems to other formats.
 
-### convert
+### convert_to
 
 Converts a problem to one of the following formats:
 
@@ -65,19 +65,20 @@ Converts a problem to one of the following formats:
     - Testcases with the same index as the new ones will be overwritten.
     - Script will be overwritten if a script request was made.
 
-Usage: `python3 convert.py convert <format> <problem_id>`
+Usage: `python3 convert.py [-o] convert_to <format> <problem_id>`
 
 Options:
 - **-o**: Define a output directory for the problem. In case of a Polygon conversion, defines the ID of the problem in the file problem.json for future uses.
 
-### convert_polygon
+### convert_from
 
-Converts problem from Polygon. Downloads the latest ready linux package from Polygon in the problem folder and use it to convert the problem. Aditional requests are made to the API in order to find the name of the source files and the type of the problem.
+Converts a problem from one of the following formats to DS format:
+- *Polygon*: Downloads the latest ready linux package from Polygon in the problem folder and use it to convert the problem. Aditional requests are made to the API in order to find the name of the source files and the type of the problem. It is also possible to convert local problems.
 
-Usage: `python3 convert.py convert_polygon [-l] <problem_id> <package_folder_or_polygon_id`
+Usage: `python3 convert.py [-l] convert_from <format> <problem_dir> <package_dir_or_polygon_id>`
 
 Options:
-- **-l**: Converts problem from a local Polygon package. It is possible to convert FULL and STANDARD packages. Requests are not made, so the user needs to specify if the problem is interactive or not, and change the name of the source files.
+- **-l**: Converts local Polygon package to DS. It is possible to convert FULL and STANDARD packages. Requests are not made, so the user needs to specify if the problem is interactive or not, and change the name of the source files to DS standard.
 
 ### change_keys
 
