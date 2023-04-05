@@ -43,8 +43,10 @@ def info_log(text: str) -> None:
         text: The information to be logged.
     """
     tool = logging.getLogger('tool')
-    if text is not None and text.rstrip() != '':
-        tool.info(text.rstrip())
+    text = text.rstrip()
+    if text is not None and text != '':
+        tool.info(text)
+        print(text)
 
 
 def debug_log(text: str) -> None:

@@ -5,8 +5,7 @@ from typing import Dict, List, Tuple, Union
 from fileutils import get_statement_files
 from jsonutils import parse_json
 from metadata import Paths
-from polygon_connection import (add_requests_info, check_polygon_id,
-                                submit_requests_list)
+from polygon_connection import check_polygon_id, submit_requests_list
 from utils import check_problem_metadata, instance_paths, verify_path
 
 LANGUAGE = 'english'
@@ -422,6 +421,4 @@ def send_to_polygon(problem_folder: str, problem_id: Union[str, None]) -> None:
     problem_id = check_polygon_id(problem_id)
 
     requests_list: List[Tuple[str, dict]] = get_requests_list()
-    requests_list = add_requests_info(problem_id, requests_list)
-
-    submit_requests_list(requests_list)
+    submit_requests_list(requests_list, problem_id)

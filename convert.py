@@ -23,31 +23,22 @@ def create_parser():
         required=True
     )
 
-    ds_parser = subparsers.add_parser(
-        'convert', help='Convert DS problem to another format.')
-    ds_parser.add_argument('format', choices=['BOCA', 'Polygon', 'SQTPM'],
-                           help='Format to convert the problem.')
-    ds_parser.add_argument(
-        'problem_dir', help='Path to the problem directory.')
-    ds_parser.add_argument(
-        '-o', '--output_dir', help='Output directory of the converted problem or ID of the Polygon problem.')
-    ds_parser.set_defaults(function=lambda options: start_conversion(
-        options.problem_dir, options.output_dir, options.format))
+    ds_parser = subparsers.add_parser('convert_to', help='Convert DS problem to another format.')
+    ds_parser.add_argument('format', choices=['boca', 'polygon', 'sqtpm'], help='Format to convert the problem.')
+    ds_parser.add_argument('problem_dir', help='Path to the problem directory.')
+    ds_parser.add_argument('-o', '--output_dir', 
+                           help='Path to save the converted problem or ID of the Polygon problem, if one is not defined yet. Default output directory is the problem directory.')
+    ds_parser.set_defaults(function=lambda options: start_conversion(options.problem_dir, options.output_dir, options.format))
 
-    polygon_parser = subparsers.add_parser(
-        'convert_polygon', help='Convert problem from Polygon.')
-    polygon_parser.add_argument(
-        'problem_dir', help='Problem directory.')
-    polygon_parser.add_argument(
-        'problem_id', help='Polygon Problem ID or local directory.')
-    polygon_parser.add_argument('-l', '--local', action='store_true')
-    polygon_parser.set_defaults(
-        function=lambda options: start_polygon_conversion(options.problem_dir, options.local, options.problem_id))
+    polygon_parser = subparsers.add_parser('convert_from', help='Convert problem from some format to DS format.')
+    polygon_parser.add_argument('format', choices=['sqtpm'], help='Format to convert the problem.')
+    polygon_parser.add_argument('problem_dir', help='Path to store the converted problem.')
+    polygon_parser.add_argument('package_dir', help='Path to the problem package or Polygon ID')
+    polygon_parser.add_argument('-l', '--local', action='store_true', help='Convert local Polygon package. Use the package path instead of ID in package_dir.')
+    polygon_parser.set_defaults(function=lambda options: start_polygon_conversion(options.problem_dir, options.local, options.package_dir))
 
-    keys_parser = subparsers.add_parser(
-        'change_keys', help='Change Polygon API keys.')
-    keys_parser.set_defaults(
-        function=lambda _: change_polygon_keys())
+    keys_parser = subparsers.add_parser('set_keys', help='Change Polygon API keys.')
+    keys_parser.set_defaults(function=lambda _: change_polygon_keys())
 
     options = parser.parse_args()
     options.function(options)
@@ -69,10 +60,10 @@ def start_conversion(problem_dir: str, output_dir: Union[str, None], problem_for
             f'Interactive problems are not supported by {problem_format} format.')
         sys.exit(0)
 
-    if problem_format == 'Polygon':
+    if problem_format == 'polygon':
         verify_polygon_keys()
         send_to_polygon(problem_dir, output_dir)
-    elif problem_format == 'SQTPM':
+    elif problem_format == 'sqtpm':
         convert_to_sqtpm(problem_dir, output_dir)
     else:
         print('Not implemented yet.')
