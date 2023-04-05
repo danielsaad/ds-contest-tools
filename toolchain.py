@@ -198,7 +198,9 @@ def move_inputs(temporary_folder: str) -> None:
                 repeated_tests.add(os.path.basename(value))
 
     index = 1
-    for input_test in os.listdir(temporary_folder):
+    output_folder = os.listdir(temporary_folder)
+    output_folder.sort(key=custom_key)
+    for input_test in output_folder:
         if input_test in repeated_tests:
             continue
         while os.path.exists(os.path.join(input_folder, str(index))):
