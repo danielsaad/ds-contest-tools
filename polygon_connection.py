@@ -252,8 +252,6 @@ def verify_response(response: requests.Response, method: str, params: Dict[str, 
         params: Parameters used in the request.
     """
     error: str = ''
-    content = json.loads(response.content.decode())
-
     if response.status_code == requests.codes.ok:
         info_log(f'Request for {method} was successful.')
         return
@@ -262,15 +260,22 @@ def verify_response(response: requests.Response, method: str, params: Dict[str, 
     else:
         error = "Error connecting to the API."
 
+    # Convert a JSON response for better debugging
+    try:
+        content = json.loads(response.content.decode())
+        error_log(f"API status: {content['status']}")
+        error_log(f"Comment: {content['comment']}")
+        error_log('Check debug.log for parameters information')
+
+        debug_log("API status: " + content['status'])
+    except:
+        error_log("Status code: " + response)
+
     parameters = 'Parameters:\n'
     for key, value in params.items():
         parameters += f"{key}: {value}\n"
 
-    error_log(f"API status: {content['status']}")
-    error_log(f"Comment: {content['comment']}")
     error_log('Check debug.log for parameters information')
-
-    debug_log("API status: " + content['status'])
     debug_log(parameters)
 
     raise APICallError(error)
