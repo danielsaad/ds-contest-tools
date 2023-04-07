@@ -31,7 +31,7 @@ def build_executables() -> None:
     os.chdir(old_cwd)
 
 
-def run_programs(all_solutions: bool = False, specific_solution: str = '') -> None:
+def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_number: int = 0) -> None:
     """
     Run the executables to create the problem.
 
@@ -75,7 +75,7 @@ def run_programs(all_solutions: bool = False, specific_solution: str = '') -> No
             sys.exit(0)
 
     solutions_info_dict: dict = run_solutions(
-        input_folder, problem_metadata, all_solutions, specific_solution_info)
+        input_folder, problem_metadata, all_solutions, specific_solution_info, cpu_number)
     print_to_html(problem_metadata, solutions_info_dict)
 
 

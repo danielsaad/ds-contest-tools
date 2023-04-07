@@ -18,9 +18,10 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument('-i', '--interactive', action='store_true',
                         default=False, help='init interactive problem')
     parser.add_argument('-a', '--all', action='store_true',
-                        default=False, help='buil problem with all solutions')
+                        default=False, help='build problem with all solutions')
     parser.add_argument('-s', '--specific',
                         help='build problem with specific solution')
+    parser.add_argument('-c', '--cpu-count', help="the number of CPUs to be used when checking solutions", type=int)
     parser.add_argument(
         'mode', choices=['init', 'build', 'genio', 'genpdf', 'pack2boca', 'clean'],
         help='init: init a problem.\nbuild: build a problem.\n' +
@@ -43,11 +44,11 @@ def genpdf() -> None:
     build_pdf()
 
 
-def build(all_solutions=False, specific_solution: str = '') -> None:
+def build(all_solutions=False, specific_solution: str = '', cpu_number: int = 0) -> None:
     """Call functions to build a problem."""
     build_executables()
     if all_solutions:
-        run_programs(all_solutions=all_solutions)
+        run_programs(all_solutions=all_solutions, cpu_number=cpu_number)
     elif specific_solution:
         run_programs(specific_solution=specific_solution)
     else:
@@ -115,7 +116,7 @@ if __name__ == "__main__":
         info_log('Problem ' + args.problem_id + ' initialized.')
     elif (args.mode == 'build'):
         info_log("Building problem " + args.problem_id)
-        build(args.all, args.specific)
+        build(args.all, args.specific, args.cpu_count)
         info_log("Problem " + args.problem_id + " built")
     elif (args.mode == 'pack2boca'):
         pack2boca()
