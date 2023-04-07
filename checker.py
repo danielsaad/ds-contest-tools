@@ -192,7 +192,6 @@ def run_solutions(input_folder: str, problem_metadata: dict, all_solutions: bool
                     if submission_file:
                         running: str = f'Running {submission_file} solution'
                         info_log(running)
-                        print(running)
                         tmp_test_case_info: dict = run(
                             submission_file, input_folder, tmp_output_folder, problem_limits, expected_result)
                         tmp_solution_result: dict = solution_status(
@@ -205,7 +204,6 @@ def run_solutions(input_folder: str, problem_metadata: dict, all_solutions: bool
                 submission_file = files
                 running: str = f'Running {submission_file} solution'
                 info_log(running)
-                print(running)
                 os.makedirs(tmp_output_folder, exist_ok=True)
                 tmp_test_case_info: dict = run(
                     submission_file, input_folder, tmp_output_folder, problem_limits, expected_result)
@@ -224,7 +222,6 @@ def run_solutions(input_folder: str, problem_metadata: dict, all_solutions: bool
             submission_file = solutions[expected_result]
         running: str = f'Running {submission_file} solution'
         info_log(running)
-        print(running)
         tmp_test_case_info: dict = run(
             submission_file, input_folder, tmp_output_folder, problem_limits, expected_result)
         tmp_solution_result: dict = solution_status(

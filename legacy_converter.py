@@ -55,7 +55,7 @@ def convert_statement() -> None:
     os.makedirs(statement_dir, exist_ok=True)
     with open(statement_path, 'r') as statement:
         statement.readline()
-        
+
         files = {
             'description': 'description',
             'input': 'input',
@@ -117,7 +117,7 @@ def convert_problem_json() -> None:
         if key == 'io_samples':
             new_problem_metadata[key] = value
             continue
-        
+
         for subkey, subvalue in value.items():
             new_problem_metadata[key][subkey] = subvalue
 
@@ -147,5 +147,5 @@ if __name__ == '__main__':
 
     convert_problem()
 
-    print('Update the solutions in problem.json file.')
-    print('Problem converted successfully.')
+    info_log('Update the solutions in problem.json file.')
+    info_log('Problem converted successfully.')

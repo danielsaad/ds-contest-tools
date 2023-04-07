@@ -5,8 +5,8 @@ from math import floor, log10
 from typing import Optional
 
 from jsonutils import parse_json
-from metadata import Paths
-from utils import check_problem_metadata, verify_path
+from logger import error_log
+from utils import verify_path
 
 
 def rename_io(io_folder: str) -> None:
@@ -109,7 +109,7 @@ def check_interactive_problem(problem_dir: str) -> bool:
 
     Args:
         problem_dir: Path to the problem directory.
-    
+
     Returns:
         True if the problem is interactive, False otherwise.
     """
@@ -117,6 +117,6 @@ def check_interactive_problem(problem_dir: str) -> bool:
     verify_path(metadata_path)
     problem_metadata = parse_json(metadata_path)
     if 'problem' not in problem_metadata or 'interactive' not in problem_metadata['problem']:
-        print("Interactive value in problem.json is not defined.")
+        error_log("Interactive value in problem.json is not defined.")
         sys.exit(0)
     return problem_metadata['problem']['interactive']

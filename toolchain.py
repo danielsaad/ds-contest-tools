@@ -71,7 +71,7 @@ def run_programs(all_solutions: bool = False, specific_solution: str = '') -> No
                     specific_solution_info['expected_result'] = key
                     specific_solution_info['solution_name'] = solution_name
         if not specific_solution_info['expected_result']:
-            print(f'Solution {specific_solution} not found.')
+            error_log(f'Solution {specific_solution} not found.')
             sys.exit(0)
 
     solutions_info_dict: dict = run_solutions(
@@ -134,7 +134,7 @@ def validate_inputs() -> None:
             if out or err:
                 error_log(out)
                 error_log(err)
-                print("Failed validation on input", fname)
+                error_log("Failed validation on input", fname)
                 sys.exit(1)
 
     # Check for equal test cases
@@ -143,10 +143,10 @@ def validate_inputs() -> None:
     for key in encoded_tests:
         if len(encoded_tests[key]) > 1:
             equal_tests += len(encoded_tests[key])
-            info_log("Testcases " +
+            debug_log("Testcases " +
                      ', '.join(encoded_tests[key]) + " are equal.")
     if equal_tests:
-        print("All test cases must be different, however there are " +
+        error_log("All test cases must be different, however there are " +
               f"{equal_tests} equal tests.")
         sys.exit(0)
 
@@ -257,7 +257,7 @@ def generate_inputs(move: bool = True, output_folder: str = '') -> None:
                 ds_generator = False
                 break
     elif not os.path.exists(generator_path):
-        print("Error. No generators or scripts found.")
+        error_log("No generators or scripts found.")
         sys.exit(1)
 
     # Verify and run a DS generator

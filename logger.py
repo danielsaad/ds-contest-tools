@@ -60,12 +60,16 @@ def debug_log(text: str) -> None:
         debug.debug(text.rstrip())
 
 
-def error_log(text: str) -> None:
+def error_log(text: str, print_text: bool = True) -> None:
     """Logs errors that occur during tool execution.
 
     Args:
         text: The error information to be logged.
     """
     tool = logging.getLogger('tool')
-    if text is not None and text.rstrip() != '':
-        tool.error(text.rstrip())
+    text = text.rstrip()
+    if text is not None and text != '':
+        tool.error(text)
+        if print_text:
+            print(text)
+        

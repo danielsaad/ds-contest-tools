@@ -6,6 +6,7 @@ from typing import Union
 
 from fileutils import check_interactive_problem
 from jsonutils import write_to_json
+from logger import error_log, info_log
 from polygon_converter import get_polygon_problem
 from polygon_submitter import send_to_polygon
 from sqtpm import convert_to_sqtpm
@@ -50,16 +51,16 @@ def start_conversion_from(problem_format: str, problem_dir: str, package_dir: st
         if not local:
             verify_polygon_keys()
         get_polygon_problem(problem_dir, package_dir, local)
-        print('Problem converted successfully.')
+        info_log('Problem converted successfully.')
     else:
-        print('Not implemented yet.')
+        info_log('Not implemented yet.')
 
 
 def start_conversion_to(problem_format: str, problem_dir: str, output_dir: Union[str, None]) -> None:
     """Convert problem from DS to Polygon, SQTPM or BOCA."""
     interactive = check_interactive_problem(problem_dir)
     if problem_format != 'polygon' and interactive:
-        print(f'Interactive problems are not supported by {problem_format} format.')
+        error_log(f'Interactive problems are not supported by {problem_format} format.')
         sys.exit(0)
 
     if problem_format == 'polygon':
@@ -68,20 +69,20 @@ def start_conversion_to(problem_format: str, problem_dir: str, output_dir: Union
     elif problem_format == 'sqtpm':
         convert_to_sqtpm(problem_dir, output_dir)
     else:
-        print('Not implemented yet.')
+        error_log('Not implemented yet.')
         sys.exit(0)
-    print('Problem converted successfully.')
+    info_log('Problem converted successfully.')
 
 
 def change_polygon_keys() -> None:
     """Prompts the user to enter their Polygon API keys and saves them to a local file."""
     api_key = getpass("API key: ")
     if not api_key:
-        print("API key cannot be empty.")
+        error_log("API key cannot be empty.")
         sys.exit(1)
     secret = getpass("API secret: ")
     if not secret:
-        print("API secret cannot be empty.")
+        error_log("API secret cannot be empty.")
         sys.exit(1)
     keys = {
         'apikey': api_key,
@@ -89,7 +90,7 @@ def change_polygon_keys() -> None:
     }
     write_to_json(os.path.join(os.path.dirname(
         os.path.abspath(__file__)), 'secrets.json'), keys)
-    print('Keys saved. They are stored locally in the tool directory.')
+    info_log('Keys saved. They are stored locally in the tool directory.')
 
 
 def verify_polygon_keys() -> None:
@@ -102,7 +103,7 @@ def verify_polygon_keys() -> None:
     secrets_path = os.path.join(tool_path, 'secrets.json')
 
     if not os.path.exists(secrets_path):
-        print("Keys are not defined. Use 'change_keys' to define it.")
+        error_log("Keys are not defined. Use 'set_keys' to define it.")
         sys.exit(1)
 
 

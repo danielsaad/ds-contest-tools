@@ -182,7 +182,7 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
             print("\\end{Problema}", file=f_out)
         print("\\end{document}", file=f_out)
     if (tutorial_lines):
-        info_log("Producing Tutorial")
+        info_log("Creating problem tutorial")
         print_tutorial_to_latex(
             problem_folder, problem_metadata, tutorial_lines)
 

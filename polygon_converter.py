@@ -476,10 +476,10 @@ def convert_problem(local: bool, problem_id: Optional[str] = '') -> None:
     # manually.
     if local:
         copy_source_folder()
-        print("Please change the names of the source files to DS standard:")
-        print("checker.cpp")
-        print("validator.cpp")
-        print("interactor.cpp")
+        info_log("Change the names of the source files to DS standard:")
+        info_log("checker: checker.cpp")
+        info_log("validator: validator.cpp")
+        info_log("interactor: interactor.cpp")
     else:
         copy_checker(problem_id)
         copy_validator(problem_id)

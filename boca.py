@@ -6,8 +6,9 @@ from typing import Optional
 
 from fileutils import recursive_overwrite, rename_io
 from jsonutils import parse_json
+from logger import error_log, info_log
 from metadata import Paths
-from utils import check_problem_metadata, check_subprocess_output
+from utils import check_problem_metadata, check_subprocess_output, verify_path
 
 
 class default_boca_limits:
@@ -19,18 +20,20 @@ class default_boca_limits:
 
 def boca_zip(boca_folder: str) -> None:
     """ Zip a problem of BOCA format."""
+    info_log("Zipping BOCA package")
     old_cwd = os.getcwd()
     os.chdir(boca_folder)
     zip_filename = os.path.basename(boca_folder)+'.zip'
     p = subprocess.run('zip'+' -r ' + zip_filename + ' . ', shell=True,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    check_subprocess_output(p, "Error ziping boca file.")
+    check_subprocess_output(p, "Error ziping BOCAfile.")
     os.rename(zip_filename, os.path.join('..', zip_filename))
     os.chdir(old_cwd)
 
 
 def boca_pack(problem_folder: Optional[str] = '') -> None:
     """Convert a DS problem to a BOCA problem."""
+    info_log("Creating BOCA package")
     if (problem_folder == ''):
         problem_folder = Paths().get_problem_dir()
 
@@ -53,13 +56,14 @@ def boca_pack(problem_folder: Optional[str] = '') -> None:
 
     pdf_file = filename+'.pdf'
     if not os.path.exists(pdf_file):
-        print("Problem PDF doesn't exist.")
+        error_log("Problem PDF doesn't exist.")
         sys.exit(1)
     shutil.copy2(pdf_file, boca_description_folder)
 
     # Compare
-    shutil.copy2(os.path.join(
-        *[problem_folder, 'bin', 'checker-boca']), os.path.join(boca_folder, 'compare'))
+    checker_boca = os.path.join(problem_folder, 'bin', 'checker-boca')
+    verify_path(checker_boca)
+    shutil.copy2(checker_boca, os.path.join(boca_folder, 'compare'))
     shutil.copy2(os.path.join(*[boca_folder, 'compare', 'checker-boca']),
                  os.path.join(*[boca_folder, 'compare', 'c']))
     shutil.copy2(os.path.join(*[boca_folder, 'compare', 'checker-boca']),

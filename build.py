@@ -4,7 +4,7 @@ import shutil
 import sys
 
 from boca import boca_pack
-from logger import info_log
+from logger import error_log, info_log
 from metadata import Paths
 from pdfutils import build_pdf
 from toolchain import build_executables, clean_files, run_programs
@@ -59,7 +59,7 @@ def init(interactive=False) -> None:
     """Initialize a competitive problem."""
     problem_folder = Paths().get_problem_dir()
     if os.path.exists(os.path.join(problem_folder, 'src')):
-        print("Problem ID already exists in the directory")
+        error_log("Problem ID already exists in the directory")
         sys.exit(1)
 
     folder = os.path.join(os.path.dirname(
@@ -112,21 +112,21 @@ if __name__ == "__main__":
     if (args.mode == 'init'):
         info_log('Initializing problem ' + args.problem_id)
         init(args.interactive)
-        print('Problem', args.problem_id, 'initialized.')
+        info_log('Problem ' + args.problem_id + ' initialized.')
     elif (args.mode == 'build'):
         info_log("Building problem " + args.problem_id)
         build(args.all, args.specific)
-        print("Problem " + args.problem_id + " built.")
+        info_log("Problem " + args.problem_id + " built")
     elif (args.mode == 'pack2boca'):
         pack2boca()
-        print("Problem " + args.problem_id + " to BOCA successfully.")
+        info_log("Problem " + args.problem_id + " to BOCA successfully.")
     elif (args.mode == 'genpdf'):
         genpdf()
-        print("PDFs generated.")
+        info_log("PDFs generated.")
     elif (args.mode == 'genio'):
-        info_log("Generating input and output.")
+        info_log("Generating input and output")
         genio(args.all)
-        print("Input and output generated.")
+        info_log("Input and output generated.")
     elif (args.mode == 'clean'):
         clean()
-        print('Files removed successfully.')
+        info_log('Executables removed')

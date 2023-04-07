@@ -80,11 +80,11 @@ Usage: `python3 convert.py [-l] convert_from <format> <problem_dir> <package_dir
 Options:
 - **-l**: Converts local Polygon package to DS. It is possible to convert FULL and STANDARD packages. Requests are not made, so the user needs to specify if the problem is interactive or not, and change the name of the source files to DS standard.
 
-### change_keys
+### set_keys
 
 Changes the Polygon API keys of the user and saves it locally in the tool directory.
 
-Usage: `python3 convert.py change_keys`
+Usage: `python3 convert.py set_keys`
 
 ## contest.py
 

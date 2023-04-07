@@ -51,7 +51,7 @@ def submit_requests_list(requests_list: List[tuple], problem_id: str) -> None:
         try:
             make_api_connection(method, params, conn)
         except APICallError as err:
-            print(err)
+            error_log(err)
             sys.exit(1)
 
     # Add authorization parameters and make concurrent requests
@@ -64,7 +64,7 @@ def submit_requests_list(requests_list: List[tuple], problem_id: str) -> None:
         try:
             make_api_connection(method, params, conn)
         except APICallError as err:
-            print(err)
+            error_log(err)
             sys.exit(1)
 
     conn.close()
@@ -82,7 +82,7 @@ def submit_concurrent_requests(tests: List[Tuple[str, dict]]) -> None:
 
         for future in concurrent.futures.as_completed(futures):
             if future.exception() is not None:
-                print(future.exception())
+                error_log(str(future.exception()))
                 for f in futures:
                     if f != future and not f.done():
                         f.cancel()
@@ -102,7 +102,7 @@ def get_package_id(packages: List[dict]) -> int:
     linux_packages = [p for p in packages if p['state']
                       == 'READY' and p['type'] == 'linux']
     if not any(linux_packages):
-        print("There is not a ready linux package on Polygon.")
+        error_log("There is not a ready linux package on Polygon.")
         sys.exit(1)
 
     most_recent_creation_time = max(
@@ -158,11 +158,11 @@ def check_polygon_id(problem_id: Union[str, None]) -> str:
         return problem_id
 
     if 'polygon_config' not in problem_metadata.keys():
-        print('File problem.json does not have "polygon_config" key.')
+        error_log('File problem.json does not have "polygon_config" key.')
         sys.exit(0)
 
     if not problem_metadata['polygon_config']['id']:
-        print(
+        error_log(
             'Problem ID is not defined. Specify it in the command line or in problem.json.')
         sys.exit(0)
 
@@ -301,7 +301,7 @@ def make_api_request(method: str, parameters: dict, problem_id: str) -> bytes:
     try:
         response = make_api_connection(method, request_params)
     except APICallError as err:
-        print(err)
+        error_log(err)
         sys.exit(1)
     return response.content
 
