@@ -2,6 +2,8 @@ import json
 import os
 import sys
 
+from logger import error_log
+
 
 def parse_json(json_file: str) -> dict:
     """Converts a JSON file to a Python dictionary.
@@ -15,7 +17,7 @@ def parse_json(json_file: str) -> dict:
     json_data = {}
 
     if not os.path.isfile(json_file):
-        print(os.path.basename(json_file), 'does not exists.')
+        error_log(os.path.basename(json_file), 'does not exists.')
         sys.exit(1)
 
     with open(json_file) as f:

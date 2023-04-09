@@ -4,7 +4,7 @@ import shutil
 import sys
 
 from boca import boca_pack
-from logger import info_log
+from logger import error_log, info_log
 from metadata import Paths
 from pdfutils import build_pdf
 from toolchain import build_executables, clean_files, run_programs
@@ -18,9 +18,10 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument('-i', '--interactive', action='store_true',
                         default=False, help='init interactive problem')
     parser.add_argument('-a', '--all', action='store_true',
-                        default=False, help='buil problem with all solutions')
+                        default=False, help='build problem with all solutions')
     parser.add_argument('-s', '--specific',
                         help='build problem with specific solution')
+    parser.add_argument('-c', '--cpu-count', help="the number of CPUs to be used when checking solutions", type=int)
     parser.add_argument(
         'mode', choices=['init', 'build', 'genio', 'genpdf', 'pack2boca', 'clean'],
         help='init: init a problem.\nbuild: build a problem.\n' +
@@ -43,11 +44,11 @@ def genpdf() -> None:
     build_pdf()
 
 
-def build(all_solutions=False, specific_solution: str = '') -> None:
+def build(all_solutions=False, specific_solution: str = '', cpu_number: int = 0) -> None:
     """Call functions to build a problem."""
     build_executables()
     if all_solutions:
-        run_programs(all_solutions=all_solutions)
+        run_programs(all_solutions=all_solutions, cpu_number=cpu_number)
     elif specific_solution:
         run_programs(specific_solution=specific_solution)
     else:
@@ -59,7 +60,7 @@ def init(interactive=False) -> None:
     """Initialize a competitive problem."""
     problem_folder = Paths().get_problem_dir()
     if os.path.exists(os.path.join(problem_folder, 'src')):
-        print("Problem ID already exists in the directory")
+        error_log("Problem ID already exists in the directory")
         sys.exit(1)
 
     folder = os.path.join(os.path.dirname(
@@ -112,21 +113,21 @@ if __name__ == "__main__":
     if (args.mode == 'init'):
         info_log('Initializing problem ' + args.problem_id)
         init(args.interactive)
-        print('Problem', args.problem_id, 'initialized.')
+        info_log('Problem ' + args.problem_id + ' initialized.')
     elif (args.mode == 'build'):
         info_log("Building problem " + args.problem_id)
-        build(args.all, args.specific)
-        print("Problem " + args.problem_id + " built.")
+        build(args.all, args.specific, args.cpu_count)
+        info_log("Problem " + args.problem_id + " built")
     elif (args.mode == 'pack2boca'):
         pack2boca()
-        print("Problem " + args.problem_id + " to BOCA successfully.")
+        info_log("Problem " + args.problem_id + " to BOCA successfully.")
     elif (args.mode == 'genpdf'):
         genpdf()
-        print("PDFs generated.")
+        info_log("PDFs generated.")
     elif (args.mode == 'genio'):
-        info_log("Generating input and output.")
+        info_log("Generating input and output")
         genio(args.all)
-        print("Input and output generated.")
+        info_log("Input and output generated.")
     elif (args.mode == 'clean'):
         clean()
-        print('Files removed successfully.')
+        info_log('Executables removed')
