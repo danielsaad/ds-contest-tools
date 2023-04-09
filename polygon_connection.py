@@ -1,3 +1,4 @@
+import concurrent.futures
 import hashlib
 import io
 import json
@@ -19,17 +20,73 @@ from utils import convert_to_bytes, verify_path
 URL = 'https://polygon.codeforces.com/api/'
 
 
-def submit_requests_list(requests_list: List[dict]) -> None:
-    """
-    Submits a list of requests to the Polygon API using a single connection.
+class APICallError(Exception):
+    pass
+
+
+def submit_requests_list(requests_list: List[tuple], problem_id: str) -> None:
+    """Submit an organized list of requests to Polygon.
 
     Args:
-        requests_list: A list of dictionaries containing the method and parameters
-                       for each request.
+        requests_list: Organized list of requests to be made.
+        problem_id: ID of the Polygon problem.
     """
+    first_batch = []
+    tests_batch = []
+    last_batch = []
     conn = requests.Session()
+
+    # Separate requests
     for method, params in requests_list:
-        make_api_connection(method, params, conn)
+        if method == 'problem.saveTest':
+            tests_batch.append((method, params))
+        elif not tests_batch:
+            first_batch.append((method, params))
+        else:
+            last_batch.append((method, params))
+
+    # Add authorization parameters and make requests
+    first_batch = add_requests_info(problem_id, first_batch)
+    for method, params in first_batch:
+        try:
+            make_api_connection(method, params, conn)
+        except APICallError as err:
+            error_log(err)
+            sys.exit(1)
+
+    # Add authorization parameters and make concurrent requests
+    tests_batch = add_requests_info(problem_id, tests_batch)
+    submit_concurrent_requests(tests_batch)
+
+    # Add authorization parameters and make requests
+    last_batch = add_requests_info(problem_id, last_batch)
+    for method, params in last_batch:
+        try:
+            make_api_connection(method, params, conn)
+        except APICallError as err:
+            error_log(err)
+            sys.exit(1)
+
+    conn.close()
+
+
+def submit_concurrent_requests(tests: List[Tuple[str, dict]]) -> None:
+    """Submit a list of requests to the Polygon API using concurrent requests.
+
+    Args:
+        tests: List of methods and parameters of the input files to make the requests.
+    """
+    with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count() // 2) as executor:
+        futures = [executor.submit(make_api_connection, method, params)
+                   for method, params in tests]
+
+        for future in concurrent.futures.as_completed(futures):
+            if future.exception() is not None:
+                error_log(str(future.exception()))
+                for f in futures:
+                    if f != future and not f.done():
+                        f.cancel()
+                sys.exit(1)
 
 
 def get_package_id(packages: List[dict]) -> int:
@@ -45,7 +102,7 @@ def get_package_id(packages: List[dict]) -> int:
     linux_packages = [p for p in packages if p['state']
                       == 'READY' and p['type'] == 'linux']
     if not any(linux_packages):
-        print("There is not a ready linux package on Polygon.")
+        error_log("There is not a ready linux package on Polygon.")
         sys.exit(1)
 
     most_recent_creation_time = max(
@@ -101,11 +158,12 @@ def check_polygon_id(problem_id: Union[str, None]) -> str:
         return problem_id
 
     if 'polygon_config' not in problem_metadata.keys():
-        print('File problem.json does not have "polygon_config" key.')
+        error_log('File problem.json does not have "polygon_config" key.')
         sys.exit(0)
 
     if not problem_metadata['polygon_config']['id']:
-        print('Problem ID is not defined. Specify it in the command line or in problem.json.')
+        error_log(
+            'Problem ID is not defined. Specify it in the command line or in problem.json.')
         sys.exit(0)
 
     return problem_metadata['polygon_config']['id']
@@ -193,26 +251,34 @@ def verify_response(response: requests.Response, method: str, params: Dict[str, 
         method: The method used in the request.
         params: Parameters used in the request.
     """
+    error: str = ''
     if response.status_code == requests.codes.ok:
-        info_log(f'Request {method} successfull.')
+        info_log(f'Request for {method} was successful.')
+        return
     elif response.status_code == requests.codes.bad_request:
-        content = json.loads(response.content.decode())
-        parameters = 'Parameters:\n'
-        for key, value in params.items():
-            parameters += f"{key}: {str(value)}\n"
+        error = f"Error submitting {method} method. Stoping requests."
+    else:
+        error = "Error connecting to the API."
 
+    # Convert a JSON response for better debugging
+    try:
+        content = json.loads(response.content.decode())
         error_log(f"API status: {content['status']}")
         error_log(f"Comment: {content['comment']}")
         error_log('Check debug.log for parameters information')
 
         debug_log("API status: " + content['status'])
-        debug_log(parameters)
+    except:
+        error_log("Status code: " + response)
 
-        print(f"Wrong parameter of {method} method.")
-        sys.exit(1)
-    else:
-        print("Could not connect to the API.")
-        sys.exit(1)
+    parameters = 'Parameters:\n'
+    for key, value in params.items():
+        parameters += f"{key}: {value}\n"
+
+    error_log('Check debug.log for parameters information')
+    debug_log(parameters)
+
+    raise APICallError(error)
 
 
 def make_api_request(method: str, parameters: dict, problem_id: str) -> bytes:
@@ -232,7 +298,11 @@ def make_api_request(method: str, parameters: dict, problem_id: str) -> bytes:
     request_params = add_auth_parameters(
         method, parameters, problem_id, keys['apikey'], keys['secret'])
 
-    response = make_api_connection(method, request_params)
+    try:
+        response = make_api_connection(method, request_params)
+    except APICallError as err:
+        error_log(err)
+        sys.exit(1)
     return response.content
 
 
@@ -248,9 +318,9 @@ def make_api_connection(method: str, request_params: dict, session: Optional[req
         The response object from the API.
     """
     if session == None:
-        session = requests.Session()
+        response = requests.post(URL + method, files=request_params)
+    else:
+        response = session.post(URL + method, files=request_params)
 
-    response = session.post(URL + method, files=request_params)
     verify_response(response, method, request_params)
-
     return response

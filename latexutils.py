@@ -122,18 +122,21 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
 
         # Print statement information
         if (statement_lines):
+            statement_lines[-1] = statement_lines[-1].rstrip()
             for line in statement_lines:
                 print_line(line, f_out)
         if (input_lines):
-            print("\n\\Entrada\n", file=f_out)
+            print("\n\n\\Entrada\n", file=f_out)
+            input_lines[-1] = input_lines[-1].rstrip()
             for line in input_lines:
                 print_line(line, f_out)
         if (output_lines):
-            print("\n\\Saida\n", file=f_out)
+            print("\n\n\\Saida\n", file=f_out)
+            output_lines[-1] = output_lines[-1].rstrip()
             for line in output_lines:
                 print_line(line, f_out)
         if (interactive and interactor_lines):
-            print("\n\\Interacao\n", file=f_out)
+            print("\n\n\\Interacao\n", file=f_out)
             for line in interactor_lines:
                 print_line(line, f_out)
 
@@ -182,7 +185,7 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
             print("\\end{Problema}", file=f_out)
         print("\\end{document}", file=f_out)
     if (tutorial_lines):
-        info_log("Producing Tutorial")
+        info_log("Creating problem tutorial")
         print_tutorial_to_latex(
             problem_folder, problem_metadata, tutorial_lines)
 

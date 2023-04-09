@@ -4,9 +4,11 @@ import sys
 from typing import Union
 
 from jsonutils import parse_json
-from logger import info_log
+from logger import error_log, info_log
 from metadata import Paths
-from utils import check_problem_metadata, instance_paths, verify_path
+from toolchain import generate_inputs, get_manual_tests
+from utils import (check_problem_metadata, generate_timestamp, instance_paths,
+                   verify_path)
 
 
 def create_config(showcases: str, memory_limit: int, cputime: int) -> None:
@@ -90,7 +92,7 @@ def copy_source_files(main_solution: str) -> None:
             file += '.cpp'
             generator = os.path.join(problem_folder, 'src', file)
             if not os.path.exists(generator):
-                print(f"Generator {file} does not exist.")
+                error_log(f"Generator {file} does not exist.")
                 sys.exit(1)
             info_log(f"Copying {file} file.")
             destination = os.path.join(output_folder, 'src', file)
@@ -135,6 +137,19 @@ def copy_generator_script() -> None:
     shutil.copy2(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               'files', 'sqtpm.sh'),
                  os.path.join(output_folder, 'genio.sh'))
+
+
+def copy_manual_tests() -> None:
+    """Move manual tests to SQTPM folder."""
+    output_folder = Paths().get_output_dir()
+    tmp_folder = os.path.join(
+        '/', 'tmp', f'ds-contest-tool-{generate_timestamp()}', 'input')
+
+    generate_inputs(move=False, output_folder=tmp_folder)
+    manual_tests = get_manual_tests(tmp_folder)
+    for test in manual_tests:
+        shutil.copy2(test, os.path.join(
+            output_folder, os.path.basename(test) + '.in'))
 
 
 def create_makefile() -> None:
@@ -200,9 +215,11 @@ def convert_to_sqtpm(problem_dir: str, output_dir: Union[str, None]) -> None:
     copy_pdf(pdf_name)
     copy_generator_script()
     copy_source_files(problem_metadata['solutions']['main-ac'])
+    copy_manual_tests()
 
     create_makefile()
-    create_html_statement(os.path.basename(os.path.normpath(output_folder)), pdf_name)
+    create_html_statement(os.path.basename(
+        os.path.normpath(output_folder)), pdf_name)
     create_config(' '.join([str(x).zfill(3) for x in list(
         range(1, problem_metadata['io_samples'] + 1))]),
         problem_metadata['problem']['memory_limit_mb'],

@@ -53,9 +53,9 @@ def check_subprocess_output(p: CompletedProcess, message: str) -> None:
         message (str): The message to be printed in case of an error.
     """
     if p.returncode:
-        error_log(p.stdout)
-        error_log(p.stderr)
-        print(message)
+        error_log(p.stdout, print_text=False)
+        error_log(p.stderr, print_text=False)
+        error_log(message)
         sys.exit(1)
 
     if p.stdout and p.stdout != '':
@@ -111,7 +111,7 @@ def check_problem_metadata(problem_metadata: dict) -> None:
     Args:
         problem_metadata (dict): The problem.json file as a dictionary.
     """
-    info_log("Check problem.json for type errors")
+    info_log("Checking problem.json for type errors")
     verify_solutions(problem_metadata['solutions'])
 
     expected_types = {
@@ -120,12 +120,12 @@ def check_problem_metadata(problem_metadata: dict) -> None:
     }
     for key in expected_types:
         if key not in problem_metadata:
-            print(f"Variable {key} is not defined in problem.json.")
+            error_log(f"Variable {key} is not defined in problem.json.")
             sys.exit(1)
 
         if key == 'io_samples':
             if not isinstance(problem_metadata[key], expected_types[key]):
-                print(
+                error_log(
                     f"Variable '{key}' is not a(n) {expected_types[key].__name__}.")
                 sys.exit(1)
             continue
@@ -133,7 +133,7 @@ def check_problem_metadata(problem_metadata: dict) -> None:
         for subkey, expected_type in expected_types[key].items():
             value = problem_metadata[key].get(subkey)
             if not isinstance(value, expected_type):
-                print(
+                error_log(
                     f"Variable '{subkey}' in '{key}' is not a(n) {expected_type.__name__}.")
                 sys.exit(1)
 
@@ -146,7 +146,7 @@ def verify_path(path: str) -> None:
         path (str): Path to the file.
     """
     if not os.path.exists(path):
-        print(f'{os.path.relpath(path)} does not exist.')
+        error_log(f'{os.path.relpath(path)} does not exist.')
         sys.exit(1)
 
 
@@ -155,8 +155,8 @@ def generate_timestamp() -> str:
     Generate a timestamp in the format (Day-Month-Year-Hour:Minute:Seconds)
 
     Returns:
-        str: The string representing the timestamp.
+        The string representing the timestamp.
     """
     current_time: datetime = datetime.fromtimestamp(datetime.now().timestamp())
-    timestamp: str = current_time.strftime('%d-%m-%Y-%H:%M:%S')
+    timestamp: str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
     return timestamp

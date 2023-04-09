@@ -58,7 +58,7 @@ def build_contest_pdf() -> None:
     merge_pdfs(problem_pdf_l, merge_pdf)
     if (tutorial_pdf_l):
         merge_pdfs(tutorial_pdf_l, merge_tutorial_pdf)
-    # Remove problems PDFs and ignore PDFs which are from 
+    # Remove problems PDFs and ignore PDFs which are from
     # the same folder as the contest.
     for f in problem_pdf_l:
         folder_name = os.path.basename(output_folder) + '.pdf'
@@ -102,6 +102,7 @@ def verify_problem(problem: str) -> None:
 
     # Build problem if it is only initialized
     elif args.mode == 'build' and not os.path.exists(os.path.join(problem, 'bin')):
+        info_log(f"Generating BOCA package for {problem} problem.")
         command = ['python3', os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                            'build.py'), 'build', problem]
         p = subprocess.run(command, stdout=subprocess.PIPE,
@@ -122,10 +123,10 @@ if __name__ == '__main__':
     if (args.mode == 'build' and args.boca):
         build_boca_packages()
         build_contest_pdf()
-        print("Contest build successfully.")
+        info_log("Contest build successfully.")
     elif (args.mode == 'build'):
         build_contest_pdf()
-        print("Contest build successfully.")
+        info_log("Contest build successfully.")
     elif (args.mode == 'genpdf'):
         build_contest_pdf()
-        print("PDFs generated successfully.")
+        info_log("PDFs generated successfully.")
