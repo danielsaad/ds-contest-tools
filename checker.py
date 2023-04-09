@@ -1,12 +1,14 @@
 #!/usr/bin/python3
 
 import os
+import queue
 import subprocess
 import sys
 import time
-from datetime import datetime
 from enum import Enum
-from multiprocessing import Event, Manager, Pipe, Process, cpu_count
+from math import floor
+from multiprocessing import (Event, Manager, Pipe, Process, Queue,
+                             cpu_count)
 from multiprocessing.connection import Connection
 from multiprocessing.managers import DictProxy
 from signal import SIGKILL
@@ -15,6 +17,7 @@ import psutil
 
 from logger import debug_log, error_log, info_log
 from metadata import Paths
+from utils import generate_timestamp
 
 
 class Status(Enum):
@@ -48,7 +51,7 @@ def custom_key(str):
 
 
 def run_binary(binary_file: str, input_folder: str, output_folder: str,
-               input_files: list, output_dict, problem_limits: dict,
+               input_files: list, output_dict, problem_limits: dict, pids: Queue,
                begin: int = 0, pace: int = 1, interpreter: str = ""):
     ans_folder = os.path.join(
         Paths().get_problem_dir(), 'output')
@@ -58,13 +61,12 @@ def run_binary(binary_file: str, input_folder: str, output_folder: str,
     else:
         file = binary_file
 
+    conn_sender, con_recv = Pipe()
     for i in range(begin, len(input_files), pace):
         ans_file = os.path.join(ans_folder, input_files[i])
         fname_in = os.path.join(input_folder, input_files[i])
         fname_out = os.path.join(output_folder, input_files[i])
         status = Status.AC
-        event = Event()
-        conn_sender, con_recv = Pipe()
         mem_info = (0, 0)
         with open(fname_in, 'r') as inf, open(fname_out, 'w') as ouf:
             local_time_start = time.perf_counter()
@@ -72,11 +74,8 @@ def run_binary(binary_file: str, input_folder: str, output_folder: str,
             total_time_elapsed = 0
             p = subprocess.Popen(file,
                                  stdin=inf, stdout=ouf, stderr=subprocess.PIPE, text=True)
-
-            process = Process(target=memory_monitor,
-                              args=(p.pid, problem_limits['memory_limit'], event, conn_sender))
+            pids.put([p.pid, conn_sender])
             try:
-                process.start()
                 _, stderr = p.communicate(
                     timeout=2*problem_limits['time_limit'])
                 if p.returncode < 0 or stderr:
@@ -84,10 +83,10 @@ def run_binary(binary_file: str, input_folder: str, output_folder: str,
             except subprocess.TimeoutExpired:
                 status = Status.HARD_TLE
                 p.kill()
+                _, stderr = p.communicate()
             finally:
                 local_time_end = time.perf_counter()
                 total_time_elapsed = local_time_end - local_time_start
-                event.set()
                 mem_info = con_recv.recv()
             if mem_info[1] != Status.AC:
                 status = Status.MLE
@@ -99,6 +98,8 @@ def run_binary(binary_file: str, input_folder: str, output_folder: str,
                     status = Status.SOFT_TLE
 
             output_dict[i] = [status, total_time_elapsed, mem_info[0]]
+    con_recv.close()
+    conn_sender.close()
 
 
 def run(submission_file: str, input_folder: str, output_folder: str,
@@ -180,10 +181,8 @@ def run_solutions(input_folder: str, problem_metadata: dict, all_solutions: bool
     problem_limits: dict = {'time_limit': time_limit,
                             'memory_limit': memory_limit}
     solutions: dict = problem_metadata['solutions']
-    current_time: datetime = datetime.fromtimestamp(datetime.now().timestamp())
-    timestamp: str = current_time.strftime('%d-%m-%Y-%H:%M:%S')
     tmp_output_folder: str = os.path.join(
-        '/tmp/', f'ds-contest-tool-{timestamp}')
+        '/tmp/', f'ds-contest-tool-{generate_timestamp()}')
     solutions_info_dict = dict()
     if all_solutions:
         for expected_result, files in solutions.items():
@@ -237,23 +236,26 @@ def run_solutions(input_folder: str, problem_metadata: dict, all_solutions: bool
 def create_thread(binary_file: str, input_folder: str, output_folder: str, input_files: list, problem_limits: dict,
                   expected_result: str, interpreter: str = "", cpu_number: int = 0) -> dict:
     solution_tp = True if expected_result == "main-ac" or expected_result == "alternative-ac" else False
-    if solution_tp:
-        n_threads = 1
-    elif cpu_number:
-        n_threads = cpu_number
-    else:
-        n_threads = max(cpu_count()//2, 1)
+    n_threads = 1 if solution_tp else max(floor(cpu_count() * 0.7), 1)
     info_dict = dict()
     with Manager() as manager:
+        pids: Queue = Queue(maxsize=100)
+        stop_monitor: Event = manager.Event()
         output_dict: DictProxy = manager.dict()
+        monitor_process = Process(target=memory_monitor, args=(
+            pids, problem_limits['memory_limit'], stop_monitor))
+        monitor_process.start()
+
         processes = [Process(target=run_binary, args=(
-            binary_file, input_folder, output_folder, input_files, output_dict, problem_limits, idx, n_threads, interpreter)) for idx in range(n_threads)]
+            binary_file, input_folder, output_folder, input_files, output_dict, problem_limits, pids, idx, n_threads, interpreter)) for idx in range(n_threads)]
         for process in processes:
             process.start()
         for process in processes:
             process.join()
+        stop_monitor.set()
         processes = Process(target=write_to_log, args=(output_dict,))
         processes.start()
+        monitor_process.join()
         info_dict = dict(output_dict)
         processes.join()
 
@@ -313,20 +315,27 @@ def solution_status(test_case_info: dict, expected_result: str) -> dict:
     return solution_info
 
 
-def memory_monitor(pid: int, memory_limit: int, event: Event, con: Connection) -> None:
-    mem_usage = 0
-    status = Status.AC
-    try:
-        while (not event.is_set()):
-            process = psutil.Process(pid)
-            mem_usage = (max(process.memory_info().rss, mem_usage))
-            if (mem_usage > memory_limit):
-                status = Status.MLE
-                os.kill(pid, SIGKILL)
-                return
-            time.sleep(0.05)
-    except psutil.NoSuchProcess:
-        return
-    finally:
-        con.send((mem_usage, status))
-        con.close()
+def memory_monitor(pids: Queue, memory_limit: int, stop_monitor: Event) -> None:
+    mem_usage: dict = dict()
+    status: dict = dict()
+    while not stop_monitor.is_set():
+        try:
+            process = pids.get(timeout=0.5)
+            process_pid: int = process[0]
+            mem_usage[process_pid] = mem_usage.get(process_pid, 0)
+            conn: Connection = process[1]
+            process_info = psutil.Process(process_pid)
+            mem_usage[process_pid] = (
+                max(process_info.memory_info().rss, mem_usage[process_pid]))
+            if (mem_usage[process_pid] > memory_limit):
+                status[process_pid] = status.get(process_pid, Status.MLE)
+                try:
+                    os.kill(process_pid, SIGKILL)
+                except:
+                    pass
+            pids.put(process)
+        except queue.Empty:
+            pass
+        except psutil.NoSuchProcess:
+            conn.send((mem_usage[process_pid],
+                       status.get(process_pid, Status.AC)))
