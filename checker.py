@@ -236,7 +236,12 @@ def run_solutions(input_folder: str, problem_metadata: dict, all_solutions: bool
 def create_thread(binary_file: str, input_folder: str, output_folder: str, input_files: list, problem_limits: dict,
                   expected_result: str, interpreter: str = "", cpu_number: int = 0) -> dict:
     solution_tp = True if expected_result == "main-ac" or expected_result == "alternative-ac" else False
-    n_threads = 1 if solution_tp else max(floor(cpu_count() * 0.7), 1)
+    if solution_tp:
+        n_threads = 1
+    elif cpu_number:
+        n_threads = cpu_number
+    else:
+        n_threads = max(floor(cpu_count() * 0.7), 1)
     info_dict = dict()
     with Manager() as manager:
         pids: Queue = Queue(maxsize=100)
