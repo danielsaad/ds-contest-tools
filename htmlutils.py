@@ -46,7 +46,7 @@ def write_nav_bar(f_out: io.TextIOWrapper) -> None:
     print(nav_bar, file=f_out)
 
 
-def write_main(solutions_info_dict: dict, f_out: io.TextIOWrapper) -> None:
+def write_main(solutions_info_dict: dict, problem_metadata: dict, f_out: io.TextIOWrapper) -> None:
     main_init: str = """
      <main class="row col-md col-lg col-xl mx-auto mt-3 mb-3">
         <section>
@@ -56,7 +56,11 @@ def write_main(solutions_info_dict: dict, f_out: io.TextIOWrapper) -> None:
     """
     print(main_init, file=f_out)
     solutions: list = solutions_list(solutions_info_dict)
-    write_test_case_table(solutions_info_dict, solutions, f_out)
+    problem_limits: dict = {'time': problem_metadata['problem']['time_limit'],
+                            'memory': problem_metadata['problem']['memory_limit_mb']}
+
+    write_test_case_table(solutions_info_dict, solutions,
+                          problem_limits, f_out)
     write_auxiliary_table(solutions_info_dict, f_out)
 
     main_end: str = """
@@ -76,7 +80,7 @@ def solutions_list(solutions_info_dict: dict) -> list:
     return tmp_list
 
 
-def write_test_case_table(solutions_info_dict: dict, solutions: list, f_out: io.TextIOWrapper) -> None:
+def write_test_case_table(solutions_info_dict: dict, solutions: list, problem_limits: dict, f_out: io.TextIOWrapper) -> None:
     thead: str = """
     <table class="table table-hover table-bordered border-secondary">
         <thead class="table-secondary sticky-top">
@@ -92,15 +96,18 @@ def write_test_case_table(solutions_info_dict: dict, solutions: list, f_out: io.
     </thead>
     """
     print(thead, file=f_out)
-    write_test_cases_tbody(solutions_info_dict, solutions, f_out)
+    write_test_cases_tbody(solutions_info_dict,
+                           solutions, problem_limits, f_out)
 
 
-def write_test_cases_tbody(solutions_info_dict: dict, solutions: list, f_out: io.TextIOWrapper) -> None:
+def write_test_cases_tbody(solutions_info_dict: dict, solutions: list, problem_limits: dict, f_out: io.TextIOWrapper) -> None:
     tbody: str = """
         <tbody class="table-group-divider">
     """
     n_test_cases: int = len(
         solutions_info_dict[solutions[0]]['test-case-info'])
+    time_limit: float = problem_limits['time']
+    mem_limit: int = problem_limits['memory']
     for i in range(n_test_cases):
         print(f'<tr class="text-center">', file=f_out)
         print(f'\t<td class="fw-bolder">{i + 1}</td>', file=f_out)
@@ -108,8 +115,8 @@ def write_test_cases_tbody(solutions_info_dict: dict, solutions: list, f_out: io
             test_case_info: list = solutions_info_dict[solution
                                                        ]['test-case-info'][i]
             test_color_class, test_status = test_case_status(test_case_info)
-            memo_info: int = test_case_info[2]
-            exec_time: float = test_case_info[1]
+            memo_info: int = test_case_info[2] if test_case_info[2] < mem_limit else mem_limit
+            exec_time: float = test_case_info[1] if test_case_info[1] < time_limit else time_limit
             print(
                 f'\t<td class="{test_color_class}"><a href="./assets/test-case-info.html?id={i + 1}&solution={solution}">{test_status} </a> <br>{exec_time:.2f} / {(memo_info // 1000000):.1f} </td>', file=f_out)
         print(f'</tr>', file=f_out)
@@ -270,5 +277,5 @@ def print_to_html(problem_metadata: str, solutions_info_dict: dict) -> None:
         problem_name: str = problem_metadata['problem']['title']
         write_head(problem_name, f_out)
         write_nav_bar(f_out)
-        write_main(solutions_info_dict, f_out)
+        write_main(solutions_info_dict, problem_metadata, f_out)
         write_footer(f_out)
