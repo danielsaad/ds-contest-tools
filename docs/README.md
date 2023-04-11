@@ -14,6 +14,7 @@ Usage: `python3 build.py init [-i] <problem_id>`
 
 Options:
 - **-i**: Initializes an interactive problem. In interactive problems, the example tests are the input/output files ending with '.interactive'.
+- **-c**: Number of threads to be used when running the checker to verify the solution files.
 
 ### build
 
