@@ -7,8 +7,7 @@ import sys
 import time
 from enum import Enum
 from math import floor
-from multiprocessing import (Event, Manager, Pipe, Process, Queue,
-                             cpu_count)
+from multiprocessing import Event, Manager, Pipe, Process, Queue, cpu_count
 from multiprocessing.connection import Connection
 from multiprocessing.managers import DictProxy
 from signal import SIGKILL
@@ -103,7 +102,7 @@ def run_binary(binary_file: str, input_folder: str, output_folder: str,
 
 
 def run(submission_file: str, input_folder: str, output_folder: str,
-        problem_limits: dict, expected_result: str, cpu_number: int = 0) -> None:
+        problem_limits: dict, expected_result: str, cpu_number: int) -> None:
     binary_file, ext = os.path.splitext(submission_file)
     output_folder: str = os.path.join(
         output_folder, ext.replace('.', ''), binary_file)
@@ -120,7 +119,7 @@ def run(submission_file: str, input_folder: str, output_folder: str,
     if (ext == '.cpp' or ext == '.c'):
         start_time = time.perf_counter()
         output_dict = create_thread(binary_file, input_folder,
-                                    output_folder, input_files, problem_limits, expected_result, cpu_number=cpu_number)
+                                    output_folder, input_files, problem_limits, expected_result, cpu_number)
         end_time = time.perf_counter()
     elif (ext == '.java'):
         problem_id = os.path.join(problem_folder, 'bin')
@@ -128,14 +127,14 @@ def run(submission_file: str, input_folder: str, output_folder: str,
         interpreter: str = f'{JAVA_INTERPRETER} {JAVA_FLAG} {problem_id}'
         start_time = time.perf_counter()
         output_dict = create_thread(binary_file, input_folder,
-                                    output_folder, input_files, problem_limits, expected_result, interpreter, cpu_number=cpu_number)
+                                    output_folder, input_files, problem_limits, expected_result, cpu_number, interpreter)
         end_time = time.perf_counter()
     elif (ext == '.py'):
         submission_file = os.path.join(problem_folder, 'src', submission_file)
         interpreter: list = PYTHON3_INTERPRETER
         start_time: float = time.perf_counter()
         output_dict: dict = create_thread(submission_file, input_folder,
-                                          output_folder, input_files, problem_limits, expected_result, interpreter, cpu_number=cpu_number)
+                                          output_folder, input_files, problem_limits, expected_result, cpu_number, interpreter)
         end_time: float = time.perf_counter()
     else:
         error_log(f'{submission_file} has an invalid extension')
@@ -175,7 +174,7 @@ def run_checker(ans: str, inf: str, ouf: str) -> Status:
 # TODO - write documentation
 
 
-def run_solutions(input_folder: str, problem_metadata: dict, all_solutions: bool, specific_solution: dict, cpu_number: int = 0) -> dict:
+def run_solutions(input_folder: str, problem_metadata: dict, all_solutions: bool, specific_solution: dict, cpu_number: int) -> dict:
     time_limit: float = problem_metadata["problem"]["time_limit"]
     memory_limit: int = problem_metadata["problem"]["memory_limit_mb"] * 2 ** 20
     problem_limits: dict = {'time_limit': time_limit,
@@ -234,9 +233,10 @@ def run_solutions(input_folder: str, problem_metadata: dict, all_solutions: bool
 
 
 def create_thread(binary_file: str, input_folder: str, output_folder: str, input_files: list, problem_limits: dict,
-                  expected_result: str, interpreter: str = "", cpu_number: int = 0) -> dict:
+                  expected_result: str, cpu_number: int, interpreter: str = "") -> dict:
     solution_tp = True if expected_result == "main-ac" or expected_result == "alternative-ac" else False
-    n_threads = 1 if solution_tp else max(floor(cpu_count() * 0.7), 1)
+    n_threads = 1 if solution_tp else cpu_number
+    print(n_threads)
     info_dict = dict()
     with Manager() as manager:
         pids: Queue = Queue(maxsize=100)

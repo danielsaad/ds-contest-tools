@@ -51,12 +51,11 @@ def submit_requests_list(requests_list: List[tuple], problem_id: str) -> None:
         try:
             make_api_connection(method, params, conn)
         except APICallError as err:
-            error_log(err)
+            error_log(err.args[0])
             sys.exit(1)
 
-    # Add authorization parameters and make concurrent requests
-    tests_batch = add_requests_info(problem_id, tests_batch)
-    submit_concurrent_requests(tests_batch)
+    # Make concurrent tests requests
+    submit_concurrent_requests(problem_id, tests_batch)
 
     # Add authorization parameters and make requests
     last_batch = add_requests_info(problem_id, last_batch)
@@ -64,29 +63,39 @@ def submit_requests_list(requests_list: List[tuple], problem_id: str) -> None:
         try:
             make_api_connection(method, params, conn)
         except APICallError as err:
-            error_log(err)
+            error_log(err.args[0])
             sys.exit(1)
-
     conn.close()
 
 
-def submit_concurrent_requests(tests: List[Tuple[str, dict]]) -> None:
+def submit_concurrent_requests(problem_id: int, requests_batch: List[Tuple[str, dict]]) -> None:
     """Submit a list of requests to the Polygon API using concurrent requests.
 
     Args:
         tests: List of methods and parameters of the input files to make the requests.
     """
-    with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count() // 2) as executor:
-        futures = [executor.submit(make_api_connection, method, params)
-                   for method, params in tests]
+    max_workers = max(os.cpu_count() // 2, 1)
+    
+    # Split list into smaller sub-lists to avoid authentication expired error
+    max_request_time = 7
+    batch_size = (300 // max_request_time) * max_workers
+    split_batches = [requests_batch[i:i+batch_size]
+                     for i in range(0, len(requests_batch), batch_size)]
 
-        for future in concurrent.futures.as_completed(futures):
-            if future.exception() is not None:
-                error_log(str(future.exception()))
-                for f in futures:
-                    if f != future and not f.done():
-                        f.cancel()
-                sys.exit(1)
+    conn = requests.Session()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        for batche in split_batches:
+            futures = [executor.submit(make_api_connection, method, params, conn)
+                       for method, params in add_requests_info(problem_id, batche)]
+
+            for future in concurrent.futures.as_completed(futures):
+                if future.exception() is not None:
+                    for f in futures:
+                        if f != future and not f.done():
+                            f.cancel()
+                    error_log(future.exception().args[0])
+                    sys.exit(1)
+    conn.close()
 
 
 def get_package_id(packages: List[dict]) -> int:
@@ -258,18 +267,17 @@ def verify_response(response: requests.Response, method: str, params: Dict[str, 
     elif response.status_code == requests.codes.bad_request:
         error = f"Error submitting {method} method. Stoping requests."
     else:
-        error = "Error connecting to the API."
+        error = "Internal server error occurred while making the API request. Try again."
 
     # Convert a JSON response for better debugging
     try:
         content = json.loads(response.content.decode())
         error_log(f"API status: {content['status']}")
         error_log(f"Comment: {content['comment']}")
-        error_log('Check debug.log for parameters information')
 
         debug_log("API status: " + content['status'])
     except:
-        error_log("Status code: " + response)
+        error_log("Status code: " + str(response.status_code))
 
     parameters = 'Parameters:\n'
     for key, value in params.items():
@@ -301,7 +309,7 @@ def make_api_request(method: str, parameters: dict, problem_id: str) -> bytes:
     try:
         response = make_api_connection(method, request_params)
     except APICallError as err:
-        error_log(err)
+        error_log(err.args[0])
         sys.exit(1)
     return response.content
 

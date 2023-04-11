@@ -2,6 +2,7 @@ import argparse
 import os
 import shutil
 import sys
+from math import floor
 
 from boca import boca_pack
 from logger import error_log, info_log
@@ -21,7 +22,9 @@ def create_parser() -> argparse.ArgumentParser:
                         default=False, help='build problem with all solutions')
     parser.add_argument('-s', '--specific',
                         help='build problem with specific solution')
-    parser.add_argument('-c', '--cpu-count', help="the number of CPUs to be used when checking solutions", type=int)
+    default_threads = max(floor(os.cpu_count() * 0.7), 1)
+    parser.add_argument('-c', '--cpu-count', help=f"number of threads to be used when checking solutions. Default is {default_threads} threads.",
+                        type=int, default=default_threads)
     parser.add_argument(
         'mode', choices=['init', 'build', 'genio', 'genpdf', 'pack2boca', 'clean'],
         help='init: init a problem.\nbuild: build a problem.\n' +
