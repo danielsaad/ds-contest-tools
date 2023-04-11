@@ -19,7 +19,21 @@ def write_head(problem_name: str, f_out: io.TextIOWrapper) -> None:
     <title>{problem_name}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-    <link rel="stylesheet" href="../arquivos/assets/style/bootstrap.css">
+    <style>
+        .table-hard-warning {{ 
+          --bs-table-color: #000;
+          --bs-table-bg: #ffe17d;
+          --bs-table-border-color: #e6dbb9;
+          --bs-table-striped-bg: #f2e7c3;
+          --bs-table-striped-color: #000;
+          --bs-table-active-bg: #e6dbb9;
+          --bs-table-active-color: #000;
+          --bs-table-hover-bg: #ece1be;
+          --bs-table-hover-color: #000;
+          color: var(--bs-table-color);
+          border-color: var(--bs-table-border-color);
+        }}
+      </style>
 </head>
     """
     print(head, file=f_out)
