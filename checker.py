@@ -236,7 +236,6 @@ def create_thread(binary_file: str, input_folder: str, output_folder: str, input
                   expected_result: str, cpu_number: int, interpreter: str = "") -> dict:
     solution_tp = True if expected_result == "main-ac" or expected_result == "alternative-ac" else False
     n_threads = 1 if solution_tp else cpu_number
-    print(n_threads)
     info_dict = dict()
     with Manager() as manager:
         pids: Queue = Queue(maxsize=100)

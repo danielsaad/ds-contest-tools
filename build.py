@@ -51,7 +51,7 @@ def build(all_solutions=False, specific_solution: str = '', cpu_number: int = 0)
     """Call functions to build a problem."""
     build_executables()
     if all_solutions:
-        run_programs(all_solutions=all_solutions, cpu_number=cpu_number)
+        run_programs(all_solutions=all_solutions, cpu_number=max(cpu_number, 1))
     elif specific_solution:
         run_programs(specific_solution=specific_solution)
     else:
