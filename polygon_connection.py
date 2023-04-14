@@ -2,7 +2,9 @@ import concurrent.futures
 import hashlib
 import io
 import json
+import multiprocessing
 import os
+import queue
 import random
 import string
 import sys
@@ -18,6 +20,7 @@ from metadata import Paths
 from utils import convert_to_bytes, verify_path
 
 URL = 'https://polygon.codeforces.com/api/'
+RETRIES = 3
 
 
 class APICallError(Exception):
@@ -48,11 +51,7 @@ def submit_requests_list(requests_list: List[tuple], problem_id: str) -> None:
     # Add authorization parameters and make requests
     first_batch = add_requests_info(problem_id, first_batch)
     for method, params in first_batch:
-        try:
-            make_api_connection(method, params, conn)
-        except APICallError as err:
-            error_log(err.args[0])
-            sys.exit(1)
+        single_api_connection(method, params, conn)
 
     # Make concurrent tests requests
     submit_concurrent_requests(problem_id, tests_batch)
@@ -60,11 +59,8 @@ def submit_requests_list(requests_list: List[tuple], problem_id: str) -> None:
     # Add authorization parameters and make requests
     last_batch = add_requests_info(problem_id, last_batch)
     for method, params in last_batch:
-        try:
-            make_api_connection(method, params, conn)
-        except APICallError as err:
-            error_log(err.args[0])
-            sys.exit(1)
+        single_api_connection(method, params, conn)
+
     conn.close()
 
 
@@ -74,28 +70,33 @@ def submit_concurrent_requests(problem_id: int, requests_batch: List[Tuple[str, 
     Args:
         tests: List of methods and parameters of the input files to make the requests.
     """
-    max_workers = max(os.cpu_count() // 2, 1)
-    
-    # Split list into smaller sub-lists to avoid authentication expired error
-    max_request_time = 7
-    batch_size = (300 // max_request_time) * max_workers
-    split_batches = [requests_batch[i:i+batch_size]
-                     for i in range(0, len(requests_batch), batch_size)]
+    with multiprocessing.Manager() as manager:
+        q = manager.Queue()
+        process = multiprocessing.Process(
+            target=print_ordered_requests, args=(q, len(requests_batch)))
+        process.start()
 
-    conn = requests.Session()
-    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        for batche in split_batches:
-            futures = [executor.submit(make_api_connection, method, params, conn)
-                       for method, params in add_requests_info(problem_id, batche)]
+        # Split list into smaller sub-lists to avoid authentication expired error
+        max_workers = max(os.cpu_count() // 2, 1)
+        max_request_time = 7
+        batch_size = (300 // max_request_time) * max_workers
+        split_batches = [requests_batch[i:i+batch_size]
+                         for i in range(0, len(requests_batch), batch_size)]
 
-            for future in concurrent.futures.as_completed(futures):
-                if future.exception() is not None:
-                    for f in futures:
-                        if f != future and not f.done():
-                            f.cancel()
-                    error_log(future.exception().args[0])
-                    sys.exit(1)
-    conn.close()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            for batche in split_batches:
+
+                futures = [executor.submit(concurrent_api_connection, method, params, q)
+                           for method, params in add_requests_info(problem_id, batche)]
+
+                for future in concurrent.futures.as_completed(futures):
+                    if future.exception() is not None:
+                        for f in futures:
+                            if f != future and not f.done():
+                                f.cancel()
+                        process.join()
+                        sys.exit(1)
+        process.join()
 
 
 def get_package_id(packages: List[dict]) -> int:
@@ -252,43 +253,6 @@ def add_auth_parameters(method: str, params: Dict[str, bytes], problem_id: str, 
     return auth_params
 
 
-def verify_response(response: requests.Response, method: str, params: Dict[str, List[bytes]]) -> None:
-    """Verify if the request from Polygon was successful.
-
-    Args:
-        response: Response object returned from the request.
-        method: The method used in the request.
-        params: Parameters used in the request.
-    """
-    error: str = ''
-    if response.status_code == requests.codes.ok:
-        info_log(f'Request for {method} was successful.')
-        return
-    elif response.status_code == requests.codes.bad_request:
-        error = f"Error submitting {method} method. Stoping requests."
-    else:
-        error = "Internal server error occurred while making the API request. Try again."
-
-    # Convert a JSON response for better debugging
-    try:
-        content = json.loads(response.content.decode())
-        error_log(f"API status: {content['status']}")
-        error_log(f"Comment: {content['comment']}")
-
-        debug_log("API status: " + content['status'])
-    except:
-        error_log("Status code: " + str(response.status_code))
-
-    parameters = 'Parameters:\n'
-    for key, value in params.items():
-        parameters += f"{key}: {value}\n"
-
-    error_log('Check debug.log for parameters information')
-    debug_log(parameters)
-
-    raise APICallError(error)
-
-
 def make_api_request(method: str, parameters: dict, problem_id: str) -> bytes:
     """Make a request to the Polygon API and return the response content.
 
@@ -306,15 +270,129 @@ def make_api_request(method: str, parameters: dict, problem_id: str) -> bytes:
     request_params = add_auth_parameters(
         method, parameters, problem_id, keys['apikey'], keys['secret'])
 
-    try:
-        response = make_api_connection(method, request_params)
-    except APICallError as err:
-        error_log(err.args[0])
-        sys.exit(1)
+    response = single_api_connection(method, request_params)
     return response.content
 
 
-def make_api_connection(method: str, request_params: dict, session: Optional[requests.Session] = None) -> requests.Response:
+def get_method_information(method: str, params: dict) -> str:
+    method_messages = {
+        'problem.updateInfo': 'General informations saved',
+        'problem.saveTags': 'Tags saved',
+        'problem.setInteractor': 'Interactor set',
+        'problem.setChecker': 'Checker set',
+        'problem.setValidator': 'Validator set',
+        'problem.saveScript': 'Generator script saved',
+        'problem.saveStatement': 'Statement text saved',
+        'problem.info': 'Checking if problem is interactive',
+        'problem.interactor': 'Checking interactor name',
+        'problem.validator': 'Checking validator name',
+        'problem.checker': 'Checking checker name',
+        'problem.packages': 'Finding the latest linux package',
+        'problem.package': 'Downloading ready package'
+    }
+
+    if method in method_messages:
+        return method_messages[method]
+
+    named_methods = {
+        'problem.saveSolution': f'Solution',
+        'problem.saveFile': f'File',
+        'problem.saveStatementResource': f'Statement resource'
+    }
+
+    if method in named_methods:
+        return f'{named_methods[method]} {str(params["name"].decode())} saved'
+
+    return 'No information about this method.'
+
+
+def print_ordered_requests(q, max_indice) -> None:
+    index = 1
+    pq = queue.PriorityQueue()
+
+    while True:
+        if index > max_indice:
+            break
+
+        try:
+            element = q.get(block=False)
+        except:
+            time.sleep(0.5)
+            continue
+        try:
+            pq.put(int(element))
+        except ValueError:
+            error_log(element)
+            break
+
+        while not pq.empty() and pq.queue[0] == index:
+            pq.get()
+            info_log(f'Testcase {index} saved')
+            index += 1
+
+
+def verify_response(response: requests.Response, params: Dict[str, List[bytes]]) -> str:
+    """Verify if the request from Polygon was successful.
+
+    Args:
+        response: Response object returned from the request.
+        params: Parameters used in the request.
+
+    Returns: 
+        A string with informations about the request
+    """
+    response_information = ['Request informations:']
+    try:
+        content = json.loads(response.content.decode())
+        response_information.append(f"    API status: {content['status']}")
+        response_information.append(f"    Comment: {content['comment']}")
+
+        debug_log("API status: " + content['status'])
+    except:
+        response_information.append(
+            "    Status code: " + str(response.status_code))
+
+    parameters = 'Parameters:\n'
+    for key, value in params.items():
+        parameters += f"{key}: {value}\n"
+
+    response_information.append('Check debug.log for parameters information')
+    debug_log(parameters)
+
+    return '\n'.join(response_information)
+
+
+def concurrent_api_connection(method: str, request_params: dict, q) -> None:
+    """_summary_
+
+    Args:
+        method (str): _description_
+        request_params (dict): _description_
+        q (multiprocessing.Queue): _description_
+
+    Raises:
+        APICallError: _description_
+    """
+    test_index = str(request_params['testIndex'].decode()).lstrip('0')
+
+    for retry in range(RETRIES):
+        debug_log(f'Retry {retry + 1} for testcase {test_index}')
+        response = requests.post(URL + method, files=request_params)
+
+        if response.status_code == requests.codes.ok:
+            q.put(test_index)
+            return
+        elif response.status_code == requests.codes.bad_request:
+            q.put(f"Error submitting testcase {test_index}. Stopping requests\n"
+                  + verify_response(response, request_params))
+            raise APICallError
+
+    q.put(f"Internal server error occurred while trying to submit {test_index} testcase. Try again\n"
+          + verify_response(response, request_params))
+    raise APICallError
+
+
+def single_api_connection(method: str, request_params: dict, session: Optional[requests.Session] = None) -> requests.Response:
     """Make connection with the Polygon API.
 
     Args:
@@ -325,10 +403,22 @@ def make_api_connection(method: str, request_params: dict, session: Optional[req
     Returns:
         The response object from the API.
     """
-    if session == None:
-        response = requests.post(URL + method, files=request_params)
-    else:
-        response = session.post(URL + method, files=request_params)
+    for retry in range(RETRIES):
+        debug_log(f'Retry {retry + 1} for method {method}')
 
-    verify_response(response, method, request_params)
-    return response
+        if session == None:
+            response = requests.post(URL + method, files=request_params)
+        else:
+            response = session.post(URL + method, files=request_params)
+
+        if response.status_code == requests.codes.ok:
+            info_log(get_method_information(method, request_params))
+            return response
+        elif response.status_code == requests.codes.bad_request:
+            error_log(f"Error submitting {method} method. Stoping requests.\n"
+                      + verify_response(response, request_params))
+            sys.exit(0)
+
+    error_log("Internal server error occurred while making the API request. Try again.\n"
+              + verify_response(response, request_params))
+    sys.exit(0)
