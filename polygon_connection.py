@@ -34,6 +34,8 @@ def submit_requests_list(requests_list: List[tuple], problem_id: str) -> None:
         requests_list: Organized list of requests to be made.
         problem_id: ID of the Polygon problem.
     """
+    info_log('Submitting requests to Polygon')
+
     first_batch = []
     tests_batch = []
     last_batch = []
@@ -68,7 +70,9 @@ def submit_concurrent_requests(problem_id: int, requests_batch: List[Tuple[str, 
     """Submit a list of requests to the Polygon API using concurrent requests.
 
     Args:
-        tests: List of methods and parameters of the input files to make the requests.
+        problem_id: The ID of the problem to submit requests for.
+        requests_batch: A list of tuples, where each tuple contains a method name 
+        and a dictionary of parameters for that method.
     """
     with multiprocessing.Manager() as manager:
         q = manager.Queue()
@@ -85,10 +89,10 @@ def submit_concurrent_requests(problem_id: int, requests_batch: List[Tuple[str, 
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             for batche in split_batches:
-
+                # Submit requests concurrently
                 futures = [executor.submit(concurrent_api_connection, method, params, q)
                            for method, params in add_requests_info(problem_id, batche)]
-
+                # Check for exceptions in completed futures
                 for future in concurrent.futures.as_completed(futures):
                     if future.exception() is not None:
                         for f in futures:
@@ -275,6 +279,15 @@ def make_api_request(method: str, parameters: dict, problem_id: str) -> bytes:
 
 
 def get_method_information(method: str, params: dict) -> str:
+    """Get information about a given method.
+
+    Args:
+        method: The name of the method to retrieve information for.
+        params: Dictionary of parameters used for requests to improve the information.
+
+    Returns:
+        A message containing information about the method.
+    """
     method_messages = {
         'problem.updateInfo': 'General informations saved',
         'problem.saveTags': 'Tags saved',
@@ -306,7 +319,13 @@ def get_method_information(method: str, params: dict) -> str:
     return 'No information about this method.'
 
 
-def print_ordered_requests(q, max_indice) -> None:
+def print_ordered_requests(q: multiprocessing.Queue, max_indice: int) -> None:
+    """Print the requests in order.
+
+    Args:
+        q: Queue with the requests.
+        max_indice: Maximum indice of the requests.
+    """
     index = 1
     pq = queue.PriorityQueue()
 
@@ -363,18 +382,19 @@ def verify_response(response: requests.Response, params: Dict[str, List[bytes]])
 
 
 def concurrent_api_connection(method: str, request_params: dict, q) -> None:
-    """_summary_
+    """Make concurrent requests for problem.saveTest method
 
     Args:
-        method (str): _description_
-        request_params (dict): _description_
-        q (multiprocessing.Queue): _description_
+        method: Method to be used for the connection with the API
+        request_params: Parameters used in the request
+        q: Queue to sort the output messages
 
     Raises:
-        APICallError: _description_
+        APICallError: Internal server error from the API side
     """
     test_index = str(request_params['testIndex'].decode()).lstrip('0')
 
+    # Make three attempts to connect to the API
     for retry in range(RETRIES):
         debug_log(f'Retry {retry + 1} for testcase {test_index}')
         response = requests.post(URL + method, files=request_params)
