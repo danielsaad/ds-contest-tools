@@ -18,6 +18,22 @@ def write_head(problem_name: str, f_out: io.TextIOWrapper) -> None:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{problem_name}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <style>
+        .table-hard-warning {{ 
+          --bs-table-color: #000;
+          --bs-table-bg: #ffe17d;
+          --bs-table-border-color: #e6dbb9;
+          --bs-table-striped-bg: #f2e7c3;
+          --bs-table-striped-color: #000;
+          --bs-table-active-bg: #e6dbb9;
+          --bs-table-active-color: #000;
+          --bs-table-hover-bg: #ece1be;
+          --bs-table-hover-color: #000;
+          color: var(--bs-table-color);
+          border-color: var(--bs-table-border-color);
+        }}
+      </style>
 </head>
     """
     print(head, file=f_out)
@@ -46,7 +62,7 @@ def write_nav_bar(f_out: io.TextIOWrapper) -> None:
     print(nav_bar, file=f_out)
 
 
-def write_main(solutions_info_dict: dict, f_out: io.TextIOWrapper) -> None:
+def write_main(solutions_info_dict: dict, problem_metadata: dict, f_out: io.TextIOWrapper) -> None:
     main_init: str = """
      <main class="row col-md col-lg col-xl mx-auto mt-3 mb-3">
         <section>
@@ -56,7 +72,11 @@ def write_main(solutions_info_dict: dict, f_out: io.TextIOWrapper) -> None:
     """
     print(main_init, file=f_out)
     solutions: list = solutions_list(solutions_info_dict)
-    write_test_case_table(solutions_info_dict, solutions, f_out)
+    problem_limits: dict = {'time': problem_metadata['problem']['time_limit'],
+                            'memory': problem_metadata['problem']['memory_limit_mb']}
+
+    write_test_case_table(solutions_info_dict, solutions,
+                          problem_limits, f_out)
     write_auxiliary_table(solutions_info_dict, f_out)
 
     main_end: str = """
@@ -76,7 +96,7 @@ def solutions_list(solutions_info_dict: dict) -> list:
     return tmp_list
 
 
-def write_test_case_table(solutions_info_dict: dict, solutions: list, f_out: io.TextIOWrapper) -> None:
+def write_test_case_table(solutions_info_dict: dict, solutions: list, problem_limits: dict, f_out: io.TextIOWrapper) -> None:
     thead: str = """
     <table class="table table-hover table-bordered border-secondary">
         <thead class="table-secondary sticky-top">
@@ -92,26 +112,32 @@ def write_test_case_table(solutions_info_dict: dict, solutions: list, f_out: io.
     </thead>
     """
     print(thead, file=f_out)
-    write_test_cases_tbody(solutions_info_dict, solutions, f_out)
+    write_test_cases_tbody(solutions_info_dict,
+                           solutions, problem_limits, f_out)
 
 
-def write_test_cases_tbody(solutions_info_dict: dict, solutions: list, f_out: io.TextIOWrapper) -> None:
+def write_test_cases_tbody(solutions_info_dict: dict, solutions: list, problem_limits: dict, f_out: io.TextIOWrapper) -> None:
     tbody: str = """
         <tbody class="table-group-divider">
     """
     n_test_cases: int = len(
         solutions_info_dict[solutions[0]]['test-case-info'])
+    time_limit: float = problem_limits['time']
+    mem_limit: float = problem_limits['memory']
     for i in range(n_test_cases):
         print(f'<tr class="text-center">', file=f_out)
         print(f'\t<td class="fw-bolder">{i + 1}</td>', file=f_out)
         for solution in solutions:
             test_case_info: list = solutions_info_dict[solution
                                                        ]['test-case-info'][i]
-            test_color_class, test_status = test_case_status(test_case_info)
-            memo_info: int = test_case_info[2]
-            exec_time: float = test_case_info[1]
+            test_color_class, test_status, tooltip_msg = test_case_status(
+                test_case_info)
+            memo_usage: float = test_case_info[2] / 1000000
+            memo_usage: float = min(memo_usage, mem_limit)
+            exec_time: float = min(test_case_info[1], time_limit)
+
             print(
-                f'\t<td class="{test_color_class}"><a href="./assets/test-case-info.html?id={i + 1}&solution={solution}">{test_status} </a> <br>{exec_time:.2f} / {(memo_info // 1000000):.1f} </td>', file=f_out)
+                f'\t<td class="{test_color_class}"><a href="./assets/test-case-info.html?id={i + 1}&solution={solution}" {tooltip_msg}>{test_status} </a> <br>{exec_time:.2f} / {(memo_usage):.1f} </td>', file=f_out)
         print(f'</tr>', file=f_out)
 
     tbody = """
@@ -125,6 +151,7 @@ def write_test_cases_tbody(solutions_info_dict: dict, solutions: list, f_out: io
 def test_case_status(test_case_info: list) -> tuple:
     test_color_class: str = ''
     test_status: str = ''
+    tooltip_msg: str = ''
     if test_case_info[0] == Status.AC:
         test_status = 'AC'
         test_color_class = "table-success"
@@ -134,16 +161,20 @@ def test_case_status(test_case_info: list) -> tuple:
     elif test_case_info[0] == Status.RE:
         test_status = 'RE'
         test_color_class = "table-info"
-    elif test_case_info[0] == Status.HARD_TLE or test_case_info[0] == Status.SOFT_TLE:
+    elif test_case_info[0] == Status.HARD_TLE:
+        test_status = 'TLE'
+        test_color_class = "table-hard-warning"
+    elif test_case_info[0] == Status.SOFT_TLE:
         test_status = 'TLE'
         test_color_class = "table-warning"
+        tooltip_msg = 'data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="Solution passed in double of time!"'
     elif test_case_info[0] == Status.MLE:
         test_status = 'MLE'
         test_color_class = "table-primary"
     elif test_case_info[0] == Status.PE:
         test_status = 'PE'
         test_color_class = "table-light"
-    return test_color_class, test_status
+    return test_color_class, test_status, tooltip_msg
 
 
 def write_auxiliary_table(solutions_info_dict, f_out) -> None:
@@ -255,6 +286,12 @@ def write_footer(f_out: io.TextIOWrapper) -> None:
             </div>
         </div>
     </footer>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js" integrity="sha384-zYPOMqeu1DAVkHiLqWBUTcbYfZ8osu1Nd6Z89ify25QV9guujx43ITvfi12/QExE" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js" integrity="sha384-Y4oOpwW3duJdCWv5ly8SCFYWqFDsfob/3GkgExXKV4idmbt98QcxXYs9UoXAB7BZ" crossorigin="anonymous"></script>
+	<script>
+		const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+		const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+	</script>
 </body>
 </html>
     """
@@ -263,12 +300,12 @@ def write_footer(f_out: io.TextIOWrapper) -> None:
 
 def print_to_html(problem_metadata: str, solutions_info_dict: dict) -> None:
     problem_folder: str = Paths().get_problem_dir()
-    html_filename: str = 'index.html'
+    html_filename: str = 'report.html'
     html_filepath: str = os.path.join(problem_folder, html_filename)
     info_log(f'Creating {html_filename}')
     with open(html_filepath, 'w') as f_out:
         problem_name: str = problem_metadata['problem']['title']
         write_head(problem_name, f_out)
         write_nav_bar(f_out)
-        write_main(solutions_info_dict, f_out)
+        write_main(solutions_info_dict, problem_metadata, f_out)
         write_footer(f_out)
