@@ -339,9 +339,10 @@ def save_test(tests_in_statement: int, interactive: bool) -> list:
         with open(input_path, 'r') as f:
             test_input = f.read()
 
+        # Index has leading zeros in order to sort them for requests
         params: dict = {
             'testset': TESTSET,
-            'testIndex': input_file,
+            'testIndex': input_file.zfill(len(str(total_inputs))),
             'testInput': test_input,
             'checkExisting': 'false',
             'testDescription': test_description,
@@ -365,7 +366,10 @@ def save_test(tests_in_statement: int, interactive: bool) -> list:
             params['testOutputForStatements'] = test_output_statement
 
         parameters_list.append(('problem.saveTest', params))
-    return parameters_list
+
+    # Sort params by the test index
+    sorted_list = sorted(parameters_list, key=lambda x: x[1]['testIndex'])
+    return sorted_list
 
 
 def get_requests_list() -> List[Tuple[str, dict]]:
