@@ -53,29 +53,8 @@ def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_n
     produce_outputs(problem_metadata)
 
     info_log("Running solutions")
-    specific_solution_info: dict = {
-        'expected_result': '',
-        'solution_name': ''
-    }
-    if specific_solution:
-        for key, values in problem_metadata['solutions'].items():
-            if isinstance(values, str) and specific_solution == values:
-                specific_solution_info['expected_result'] = key
-                specific_solution_info['solution_name'] = values
-                break
-            elif isinstance(values, str):
-                continue
-
-            for solution_name in values:
-                if solution_name == specific_solution:
-                    specific_solution_info['expected_result'] = key
-                    specific_solution_info['solution_name'] = solution_name
-        if not specific_solution_info['expected_result']:
-            error_log(f'Solution {specific_solution} not found.')
-            sys.exit(0)
-
     solutions_info_dict: dict = run_solutions(
-        input_folder, problem_metadata, all_solutions, specific_solution_info, cpu_number)
+        input_folder, problem_metadata, all_solutions, specific_solution, cpu_number)
     print_to_html(problem_metadata, solutions_info_dict)
 
 
@@ -144,10 +123,10 @@ def validate_inputs() -> None:
         if len(encoded_tests[key]) > 1:
             equal_tests += len(encoded_tests[key])
             debug_log("Testcases " +
-                     ', '.join(encoded_tests[key]) + " are equal.")
+                      ', '.join(encoded_tests[key]) + " are equal.")
     if equal_tests:
         error_log("All test cases must be different, however there are " +
-              f"{equal_tests} equal tests.")
+                  f"{equal_tests} equal tests.")
         sys.exit(0)
 
 

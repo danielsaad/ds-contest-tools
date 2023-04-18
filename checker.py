@@ -174,60 +174,28 @@ def run_checker(ans: str, inf: str, ouf: str) -> Status:
 # TODO - write documentation
 
 
-def run_solutions(input_folder: str, problem_metadata: dict, all_solutions: bool, specific_solution: dict, cpu_number: int) -> dict:
+def run_solutions(input_folder: str, problem_metadata: dict, all_solutions: bool, specific_solution: str, cpu_number: int) -> dict:
     time_limit: float = problem_metadata["problem"]["time_limit"]
     memory_limit: int = problem_metadata["problem"]["memory_limit_mb"] * 2 ** 20
     problem_limits: dict = {'time_limit': time_limit,
                             'memory_limit': memory_limit}
-    solutions: dict = problem_metadata['solutions']
+    solutions: dict = parse_solutions(
+        problem_metadata['solutions'], all_solutions, specific_solution)
     tmp_output_folder: str = os.path.join(
         '/tmp/', f'ds-contest-tool-{generate_timestamp()}')
     solutions_info_dict = dict()
-    if all_solutions:
-        for expected_result, files in solutions.items():
-            if isinstance(files, list):
-                for submission_file in files:
-                    if submission_file:
-                        running: str = f'Running {submission_file} solution'
-                        info_log(running)
-                        tmp_test_case_info: dict = run(
-                            submission_file, input_folder, tmp_output_folder, problem_limits, expected_result, cpu_number)
-                        tmp_solution_result: dict = solution_status(
-                            tmp_test_case_info, expected_result)
-                        solutions_info_dict[submission_file] = {
-                            'test-case-info': tmp_test_case_info,
-                            'solution-result': tmp_solution_result
-                        }
-            else:
-                submission_file = files
-                running: str = f'Running {submission_file} solution'
-                info_log(running)
-                os.makedirs(tmp_output_folder, exist_ok=True)
-                tmp_test_case_info: dict = run(
-                    submission_file, input_folder, tmp_output_folder, problem_limits, expected_result, cpu_number)
-                tmp_solution_result: dict = solution_status(
-                    tmp_test_case_info, expected_result)
-                solutions_info_dict[submission_file] = {
-                    'test-case-info': tmp_test_case_info,
-                    'solution-result': tmp_solution_result
-                }
-    else:
-        if specific_solution['expected_result']:
-            expected_result = specific_solution['expected_result']
-            submission_file = specific_solution['solution_name']
-        else:
-            expected_result = "main-ac"
-            submission_file = solutions[expected_result]
-        running: str = f'Running {submission_file} solution'
-        info_log(running)
-        tmp_test_case_info: dict = run(
-            submission_file, input_folder, tmp_output_folder, problem_limits, expected_result, cpu_number)
-        tmp_solution_result: dict = solution_status(
-            tmp_test_case_info, expected_result)
-        solutions_info_dict[submission_file] = {
-            'test-case-info': tmp_test_case_info,
-            'solution-result': tmp_solution_result
-        }
+    for expected_result, files in solutions.items():
+        for submission_file in files:
+            running: str = f'Running {submission_file} solution'
+            info_log(running)
+            tmp_test_case_info: dict = run(
+                submission_file, input_folder, tmp_output_folder, problem_limits, expected_result, cpu_number)
+            tmp_solution_result: dict = solution_status(
+                tmp_test_case_info, expected_result)
+            solutions_info_dict[submission_file] = {
+                'test-case-info': tmp_test_case_info,
+                'solution-result': tmp_solution_result
+            }
 
     return solutions_info_dict
 
@@ -276,9 +244,7 @@ def write_to_log(output_dict: DictProxy) -> None:
             debug_log('ML: Memory limit exceeded')
         elif output_dict[i][0] == Status.PE:
             debug_log('PE: Presentation Error')
-        elif output_dict[i][0] == Status.FAIL:
-            debug_log(
-                'FAIL: maybe the jury solution or the checker are not correct')
+
         debug_log(f'Time elapsed: {output_dict[i][1]:.2f} seconds')
         debug_log(f'Memory: {output_dict[i][2] // 1000} KB')
 
@@ -338,3 +304,41 @@ def memory_monitor(pids: Queue, memory_limit: int, stop_monitor: Event) -> None:
         except psutil.NoSuchProcess:
             conn.send((mem_usage[process_pid],
                        status.get(process_pid, Status.AC)))
+
+
+def parse_solutions(solutions: dict, all_solutions, specific_solution: str) -> dict:
+    tmp_solutions: dict = dict()
+    if all_solutions:
+        for expected_result, files in solutions.items():
+            if len(files) == 0:
+                continue
+            tmp_solutions[expected_result] = list()
+            if isinstance(files, list):
+                for submission_file in files:
+                    tmp_solutions[expected_result].append(submission_file)
+            else:
+                submission_file = files
+                tmp_solutions[expected_result].append(submission_file)
+    else:
+        if specific_solution:
+            for expected_result, files in solutions.items():
+                if len(files) == 0:
+                    continue
+                if isinstance(files, list):
+                    for submission_file in files:
+                        if submission_file == specific_solution:
+                            tmp_solutions[expected_result] = [
+                                specific_solution]
+                else:
+                    submission_file = files
+                    if submission_file == specific_solution:
+                        tmp_solutions[expected_result] = [specific_solution]
+
+            if len(tmp_solutions) == 0:
+                error_log(f'Solution {specific_solution} not found.')
+                sys.exit(0)
+        else:
+            expected_result = "main-ac"
+            submission_file = solutions[expected_result]
+
+    return tmp_solutions
