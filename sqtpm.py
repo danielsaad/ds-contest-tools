@@ -7,8 +7,8 @@ from jsonutils import parse_json
 from logger import error_log, info_log
 from metadata import Paths
 from toolchain import generate_inputs, get_manual_tests
-from utils import (check_problem_metadata, generate_timestamp, instance_paths,
-                   verify_path)
+from utils import (check_problem_metadata, generate_tmp_directory,
+                   instance_paths, verify_path)
 
 
 def create_config(showcases: str, memory_limit: int, cputime: int) -> None:
@@ -142,14 +142,13 @@ def copy_generator_script() -> None:
 def copy_manual_tests() -> None:
     """Move manual tests to SQTPM folder."""
     output_folder = Paths().get_output_dir()
-    tmp_folder = os.path.join(
-        '/', 'tmp', f'ds-contest-tool-{generate_timestamp()}', 'input')
+    tmp_folder = os.path.join(generate_tmp_directory(), 'scripts')
 
     generate_inputs(move=False, output_folder=tmp_folder)
     manual_tests = get_manual_tests(tmp_folder)
     for test in manual_tests:
         shutil.copy2(test, os.path.join(
-            output_folder, os.path.basename(test) + '.in'))
+            output_folder, os.path.basename(test).zfill(3) + '.in'))
 
 
 def create_makefile() -> None:

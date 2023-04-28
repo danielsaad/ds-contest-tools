@@ -111,7 +111,6 @@ def check_problem_metadata(problem_metadata: dict) -> None:
     Args:
         problem_metadata (dict): The problem.json file as a dictionary.
     """
-    info_log("Checking problem.json for type errors")
     verify_solutions(problem_metadata['solutions'])
 
     expected_types = {
@@ -160,3 +159,12 @@ def generate_timestamp() -> str:
     current_time: datetime = datetime.fromtimestamp(datetime.now().timestamp())
     timestamp: str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
     return timestamp
+
+
+def generate_tmp_directory() -> str:
+    """Generate path to a temporary directory.
+
+    Returns:
+        Path to the temporary directory.
+    """
+    return os.path.join('/', 'tmp', f'ds-contest-tools-{generate_timestamp()}')
