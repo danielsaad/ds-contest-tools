@@ -135,30 +135,26 @@ def copy_generator(script: str) -> None:
     generator_list = set()
 
     # Copy script generators
-    if script != '':
-        with open(os.path.join(problem_folder, 'src', 'script.sh'), 'w') as f:
-            f.write(script)
+    with open(os.path.join(problem_folder, 'src', 'script.sh'), 'w') as f:
+        f.write(script)
 
-        script_lines = script.split('\n')
-        for line in script_lines:
-            if line != '':
-                generator_list.add(line.split()[0])
+    if script == '':
+        info_log("No script found.")
+        return
 
-        for file in generator_list:
-            file += '.cpp'
-            generator = os.path.join(*[package_folder, 'files', file])
-            if not os.path.exists(generator):
-                error_log(f"Generator {os.path.relpath(generator)} not found.")
-                continue
-            destination = os.path.join(problem_folder, 'src', file)
-            shutil.copy(generator, destination)
+    script_lines = script.split('\n')
+    for line in script_lines:
+        if line != '':
+            generator_list.add(line.split()[0])
 
-    # Copy standard DS generator
-    ds_generator = 'generator.cpp'
-    ds_gen_path = os.path.join(package_folder, 'files', ds_generator)
-    if os.path.exists(ds_gen_path) and ds_generator not in generator_list:
-        destination = os.path.join(problem_folder, 'src', ds_generator)
-        shutil.copy(ds_gen_path, destination)
+    for file in generator_list:
+        file += '.cpp'
+        generator = os.path.join(*[package_folder, 'files', file])
+        if not os.path.exists(generator):
+            error_log(f"Generator {os.path.relpath(generator)} not found.")
+            continue
+        destination = os.path.join(problem_folder, 'src', file)
+        shutil.copy(generator, destination)
 
 
 def copy_source_files(file_name: str) -> None:

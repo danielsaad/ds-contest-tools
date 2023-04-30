@@ -6,74 +6,69 @@
 # Move checker executable
 (mv src/checker .)
 
-# Verify if there is not a DS generator
-ds_generator=true
+# Paths to be used
+tests_folder="src/tests"
+tmp_folder="src/tmp"
 script_path="src/script.sh"
-if [[ -f "$script_path" ]]
-then
-	# Read script lines
-	while IFS= read -r line; do
-		# Get generator name
-    	set -- $line
 
-		# Check for a DS generator
-		if [[ "$1" == "generator" ]]
-		then
-			ds_generator=false
-		fi
-	done < "$script_path"
-fi
-
-# Create temporary directory
-(cd src && mkdir -p tmp)
-
-# Generate problem input from DS generator
-generator_path="src/generator.cpp"
-if [[ -f "$generator_path" ]] && $ds_generator
-then
-	(cd src/tmp && ../generator)
-fi
+# Create temporary folders
+mkdir -p "$tests_folder"
+mkdir -p "$tmp_folder"
 
 # Generate problem input from scripts
 if [[ -f "$script_path" ]]
 then
-	index=`(cd src/tmp && ls -l | wc -l)`
-	while IFS= read -r line; do
-		(cd src && ./$line > tmp/"$index")
-		((index++))
-	done < "$script_path"
+	outfile="teste"
+    index=`(cd "$tmp_folder" && ls -l | wc -l)`
+    while IFS= read -r line; do
+        (cd "$tmp_folder" && ../$line > "$outfile")
+        # Move only created file if it is not a multigenerator
+        if [[ -s "$tmp_folder"/"$outfile" ]]; then
+            mv "$tmp_folder"/"$outfile" "$tests_folder"/"$index"
+            ((index++))
+        # Move all files of the multigenerator
+        else
+            (cd "$tmp_folder" && rm "$outfile")
+            for item in "$tmp_folder"/*
+            do
+                mv "$item" "$tests_folder"/"$index"
+                ((index++))
+            done
+        fi
+    done < "$script_path"
 fi
 
+
 # Add leading zeros to files
-tests_path="src/tmp"
-for testcase in $tests_path/*
+for testcase in $tests_folder/*
 do
-	old_name="$(basename $testcase)"
-	new_name=`printf %03d ${old_name}`
-	mv "$tests_path"/"$old_name" "$tests_path"/"$new_name" 2>/dev/null
+    old_name="$(basename $testcase)"
+    new_name=`printf %03d ${old_name}`
+    mv "$tests_folder"/"$old_name" "$tests_folder"/"$new_name" 2>/dev/null
 done
 
 # Move files and rename them
 index=1
-for testcase in $tests_path/*
+for testcase in $tests_folder/*
 do
-	test_name=$(basename $testcase)
-	zero_index=`printf %03d ${index}`
-	# Check next index not used
-	while [ -f "$zero_index".in ]
-	do
-		((index++))
-		zero_index=`printf %03d ${index}`
-	done
-	mv "$tests_path"/"$test_name" "$zero_index".in
+    test_name=$(basename $testcase)
+    zero_index=`printf %03d ${index}`
+    # Check next index not used
+    while [ -f "$zero_index".in ]
+    do
+        ((index++))
+        zero_index=`printf %03d ${index}`
+    done
+    mv "$tests_folder"/"$test_name" "$zero_index".in
 done
 
 # Generate output of tests
 for input_file in *.in
 do
-	./src/main_solution < $input_file > "$(basename $input_file .in)".out
+    ./src/main_solution < $input_file > "$(basename $input_file .in)".out
 done
 
 # Remove items created
-rm -rf "$tests_path"
+rm -rf "$tests_folder"
+rm -rf "$tmp_folder"
 (cd src && make clean)
