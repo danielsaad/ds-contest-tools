@@ -5,8 +5,8 @@ from operator import mod
 from subprocess import CompletedProcess
 from typing import Optional, Union
 
-from logger import debug_log, error_log, info_log, setup_logger
 from metadata import Paths
+from logger import debug_log, error_log, info_log, setup_logger
 
 
 def convert_idx_to_string(idx: int) -> str:
@@ -77,8 +77,9 @@ def instance_paths(problem_dir: Union[str, list], output_dir: Optional[str] = ''
     else:
         problem_dir = os.path.abspath(problem_dir)
     output_dir = os.path.abspath(output_dir) if output_dir else ''
-
-    Paths(problem_dir, output_dir)
+    tmp_output_root_dir = os.path.join(
+        '/', 'tmp', f'ds-contest-tools-{generate_timestamp()}')
+    Paths(problem_dir, output_dir, tmp_output_root_dir)
     setup_logger('tool', 'tool.log')
     setup_logger('debug', 'debug.log')
 
