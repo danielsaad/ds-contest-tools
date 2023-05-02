@@ -1,6 +1,8 @@
-from typing import Union
-from enum import Enum
 import os
+from enum import Enum
+from typing import Union
+# from logger import info_log
+from sys import exit
 
 
 class Status(Enum):
@@ -174,6 +176,16 @@ class Problem:
     """
         return self.get_number_of_solutions() == 0
 
+    def get_number_of_tests(self) -> int:
+        try:
+            solution: Solution = self.get_list_solution()[0]
+        except:
+            # info_log(
+            print(
+                f'The solution list for problem {self.problem_name} is empty.')
+            exit(1)
+        return len(solution.tests)
+
 
 class Solution:
     """
@@ -201,9 +213,11 @@ class Solution:
 
         """
         self.__solution_name: str = solution_name
-        self.__expected_result: str = expected_result
+        self.__expected_result: str = self.__set_expected_result(
+            expected_result)
         self.__output_path: str = self.__generate_output_folder()
-        self.__solution_status: Status = None
+        self.__solution_status: ProblemAnswer = None
+        self.__exec_args: list = None
         self.__tests: dict = {}
 
     @property
@@ -242,7 +256,7 @@ class Solution:
         return self.__output_path
 
     @property
-    def solution_status(self) -> Status:
+    def solution_status(self) -> ProblemAnswer:
         """
         Gets the status of the solution.
 
@@ -250,9 +264,28 @@ class Solution:
             Status: The status of the solution.
         """
         return self.__solution_status
+    # TODO: Review the docs
+
+    @solution_status.setter
+    def solution_status(self, solution_status: ProblemAnswer) -> None:
+        """
+        Sets the solution status of the test case.
+
+        Args:
+            solution_status: The solution status to set.
+        """
+        self.__solution_status = solution_status
 
     @property
-    def tests(self) -> None:
+    def exec_args(self) -> list:
+        return self.__exec_args
+
+    @exec_args.setter
+    def exec_args(self, exec_args: str) -> None:
+        self.__exec_args = exec_args.split(' ')
+
+    @property
+    def tests(self) -> dict:
         """
         Gets the dictionary of tests that were run on the solution.
 
@@ -318,6 +351,18 @@ class Solution:
             root_tmp_path, self.get_file_extension(), self.get_binary_name())
         return output_folder
 
+    def __set_expected_result(self, expected_result: str) -> str:
+        convert_expected_result: dict = {
+            "main-ac": 'ACCEPTED',
+            "alternative-ac": 'ACCEPTED',
+            "wrong-answer": 'WRONG ANSWER',
+            "time-limit": 'TIME LIMIT EXCEEDED',
+            "runtime-error": 'RUNTIME ERROR',
+            "memory-limit": 'MEMORY LIMIT EXCEEDED',
+            "presentation-error": 'PRESENTATION ERROR'
+        }
+        return convert_expected_result[expected_result]
+
 
 class Test:
     """
@@ -346,7 +391,7 @@ class Test:
         self.__exec_time = exec_time
         self.__memory_usage = memory_usage
         self.__status = status
-        self.__checker_output = None
+        self.__checker_output = checker_output
 
     @property
     def test_case(self) -> str:
