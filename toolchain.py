@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import sys
 from typing import Dict
+from metadata import Problem, Solution
 
 from checker import run_solutions
 from config import custom_key
@@ -47,15 +48,17 @@ def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_n
     os.makedirs(output_folder, exist_ok=True)
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
     check_problem_metadata(problem_metadata)
-
+    problem_obj = Problem(problem_metadata["problem"]["title"],
+                          problem_folder, input_folder, problem_metadata["problem"]["time_limit"], problem_metadata["problem"]["memory_limit_mb"])
+    parse_solutions(
+        problem_obj, problem_metadata['solutions'], all_solutions, specific_solution)
     generate_inputs()
     validate_inputs()
     produce_outputs(problem_metadata)
 
     info_log("Running solutions")
-    solutions_info_dict: dict = run_solutions(
-        input_folder, problem_metadata, all_solutions, specific_solution, cpu_number)
-    print_to_html(problem_metadata, solutions_info_dict)
+    run_solutions(problem_obj, cpu_number)
+    print_to_html(problem_obj)
 
 
 def get_encoded_tests(input_folder: str) -> Dict[str, bytes]:
@@ -320,3 +323,46 @@ def clean_files() -> None:
         command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     check_subprocess_output(p, "Error cleaning executables.")
     os.chdir(old_cwd)
+
+
+def parse_solutions(problem_obj: Problem, solutions: dict, all_solutions, specific_solution: str) -> None:
+    solution: Solution = None
+    if all_solutions:
+        for expected_result, files in solutions.items():
+            if len(files) == 0:
+                continue
+            if isinstance(files, list):
+                for submission_file in files:
+                    solution = Solution(submission_file, expected_result)
+                    problem_obj.add_solution(solution)
+            else:
+                submission_file = files
+                solution = Solution(submission_file, expected_result)
+                problem_obj.add_solution(solution)
+    else:
+        if specific_solution:
+            for expected_result, files in solutions.items():
+                if len(files) == 0:
+                    continue
+                if isinstance(files, list):
+                    for submission_file in files:
+                        if submission_file == specific_solution:
+                            solution = Solution(
+                                submission_file, expected_result)
+                            problem_obj.add_solution(solution)
+                else:
+                    submission_file = files
+                    if submission_file == specific_solution:
+                        solution = Solution(submission_file, expected_result)
+                        problem_obj.add_solution(solution)
+
+            if problem_obj.is_solution_list_empty():
+                error_log(f'Solution {specific_solution} not found.')
+                sys.exit(0)
+        else:
+            expected_result = "main-ac"
+            submission_file = solutions[expected_result]
+            solution = Solution(submission_file, expected_result)
+            problem_obj.add_solution(solution)
+
+    return
