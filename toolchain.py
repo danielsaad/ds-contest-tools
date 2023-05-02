@@ -13,7 +13,7 @@ from jsonutils import parse_json
 from logger import debug_log, error_log, info_log
 from metadata import Paths
 from utils import (check_problem_metadata, check_subprocess_output,
-                   generate_timestamp, verify_path)
+                   generate_tmp_directory, verify_path)
 
 
 def build_executables() -> None:
@@ -61,35 +61,36 @@ def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_n
     print_to_html(problem_obj)
 
 
-def get_encoded_tests(input_folder: str) -> Dict[str, bytes]:
+def get_encoded_tests(folder: str) -> Dict[str, bytes]:
     """
     Get a dictionary of encoded test files from a input folder.
 
     Args:
-        tests_folder: Path to the tests folder.
+        folder: Path to the tests folder.
 
     Returns:
-        A dictionary which contains the encoded version of the input files in bytes.
+        A dictionary which contains the encoded version of the input files in bytes (key) 
+        and the path to the file.
     """
     files: list = [f for f in os.listdir(
-        input_folder) if not f.endswith('.interactive')]
+        folder) if not f.endswith('.interactive')]
     files.sort(key=custom_key)
-    files_path: list = [os.path.join(input_folder, f) for f in files]
+    files_path: list = [os.path.join(folder, f) for f in files]
     return encode_tests(files_path)
 
 
-def encode_tests(input_files: list) -> Dict[str, bytes]:
+def encode_tests(files: list) -> Dict[str, bytes]:
     """
     Generates a dictionary of SHA-1 hash values of input file.
 
     Args:
-        input_files: List containing paths to input files.
+        files: List containing paths to input files.
 
     Returns:
         A dictionary which contains the encoded version of the input files in bytes.
     """
     tests = dict()
-    for fname in input_files:
+    for fname in files:
         with open(fname, 'rb') as f:
             encoded = (hashlib.sha1(f.read())).digest()
             tests.setdefault(encoded, []).append(fname)
@@ -160,110 +161,116 @@ def get_manual_tests(temporary_folder: str) -> list:
 
 
 def move_inputs(temporary_folder: str) -> None:
-    """Move input files from temporary folder to problem folder, ignoring
-    repeated testcases.
+    """
+    Move input tests to the problem folder.
 
     Args:
-        temporary_folder: Path to the temporary folder.
+        temporary_folder: Path to the temporary input folder.
     """
     info_log("Moving input tests to problem folder.")
     problem_dir = Paths().get_problem_dir()
     input_folder: str = os.path.join(problem_dir, 'input')
 
-    temporary_encoded_files: dict = get_encoded_tests(temporary_folder)
+    temporary_encoded_tests: dict = get_encoded_tests(temporary_folder)
     original_encoded_tests: dict = get_encoded_tests(input_folder)
 
-    repeated_tests = set()
-    for key, values in temporary_encoded_files.items():
-        if key in original_encoded_tests:
+    # Remove repeated tests from problem folder
+    for key, values in original_encoded_tests.items():
+        if key in temporary_encoded_tests:
             for value in values:
-                repeated_tests.add(os.path.basename(value))
+                os.remove(value)
 
+    # Move tests to problem folder maintaning manual tests
     index = 1
     output_folder = os.listdir(temporary_folder)
     output_folder.sort(key=custom_key)
     for input_test in output_folder:
-        if input_test in repeated_tests:
-            continue
         while os.path.exists(os.path.join(input_folder, str(index))):
             index += 1
         shutil.move(os.path.join(temporary_folder, str(input_test)),
                     os.path.join(input_folder, str(index)))
 
 
-def generate_script_inputs(generator_path: str, script: list, output_path: str) -> None:
-    """Generate input files from script.
-
-    Args:
-        generator_path: Path to the generator used in the script.
-        script: Script line containing commands for generator.
-        output_path: Path to store the input files.
-    """
-    script[0] = generator_path
-    p: subprocess.CompletedProcess = subprocess.run(
-        [*script], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
-    script_result: str = p.stdout
-    p.stdout = ""
-    check_subprocess_output(p, "Error generating inputs.")
-
-    with open(output_path, 'w') as input_file:
-        input_file.write(script_result)
-
-
 def generate_inputs(move: bool = True, output_folder: str = '') -> None:
-    """Generates input files inside temporary directory.
+    """Generate input tests for the problem.
 
     Args:
-        move: If the input files will be moved to the problem folder. Defaults to True.
+        move: Whether to move the input tests to the problem folder.
+        output_folder: Path to the output folder.
     """
+    info_log("Generating input tests in temporary folder.")
     problem_dir = Paths().get_problem_dir()
+    bin_folder = os.path.join(problem_dir, 'bin')
     script_path: str = os.path.join(problem_dir, 'src', 'script.sh')
-    generator_path: str = os.path.join(problem_dir, 'bin', 'generator')
+    verify_path(bin_folder)
+    verify_path(script_path)
 
+    # Create temporary folder for input tests
     if output_folder == '':
-        output_folder = os.path.join(
-            '/', 'tmp', f'ds-contest-tool-{generate_timestamp()}', 'input')
+        output_folder = os.path.join(generate_tmp_directory(), 'scripts')
+    temporary_folder = os.path.join(output_folder, 'tmp')
     os.makedirs(output_folder, exist_ok=True)
+    os.makedirs(temporary_folder, exist_ok=True)
 
+    # Get scripts for generators
     scripts: list = []
-    ds_generator: bool = True
+    with open(script_path, 'r') as f:
+        scripts: list = f.readlines()
 
-    # Verify existence of at least one generator
-    if os.path.exists(script_path):
-        with open(script_path, 'r') as f:
-            scripts: list = f.readlines()
+    index: int = 1
+    new_script = []
+    file_gen: set = set()
+    generator_index: list = []
 
-        for script in scripts:
-            if script.startswith('generator '):
-                ds_generator = False
-                break
-    elif not os.path.exists(generator_path):
-        error_log("No generators or scripts found.")
-        sys.exit(1)
-
-    # Verify and run a DS generator
-    if ds_generator and os.path.exists(generator_path):
-        info_log("Generating inputs of DS generator")
-        old_cwd = os.getcwd()
-        os.chdir(output_folder)
-        p: subprocess.CompletedProcess = subprocess.run(
-            generator_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        check_subprocess_output(p, "Error generating inputs.")
-        os.chdir(old_cwd)
-
-    # Generate tests from script
-    index: int = len(os.listdir(output_folder)) + 1
+    cwd = os.getcwd()
     for script in scripts:
-        debug_log(f"Generating script '{script.rstrip()}'.")
-        script = script.split()
-        generator_path = os.path.join(problem_dir, 'bin', script[0])
-        verify_path(generator_path)
+        # Verify generator path
+        script_args = script.split()
+        if len(script_args) == 0:
+            continue
+        script_args[0] = os.path.join(bin_folder, script_args[0].rstrip())
+        verify_path(script_args[0])
+        if script_args[0] in file_gen:
+            continue
 
-        generate_script_inputs(generator_path, script,
-                               os.path.join(output_folder, str(index)))
-        index += 1
+        # Generate testcase(s) in temporary folder
+        os.chdir(temporary_folder)
+        p: subprocess.CompletedProcess = subprocess.run(
+            [*script_args], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        script_result: str = p.stdout
+        p.stdout = ""
+        check_subprocess_output(p, "Error generating inputs.")
+        os.chdir(cwd)
 
+
+        new_script.append(script)
+        generator_index.append(len(os.listdir(temporary_folder)))
+        # If it is not a multigenerator, create test in script folder
+        if len(os.listdir(temporary_folder)) == 0:
+            with open(os.path.join(output_folder, str(index).zfill(3)), 'w') as input_file:
+                input_file.write(script_result)
+                index += 1
+        # If it is a multigenerator, move tests to script folder
+        else:
+            file_gen.add(script_args[0])
+            files = os.listdir(temporary_folder)
+            files.sort(key=custom_key)
+            for file in files:
+                shutil.move(os.path.join(temporary_folder, file),
+                            os.path.join(output_folder, str(index).zfill(3)))
+                index += 1
+    os.rmdir(temporary_folder)
+
+    if new_script != scripts:
+        info_log("Updating script.sh to avoid repeating multigenerators.")
+        with open(script_path, 'w') as f:
+            f.writelines(new_script)
+
+    # Write quantity of tests generated by each generator
+    with open(os.path.join(os.path.dirname(output_folder), 'index_gen'), 'w') as f:
+        f.write('\n'.join(map(str, generator_index)))
+
+    # Move inputs to problem folder
     move_inputs(output_folder) if move else None
 
 

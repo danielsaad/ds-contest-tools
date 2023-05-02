@@ -2,6 +2,19 @@
 
 This manual provides instructions for using various tools included in the software package. These tools are designed to help users initialize, build, convert, and manage problems for competitive programming contests.
 
+## How to create a problem
+
+Creating a problem requires several steps, which can be done in any order. Follow these guidelines:
+
+1. **Initialize the problem**: Start by initializing the problem.
+2. **Write the statement**: Write the statement text inside each file in the `statement` folder.
+3. **Configure the problem**: Use `problem.json` to configure the problem.
+4. **Write the solution**: Write the solution files inside the `src` folder and add them in `problem.json`.
+5. **Modify the problem**: Modify the generator, validator, checker, and interactor (if it's an interactive problem) of the problem, inside the `src` folder.
+6. **Generate testcases**: Write the scripts to generate test cases inside the `script.sh` file in the `src` folder. Each line of the script must contain the name of the generator and the arguments used to generate the tests.
+7. **Build the problem**: Build the problem with the tool!
+
+# Commands
 ## build.py
 
 The build.py tool provides several options for building and managing problems.

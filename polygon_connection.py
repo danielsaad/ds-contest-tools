@@ -14,10 +14,12 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import requests
 
+from config import custom_key
 from jsonutils import parse_json, write_to_json
 from logger import debug_log, error_log, info_log
 from metadata import Paths
-from utils import convert_to_bytes, verify_path
+from toolchain import get_manual_tests
+from utils import convert_to_bytes, generate_tmp_directory, verify_path
 
 URL = 'https://polygon.codeforces.com/api/'
 RETRIES = 3
@@ -43,12 +45,15 @@ def submit_requests_list(requests_list: List[tuple], problem_id: str) -> None:
 
     # Separate requests
     for method, params in requests_list:
-        if method == 'problem.saveTest':
-            tests_batch.append((method, params))
-        elif not tests_batch:
-            first_batch.append((method, params))
-        else:
+        if method == 'problem.saveScript':
             last_batch.append((method, params))
+        elif method == 'problem.saveTest':
+            if 'testInput' in params:
+                tests_batch.append((method, params))
+            else:
+                last_batch.append((method, params))
+        else:
+            first_batch.append((method, params))
 
     # Add authorization parameters and make requests
     first_batch = add_requests_info(problem_id, first_batch)
@@ -74,14 +79,17 @@ def submit_concurrent_requests(problem_id: int, requests_batch: List[Tuple[str, 
         requests_batch: A list of tuples, where each tuple contains a method name 
         and a dictionary of parameters for that method.
     """
+    if not requests_batch:
+        return
+
     with multiprocessing.Manager() as manager:
         q = manager.Queue()
         process = multiprocessing.Process(
-            target=print_ordered_requests, args=(q, len(requests_batch)))
+            target=print_ordered_requests, args=(q, ))
         process.start()
 
         # Split list into smaller sub-lists to avoid authentication expired error
-        max_workers = max(os.cpu_count() // 2, 1)
+        max_workers = max(os.cpu_count() // 3, 1)
         max_request_time = 7
         batch_size = (300 // max_request_time) * max_workers
         split_batches = [requests_batch[i:i+batch_size]
@@ -99,7 +107,7 @@ def submit_concurrent_requests(problem_id: int, requests_batch: List[Tuple[str, 
                             if f != future and not f.done():
                                 f.cancel()
                         process.join()
-                        sys.exit(1)
+                        sys.exit(0)
         process.join()
 
 
@@ -316,23 +324,32 @@ def get_method_information(method: str, params: dict) -> str:
     if method in named_methods:
         return f'{named_methods[method]} {str(params["name"].decode())} saved'
 
+    if method == 'problem.saveTest':
+        if 'testInput' in params:
+            return f'Manual testcase {str(params["testIndex"].decode().lstrip("0"))} saved'
+        return f'Testcase {str(params["testIndex"].decode()).lstrip("0")} set as statement example.'
+
     return 'No information about this method.'
 
 
-def print_ordered_requests(q: multiprocessing.Queue, max_indice: int) -> None:
+def print_ordered_requests(q: multiprocessing.Queue) -> None:
     """Print the requests in order.
 
     Args:
         q: Queue with the requests.
         max_indice: Maximum indice of the requests.
     """
-    index = 1
+    tmp_folder = os.path.join(generate_tmp_directory(), 'scripts')
+    os.makedirs(tmp_folder, exist_ok=True)
+    indexes: list = [os.path.basename(f) for f in get_manual_tests(tmp_folder)]
+    indexes.sort(key=custom_key)
+
     pq = queue.PriorityQueue()
 
+    index = 0
     while True:
-        if index > max_indice:
+        if index == len(indexes):
             break
-
         try:
             element = q.get(block=False)
         except:
@@ -344,9 +361,9 @@ def print_ordered_requests(q: multiprocessing.Queue, max_indice: int) -> None:
             error_log(element)
             break
 
-        while not pq.empty() and pq.queue[0] == index:
+        while not pq.empty() and str(pq.queue[0]) == str(indexes[index]):
             pq.get()
-            info_log(f'Testcase {index} saved')
+            info_log(f'Manual testcase {indexes[index]} saved')
             index += 1
 
 
@@ -425,11 +442,15 @@ def single_api_connection(method: str, request_params: dict, session: Optional[r
     """
     for retry in range(RETRIES):
         debug_log(f'Retry {retry + 1} for method {method}')
-
-        if session == None:
-            response = requests.post(URL + method, files=request_params)
-        else:
-            response = session.post(URL + method, files=request_params)
+        try:
+            if session == None:
+                response = requests.post(URL + method, files=request_params)
+            else:
+                response = session.post(URL + method, files=request_params)
+        except ConnectionResetError:
+            error_log(f"Connection reset error occurred while making the API request. Try again.\n"
+                      + verify_response(response, request_params))
+            sys.exit(0)
 
         if response.status_code == requests.codes.ok:
             info_log(get_method_information(method, request_params))
