@@ -1,13 +1,19 @@
 import io
 import os
-from webbrowser import open_new
 
-from checker import ProblemAnswer, Status
 from logger import info_log
-from metadata import Paths
+from metadata import Problem, ProblemAnswer, Solution, Status, Test
 
 
 def write_head(problem_name: str, f_out: io.TextIOWrapper) -> None:
+    """
+    Writes the head of the HTML file with a given problem name and an output file.
+
+    Args:
+        problem_name: The name of the problem.
+        f_out: The output file.
+
+    """
     head: str = f"""
     <!DOCTYPE html>
 <html lang="pt-br">
@@ -36,15 +42,22 @@ def write_head(problem_name: str, f_out: io.TextIOWrapper) -> None:
       </style>
 </head>
     """
-    print(head, file=f_out)
+    f_out.write(head)
 
 
-def write_nav_bar(f_out: io.TextIOWrapper) -> None:
-    nav_bar: str = """
+def write_nav_bar(f_out: io.TextIOWrapper, html_file_name: str) -> None:
+    """
+    Write HTML navigation bar to file
+
+    Args:
+        f_out : File object to write the HTML navigation bar to
+        html_file_name : Name of the HTML file
+    """
+    nav_bar: str = f"""
     <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-body-tertiary bg-dark" data-bs-theme="dark">
         <div class="container">
-            <a class="navbar-brand h1 mb-0" href="./index.html">DS-CONTEST-TOOL</a>
+            <a class="navbar-brand h1 mb-0" href="./{html_file_name}">DS-CONTEST-TOOL</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                     aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -52,17 +65,26 @@ def write_nav_bar(f_out: io.TextIOWrapper) -> None:
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="./index.html">Report</a>
+                            <a class="nav-link active" aria-current="page" href="./{html_file_name}">Report</a>
                         </li>
                     </ul>
                 </div>
             </div>
         </nav>
     """
-    print(nav_bar, file=f_out)
+    f_out.write(nav_bar)
 
 
-def write_main(solutions_info_dict: dict, problem_metadata: dict, f_out: io.TextIOWrapper) -> None:
+def write_main(problem_obj: Problem, f_out: io.TextIOWrapper) -> None:
+    """
+    Write the main HTML section of the problem page, including the test case 
+        and auxiliary tables.
+
+    Args:
+        problem_obj: The problem object to extract information from.
+        f_out: The output file stream to write the generated HTML to.
+
+    """
     main_init: str = """
      <main class="row col-md col-lg col-xl mx-auto mt-3 mb-3">
         <section>
@@ -70,14 +92,10 @@ def write_main(solutions_info_dict: dict, problem_metadata: dict, f_out: io.Text
                 <div class="row">
                     <div class="col-md-10 col-lg-10 col-xl-10">
     """
-    print(main_init, file=f_out)
-    solutions: list = solutions_list(solutions_info_dict)
-    problem_limits: dict = {'time': problem_metadata['problem']['time_limit'],
-                            'memory': problem_metadata['problem']['memory_limit_mb']}
+    f_out.write(main_init)
 
-    write_test_case_table(solutions_info_dict, solutions,
-                          problem_limits, f_out)
-    write_auxiliary_table(solutions_info_dict, f_out)
+    write_test_case_table(problem_obj, f_out)
+    write_auxiliary_table(problem_obj, f_out)
 
     main_end: str = """
                 </div>
@@ -88,96 +106,123 @@ def write_main(solutions_info_dict: dict, problem_metadata: dict, f_out: io.Text
     print(main_end, file=f_out)
 
 
-def solutions_list(solutions_info_dict: dict) -> list:
-    tmp_list: list = list()
-    for solution, _ in solutions_info_dict.items():
-        tmp_list.append(solution)
+def write_test_case_table(problem_obj: Problem, f_out: io.TextIOWrapper) -> None:
+    """
+    Writes the test case table into the HTML file.
 
-    return tmp_list
+    Args:
+        problem_obj: The Problem object.
+        f_out: The output file.
 
-
-def write_test_case_table(solutions_info_dict: dict, solutions: list, problem_limits: dict, f_out: io.TextIOWrapper) -> None:
+    """
     thead: str = """
     <table class="table table-hover table-bordered border-secondary">
         <thead class="table-secondary sticky-top">
             <tr class="text-center">
                 <th>#</th>
     """
-
-    for solution in solutions:
-        thead += f'<th>{solution}</th>\n\t'
+    solution: Solution
+    for solution in problem_obj.get_list_solution():
+        thead += f'<th>{solution.solution_name}</th>\n\t'
 
     thead += """
     </tr>
     </thead>
     """
-    print(thead, file=f_out)
-    write_test_cases_tbody(solutions_info_dict,
-                           solutions, problem_limits, f_out)
+    f_out.write(thead)
+    write_test_cases_tbody(problem_obj, f_out)
 
 
-def write_test_cases_tbody(solutions_info_dict: dict, solutions: list, problem_limits: dict, f_out: io.TextIOWrapper) -> None:
+def write_test_cases_tbody(problem_obj: Problem, f_out: io.TextIOWrapper) -> None:
+    """
+    Writes the table body of test cases for the problem.
+
+    Args:
+        problem_obj: The problem object.
+        f_out: The output file object.
+
+    """
     tbody: str = """
         <tbody class="table-group-divider">
     """
-    n_test_cases: int = len(
-        solutions_info_dict[solutions[0]]['test-case-info'])
-    time_limit: float = problem_limits['time']
-    mem_limit: float = problem_limits['memory']
-    for i in range(n_test_cases):
-        print(f'<tr class="text-center">', file=f_out)
-        print(f'\t<td class="fw-bolder">{i + 1}</td>', file=f_out)
-        for solution in solutions:
-            test_case_info: list = solutions_info_dict[solution
-                                                       ]['test-case-info'][i]
+    f_out.write(tbody)
+    memory_limit: float = problem_obj.memory_limit
+    time_limit: float = problem_obj.time_limit
+    test_cases_number: int = problem_obj.get_number_of_tests()
+    for i in range(test_cases_number):
+        f_out.write('<tr class="text-center">')
+        f_out.write(f'\t<td class="fw-bolder">{i + 1}</td>')
+        solution: Solution
+        for solution in problem_obj.get_list_solution():
+            test_case: Test = solution.tests[i]
             test_color_class, test_status, tooltip_msg = test_case_status(
-                test_case_info)
-            memo_usage: float = test_case_info[2] / 1000000
-            memo_usage: float = min(memo_usage, mem_limit)
-            exec_time: float = min(test_case_info[1], time_limit)
+                test_case)
+            memory_usage: float = test_case.memory_usage
+            memory_usage: float = min(memory_usage, memory_limit) / 1000000
+            execution_time: float = min(test_case.exec_time, time_limit)
+            url_parameters = f'id={i + 1}&solution={solution.solution_name}&veredict={test_status}&expected-result={solution.expected_result}&time={test_case.exec_time:.2f}&memory={(test_case.memory_usage / 1000):.2f}&checker-output={test_case.checker_output}'
+            url_link_param = f'input={os.path.join(problem_obj.input_folder, str(i + 1))}&output={os.path.join(solution.output_path, str(i + 1))}&answer={os.path.join(problem_obj.problem_dir, "output", str(i + 1))}'
+            td_info = f'\t<td class="{test_color_class}"><a href="./assets/test-case-info.html?{url_parameters}&{url_link_param}" {tooltip_msg}>{test_status} </a> <br>{execution_time:.2f} s / {(memory_usage):.1f} MB </td>'
+            f_out.write(td_info)
 
-            print(
-                f'\t<td class="{test_color_class}"><a href="./assets/test-case-info.html?id={i + 1}&solution={solution}" {tooltip_msg}>{test_status} </a> <br>{exec_time:.2f} / {(memo_usage):.1f} </td>', file=f_out)
-        print(f'</tr>', file=f_out)
+        f_out.write('</tr>')
 
     tbody = """
                             </tbody>
                         </table>
                     </div>
     """
-    print(tbody, file=f_out)
+    f_out.write(tbody)
 
 
-def test_case_status(test_case_info: list) -> tuple:
+def test_case_status(test_case: Test) -> tuple:
+    """
+    Determine the status of a test case and return the relevant information.
+
+    Args:
+        test_case: An instance of the Test class.
+
+    Returns:
+        tuple: A tuple containing three values: the color class for the table 
+            cell, the status abbreviation, and the tooltip message (if applicable).
+    """
     test_color_class: str = ''
     test_status: str = ''
     tooltip_msg: str = ''
-    if test_case_info[0] == Status.AC:
+    if test_case.status == Status.AC:
         test_status = 'AC'
         test_color_class = "table-success"
-    elif test_case_info[0] == Status.WA:
+    elif test_case.status == Status.WA:
         test_status = 'WA'
         test_color_class = "table-danger"
-    elif test_case_info[0] == Status.RE:
+    elif test_case.status == Status.RE:
         test_status = 'RE'
         test_color_class = "table-info"
-    elif test_case_info[0] == Status.HARD_TLE:
+    elif test_case.status == Status.HARD_TLE:
         test_status = 'TLE'
         test_color_class = "table-hard-warning"
-    elif test_case_info[0] == Status.SOFT_TLE:
+    elif test_case.status == Status.SOFT_TLE:
         test_status = 'TLE'
         test_color_class = "table-warning"
         tooltip_msg = 'data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="Solution passed in double of time!"'
-    elif test_case_info[0] == Status.MLE:
+    elif test_case.status == Status.MLE:
         test_status = 'MLE'
         test_color_class = "table-primary"
-    elif test_case_info[0] == Status.PE:
+    elif test_case.status == Status.PE:
         test_status = 'PE'
         test_color_class = "table-light"
     return test_color_class, test_status, tooltip_msg
 
 
-def write_auxiliary_table(solutions_info_dict, f_out) -> None:
+def write_auxiliary_table(problem_obj: Problem, f_out: io.TextIOWrapper) -> None:
+    """
+    Writes an auxiliary table containing a row for each solution for the problem.
+
+    Args:
+        problem_obj: The problem object to extract the solutions from.
+        f_out: The output file object to write to.
+
+    """
     table_init = """
     <div class="col-md-2 col-lg-2 col-xl-2 position-fixed end-0">
         <table class="table table-hover table-bordered">
@@ -189,28 +234,48 @@ def write_auxiliary_table(solutions_info_dict, f_out) -> None:
             </thead>
              <tbody>\
     """
-    print(table_init, file=f_out)
-    write_aux_trow(solutions_info_dict, f_out)
+    f_out.write(table_init)
+    write_aux_trow(problem_obj, f_out)
     table_end = """
             </tbody>
         </table>
     </div>\
     """
-    print(table_end, file=f_out)
+    f_out.write(table_end)
 
 
-def write_aux_trow(solutions_info_dict: dict, f_out: io.TextIOWrapper) -> None:
-    for solution, solution_info in solutions_info_dict.items():
-        print('<tr>', file=f_out)
+def write_aux_trow(problem_obj: Problem, f_out: io.TextIOWrapper) -> None:
+    """
+    Write a table row for each solution in the problem object and write it 
+    to the output file.
+
+    Args:
+        problem_obj: The problem object containing the solutions to be written 
+            to the table row.
+        f_out: The output file to which the table rows are written.
+
+    """
+    solution: Solution
+    for solution in problem_obj.get_list_solution():
+        f_out.write('<tr>')
         row_color, solution_result_symbol = solution_status(
-            solution_info['solution-result']['solution-result'])
-        print(f'\t<td>{solution}</td>', file=f_out)
-        print(
-            f'\t<td class="{row_color}">{solution_result_symbol}</td>', file=f_out)
-        print('</tr>', file=f_out)
+            solution.solution_status)
+        f_out.write(f'\t<td>{solution.solution_name}</td>')
+        f_out.write(f'\t<td class="{row_color}">{solution_result_symbol}</td>')
+        f_out.write('</tr>')
 
 
 def solution_status(result: ProblemAnswer) -> str:
+    """
+    Return the HTML row color and solution result symbol based on the result.
+
+    Args:
+        result: The result of the problem solution.
+
+    Returns:
+        Tuple[str, str]: A tuple containing the HTML row color and solution 
+            result symbol.
+    """
     solution_result_symbol: str = ''
     row_color: str = ''
     if result == ProblemAnswer.CORRECT:
@@ -224,6 +289,13 @@ def solution_status(result: ProblemAnswer) -> str:
 
 
 def write_footer(f_out: io.TextIOWrapper) -> None:
+    """
+    Writes the footer HTML code to a given text file object.
+
+    Args:
+        f_out: A text file object to write the footer HTML code.
+
+    """
     footer = """
      	<footer class="col-md-12 col-lg-12 col-xl-12 bg-dark text-white pt-4 pb-4 bottom-0">
         <div class="container text-center text-md-left">
@@ -295,17 +367,24 @@ def write_footer(f_out: io.TextIOWrapper) -> None:
 </body>
 </html>
     """
-    print(footer, file=f_out)
+    f_out.write(footer)
 
 
-def print_to_html(problem_metadata: str, solutions_info_dict: dict) -> None:
-    problem_folder: str = Paths().get_problem_dir()
+def print_to_html(problem_obj: Problem) -> None:
+    """
+    Create an HTML report for a given problem.
+
+    Args:
+        problem_obj (Problem): An instance of the Problem class.
+
+    """
+    problem_folder: str = problem_obj.problem_dir
     html_filename: str = 'report.html'
     html_filepath: str = os.path.join(problem_folder, html_filename)
     info_log(f'Creating {html_filename}')
     with open(html_filepath, 'w') as f_out:
-        problem_name: str = problem_metadata['problem']['title']
+        problem_name: str = problem_obj.problem_name
         write_head(problem_name, f_out)
-        write_nav_bar(f_out)
-        write_main(solutions_info_dict, problem_metadata, f_out)
+        write_nav_bar(f_out, html_filename)
+        write_main(problem_obj, f_out)
         write_footer(f_out)
