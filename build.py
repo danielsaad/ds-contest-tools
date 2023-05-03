@@ -4,7 +4,6 @@ import shutil
 import sys
 from math import floor
 
-from boca import boca_pack
 from logger import error_log, info_log
 from metadata import Paths
 from pdfutils import build_pdf
@@ -26,11 +25,10 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument('-c', '--cpu-count', help=f"number of threads to be used when checking solutions. Default is {default_threads} threads.",
                         type=int, default=default_threads)
     parser.add_argument(
-        'mode', choices=['init', 'build', 'genio', 'genpdf', 'pack2boca', 'clean'],
+        'mode', choices=['init', 'build', 'genio', 'genpdf', 'clean'],
         help='init: init a problem.\nbuild: build a problem.\n' +
         'genio: gen problem input/output while validating inputs.\n' +
         'genpdf: generates problem and tutorial PDFs.\n' +
-        'pack2boca: pack a problem to BOCA format.\n' +
         'clean: remove executables of a DS problem.\n')
     parser.add_argument('problem_id', nargs='?')
     return parser
@@ -94,11 +92,6 @@ def init(interactive=False) -> None:
         os.remove(interactor)
 
 
-def pack2boca() -> None:
-    """Call funtions to convert the format of the problem to BOCA."""
-    boca_pack()
-
-
 def clean() -> None:
     """Call functions to clean executables"""
     clean_files()
@@ -123,9 +116,6 @@ if __name__ == "__main__":
         info_log("Building problem " + args.problem_id)
         build(args.all, args.specific, args.cpu_count)
         info_log("Problem " + args.problem_id + " built")
-    elif (args.mode == 'pack2boca'):
-        pack2boca()
-        info_log("Problem " + args.problem_id + " to BOCA successfully.")
     elif (args.mode == 'genpdf'):
         genpdf()
         info_log("PDFs generated.")

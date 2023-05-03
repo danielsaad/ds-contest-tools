@@ -2,13 +2,13 @@ import os
 import shutil
 import subprocess
 import sys
-from typing import Optional
 
 from fileutils import recursive_overwrite, rename_io
 from jsonutils import parse_json
 from logger import error_log, info_log
 from metadata import Paths
-from utils import check_problem_metadata, check_subprocess_output, verify_path
+from utils import (check_problem_metadata, check_subprocess_output,
+                   instance_paths, verify_path)
 
 
 class default_boca_limits:
@@ -31,15 +31,20 @@ def boca_zip(boca_folder: str) -> None:
     os.chdir(old_cwd)
 
 
-def boca_pack(problem_folder: Optional[str] = '') -> None:
+def boca_pack(problem_dir: str, output_dir: str) -> None:
     """Convert a DS problem to a BOCA problem."""
-    info_log("Creating BOCA package")
-    if (problem_folder == ''):
-        problem_folder = Paths().get_problem_dir()
+    if not output_dir:
+        output_dir = problem_dir
+    instance_paths(problem_dir, output_dir)
+
+    info_log("Starting DS -> BOCA conversion.")
+    problem_folder = Paths().get_problem_dir()
+    output_folder = Paths().get_output_dir()
+    os.makedirs(output_folder, exist_ok=True)
 
     boca_template_folder = os.path.join(
         *[os.path.dirname(os.path.abspath(__file__)), 'files', 'boca'])
-    boca_folder = os.path.join(*[problem_folder, 'boca'])
+    boca_folder = os.path.join(*[output_folder, 'boca'])
     # Copy template files
     recursive_overwrite(boca_template_folder, boca_folder)
     # Get problem metadata

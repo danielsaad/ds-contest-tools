@@ -157,12 +157,22 @@ def copy_generator(script: str) -> None:
         shutil.copy(generator, destination)
 
 
-def copy_source_files(file_name: str) -> None:
+def copy_source_files(polygon_name: str, file_name: str) -> None:
     """Copy source files from package to problem folder."""
     package_folder = Paths().get_output_dir()
     problem_folder = Paths().get_problem_dir()
-    file = os.path.join(package_folder, 'files', file_name)
+    file = os.path.join(package_folder, 'files', polygon_name)
     destination = os.path.join(problem_folder, 'src', file_name)
+    
+    # If problem has standard checker, verify new checker or skip it
+    if not os.path.exists(file) and file_name == 'checker.cpp':
+        file_dir = os.path.dirname(file)
+        checker = [f for f in os.listdir(file_dir) if f.startswith('check')]
+        if not checker:
+            info_log(f"Checker {os.path.basename(polygon_name)} not found. Skipping.")
+            return
+        file = os.path.join(file_dir, checker[0])
+    
     verify_path(file)
     shutil.copy2(file, destination)
 
@@ -201,7 +211,7 @@ def copy_checker(problem_id: str) -> None:
     info_log("Copying checker.")
     content = make_api_request('problem.checker', dict(), problem_id)
     content = json.loads(content)
-    copy_source_files(content['result'])
+    copy_source_files(content['result'], 'checker.cpp')
 
 
 def copy_validator(problem_id: str) -> None:
@@ -209,7 +219,7 @@ def copy_validator(problem_id: str) -> None:
     info_log("Copying validator.")
     content = make_api_request('problem.validator', dict(), problem_id)
     content = json.loads(content)
-    copy_source_files(content['result'])
+    copy_source_files(content['result'], 'validator.cpp')
 
 
 def copy_interactor(problem_id: str) -> None:
@@ -217,7 +227,7 @@ def copy_interactor(problem_id: str) -> None:
     info_log("Copying interactor.")
     content = make_api_request('problem.interactor', dict(), problem_id)
     content = json.loads(content)
-    copy_source_files(content['result'])
+    copy_source_files(content['result'], 'interactor.cpp')
 
 
 def get_local_interactive() -> bool:

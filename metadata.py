@@ -1,8 +1,7 @@
 import os
 from enum import Enum
-from typing import Union
-# from logger import info_log
 from sys import exit
+from typing import Union
 
 
 class Status(Enum):
