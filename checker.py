@@ -171,10 +171,10 @@ def run_checker(ans: str, inf: str, ouf: str) -> tuple:
     checker_file: str = os.path.join(
         Paths().get_problem_dir(), 'bin/checker')
     if (not os.path.isfile(inf)):
-        error_log('Input' + fname + 'not available')
+        error_log('Input ' + fname + ' not available')
         sys.exit(1)
     if (not os.path.isfile(ans)):
-        error_log('Answer' + fname + 'not available')
+        error_log('Answer ' + fname + ' not available')
         sys.exit(1)
     command = [checker_file, inf, ouf, ans]
     p = subprocess.run(command, stdout=subprocess.PIPE,

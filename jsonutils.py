@@ -17,7 +17,7 @@ def parse_json(json_file: str) -> dict:
     json_data = {}
 
     if not os.path.isfile(json_file):
-        error_log(os.path.basename(json_file), 'does not exists.')
+        error_log(os.path.basename(json_file) + ' does not exist.')
         sys.exit(1)
 
     with open(json_file) as f:

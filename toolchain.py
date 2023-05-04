@@ -11,8 +11,7 @@ from htmlutils import print_to_html
 from jsonutils import parse_json
 from logger import debug_log, error_log, info_log
 from metadata import Paths, Problem, Solution
-from utils import (check_problem_metadata, check_subprocess_output,
-                   generate_tmp_directory, verify_path)
+from utils import check_problem_metadata, check_subprocess_output, verify_path
 
 
 def build_executables() -> None:
@@ -116,7 +115,7 @@ def validate_inputs() -> None:
             if out or err:
                 error_log(out)
                 error_log(err)
-                error_log("Failed validation on input", fname)
+                error_log("Failed validation on input " + fname)
                 sys.exit(1)
 
     # Check for equal test cases
@@ -206,7 +205,7 @@ def generate_inputs(move: bool = True, output_folder: str = '') -> None:
 
     # Create temporary folder for input tests
     if output_folder == '':
-        output_folder = os.path.join(generate_tmp_directory(), 'scripts')
+        output_folder = os.path.join(Paths().get_tmp_output_dir(), 'scripts')
     temporary_folder = os.path.join(output_folder, 'tmp')
     os.makedirs(output_folder, exist_ok=True)
     os.makedirs(temporary_folder, exist_ok=True)

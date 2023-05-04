@@ -114,11 +114,10 @@ if __name__ == '__main__':
     parser = create_parser()
     args = parser.parse_args()
 
-    for problem in args.problem_path:
-        verify_problem(problem)
-
-    os.makedirs(args.contest_folder, exist_ok=True)
     instance_paths(args.problem_path, args.contest_folder)
+    for problem in args.problem_path:
+            verify_problem(problem)
+    os.makedirs(args.contest_folder, exist_ok=True)
 
     if (args.mode == 'build' and args.boca):
         build_boca_packages()

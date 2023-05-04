@@ -7,8 +7,7 @@ from jsonutils import parse_json
 from logger import error_log, info_log
 from metadata import Paths
 from toolchain import generate_inputs, get_manual_tests
-from utils import (check_problem_metadata, generate_tmp_directory,
-                   instance_paths, verify_path)
+from utils import check_problem_metadata, instance_paths, verify_path
 
 
 def create_config(showcases: str, memory_limit: int, cputime: int) -> None:
@@ -142,7 +141,7 @@ def copy_generator_script() -> None:
 def copy_manual_tests() -> None:
     """Move manual tests to SQTPM folder."""
     output_folder = Paths().get_output_dir()
-    tmp_folder = os.path.join(generate_tmp_directory(), 'scripts')
+    tmp_folder = os.path.join(Paths().get_tmp_output_dir(), 'scripts')
 
     generate_inputs(move=False, output_folder=tmp_folder)
     manual_tests = get_manual_tests(tmp_folder)

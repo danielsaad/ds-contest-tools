@@ -8,8 +8,7 @@ from logger import error_log, info_log
 from metadata import Paths
 from polygon_connection import check_polygon_id, submit_requests_list
 from toolchain import generate_inputs, get_manual_tests
-from utils import (check_problem_metadata, generate_tmp_directory,
-                   instance_paths, verify_path)
+from utils import check_problem_metadata, instance_paths, verify_path
 
 LANGUAGE = 'english'
 ENCODING = 'utf-8'
@@ -454,7 +453,7 @@ def get_requests_list() -> List[Tuple[str, dict]]:
     problem_metadata = parse_json(path_json)
     check_problem_metadata(problem_metadata)
 
-    tmp_folder = os.path.join(generate_tmp_directory(), 'scripts')
+    tmp_folder = os.path.join(Paths().get_tmp_output_dir(), 'scripts')
     generate_inputs(move=False, output_folder=tmp_folder)
 
     requests_list = []
@@ -491,8 +490,8 @@ def send_to_polygon(problem_folder: str, problem_id: Union[str, None]) -> None:
         problem_folder: Path to the problem folder.
         problem_id: ID of the Polygon problem.
     """
-    verify_path(problem_folder)
     instance_paths(problem_folder)
+    verify_path(problem_folder)
     problem_id = check_polygon_id(problem_id)
 
     requests_list: List[Tuple[str, dict]] = get_requests_list()

@@ -427,6 +427,7 @@ def update_problem_metadata(title: str, solutions: dict, interactive: bool, prob
         interactive: Whether the problem is interactive.
         problem_id: Problem ID.
     """
+    info_log("Updating problem metadata.")
     package_folder = Paths().get_output_dir()
     problem_folder = Paths().get_problem_dir()
 
@@ -511,8 +512,8 @@ def get_polygon_problem(problem_folder: str, problem_id: str, local: Optional[bo
         problem_id: The ID of the problem to download (default None).
     """
     if local:
-        verify_path(local)
         instance_paths(problem_folder, problem_id)
+        verify_path(local)
     else:
         instance_paths(problem_folder, os.path.join(
             problem_folder, 'temp_package'))
