@@ -91,7 +91,9 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
     info_log(f"Creating {os.path.basename(tex_filepath)}")
     with open(tex_filepath, 'w') as f_out:
         print("\\documentclass{maratona}", file=f_out)
-        print("\\begin{document}\n", file=f_out)
+        print("\\begin{document}", file=f_out)
+        if options['event']:
+            print("\\lhead{" + problem_metadata['problem']['event'] + "}\n", file=f_out)
         if (options['display_author']):
             print("\\begin{ProblemaAutor}{" + options['problem_label']
                   + "}{" + problem_metadata["problem"]["title"] + "}{" +

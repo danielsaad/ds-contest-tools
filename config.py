@@ -1,6 +1,7 @@
 DEFAULT_PDF_OPTIONS = {
     'display_author': True,
-    'problem_label': ''
+    'problem_label': '',
+    'event': False
 }
 
 
