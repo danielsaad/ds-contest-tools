@@ -104,7 +104,7 @@ def verify_problem(problem: str) -> None:
     elif args.mode == 'build' and not os.path.exists(os.path.join(problem, 'bin')):
         info_log(f"Generating BOCA package for {problem} problem.")
         command = ['python3', os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                           'build.py'), 'build', problem]
+                                           'convert.py'), 'convert_to', 'boca', problem]
         p = subprocess.run(command, stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE, text=True)
         check_subprocess_output(p, f"Error building problem {problem}.")

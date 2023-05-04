@@ -4,14 +4,13 @@ import shutil
 import subprocess
 import sys
 from typing import Dict
-from metadata import Problem, Solution
 
 from checker import run_solutions
 from config import custom_key
 from htmlutils import print_to_html
 from jsonutils import parse_json
 from logger import debug_log, error_log, info_log
-from metadata import Paths
+from metadata import Paths, Problem, Solution
 from utils import (check_problem_metadata, check_subprocess_output,
                    generate_tmp_directory, verify_path)
 

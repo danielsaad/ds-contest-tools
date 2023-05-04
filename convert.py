@@ -4,6 +4,7 @@ import sys
 from getpass import getpass
 from typing import Union
 
+from boca import boca_pack
 from fileutils import check_interactive_problem
 from jsonutils import write_to_json
 from logger import error_log, info_log
@@ -68,6 +69,8 @@ def start_conversion_to(problem_format: str, problem_dir: str, output_dir: Union
         send_to_polygon(problem_dir, output_dir)
     elif problem_format == 'sqtpm':
         convert_to_sqtpm(problem_dir, output_dir)
+    elif problem_format == 'boca':
+        boca_pack(problem_dir, output_dir)
     else:
         error_log('Not implemented yet.')
         sys.exit(0)
