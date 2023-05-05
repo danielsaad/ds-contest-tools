@@ -103,20 +103,15 @@ def validate_inputs() -> None:
     verify_path(validator_path)
 
     # Check each input file with the validator
-    input_files = [f for f in os.listdir(input_folder) if os.path.isfile(f)
-                   and not f.endswith('.interactive')]
+    input_files = [f for f in os.listdir(input_folder) if not f.endswith('.interactive')]
     input_files.sort(key=custom_key)
-    for fname in input_files:
-        with open(os.path.join(input_folder, fname)) as f:
-            p = subprocess.Popen([validator_path],
+    input_files = [os.path.join(input_folder, f) for f in input_files]
+    for fpath in input_files:
+        with open(fpath) as f:
+            p = subprocess.run([validator_path],
                                  stdin=f, stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE, text=True)
-            out, err = p.communicate()
-            if out or err:
-                error_log(out)
-                error_log(err)
-                error_log("Failed validation on input " + fname)
-                sys.exit(1)
+            check_subprocess_output(p, "Failed validation on input " + os.path.basename(fpath))
 
     # Check for equal test cases
     equal_tests = 0
