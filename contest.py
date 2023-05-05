@@ -97,16 +97,14 @@ def verify_problem(problem: str, mode: str, boca: bool) -> None:
     """Check if the problem is ready to be used"""
     verify_path(problem)
     verify_path(os.path.join(problem, 'statement'))
-
-    # Verify I/O for statements
+    verify_path(os.path.join(problem, 'input'))
+    verify_path(os.path.join(problem, 'output'))
+    
     if mode == 'genpdf':
-        verify_path(os.path.join(problem, 'input'))
-        verify_path(os.path.join(problem, 'output'))
         return
 
     tool_directory = os.path.dirname(os.path.abspath(__file__))
-    boca_zip_path = os.path.join(problem, 'boca.zip')
-    if boca and not os.path.exists(boca_zip_path):
+    if boca:
         # Build problem if BOCA package is not available
         checker_path = os.path.join(problem, 'bin', 'checker-boca')
         if not os.path.exists(checker_path):
