@@ -25,21 +25,25 @@ def boca_zip(boca_folder: str) -> None:
     os.chdir(boca_folder)
     zip_filename = os.path.basename(boca_folder)+'.zip'
     p = subprocess.run('zip'+' -r ' + zip_filename + ' . ', shell=True,
-                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     check_subprocess_output(p, "Error ziping BOCA file.")
     os.rename(zip_filename, os.path.join('..', zip_filename))
     os.chdir(old_cwd)
 
 
-def boca_pack(problem_dir: str, output_dir: str) -> None:
-    """Convert a DS problem to a BOCA problem."""
+def generate_boca_pack(problem_dir: str, output_dir: str = ''):
     if not output_dir:
         output_dir = problem_dir
     instance_paths(problem_dir, output_dir)
+    boca_pack(Paths().get_problem_dir(), Paths().get_output_dir())
 
-    info_log("Starting DS -> BOCA conversion.")
-    problem_folder = Paths().get_problem_dir()
-    output_folder = Paths().get_output_dir()
+
+def boca_pack(problem_folder: str, output_folder: str = '') -> None:
+    """Convert a DS problem to a BOCA problem."""
+    # Verify if it is a conversion from a contest
+    info_log(f"Starting DS -> BOCA conversion for problem {os.path.basename(problem_folder)}.")
+    if not output_folder:
+        output_folder = problem_folder
     os.makedirs(output_folder, exist_ok=True)
 
     boca_template_folder = os.path.join(

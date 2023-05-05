@@ -41,7 +41,7 @@ def merge_pdfs(pdf_list: list, output_file: str) -> None:
 
     command: list = build_merge_command(pdf_list, output_file)
     p = subprocess.run(command, stdout=subprocess.PIPE,
-                       stderr=subprocess.PIPE, text=True)
+                       stderr=subprocess.PIPE)
     check_subprocess_output(p, "Error merging PDFs.")
     info_log("PDFs Merged")
 
@@ -60,6 +60,7 @@ def build_pdf(problem_folder: Optional[str] = '', output_directory: Optional[str
     if problem_folder == '':
         problem_folder = Paths().get_problem_dir()
     verify_path(os.path.join(problem_folder, 'maratona.cls'))
+    old_cwd = os.getcwd()
 
     # Generate PDF from tex file
     print_to_latex(problem_folder, options)
@@ -68,8 +69,9 @@ def build_pdf(problem_folder: Optional[str] = '', output_directory: Optional[str
     tex_filename = os.path.basename(problem_folder) + '.tex'
     tex_filepath = os.path.join(problem_folder, tex_filename)
     command = ["pdflatex", '--output-directory', folder, tex_filepath]
-    p = subprocess.run(command, stdin=subprocess.PIPE,
-                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    os.chdir(problem_folder)
+    p = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    os.chdir(old_cwd)
     check_subprocess_output(p, "Generation of problem file failed.")
     clean_auxiliary_files(folder)
 
@@ -78,7 +80,9 @@ def build_pdf(problem_folder: Optional[str] = '', output_directory: Optional[str
     tutorial_filepath = os.path.join(problem_folder, tutorial_filename)
     if os.path.isfile(tutorial_filepath):
         command = ['pdflatex', '--output-directory', folder, tutorial_filepath]
-        p = subprocess.run(command, stdin=subprocess.PIPE,
-                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        os.chdir(problem_folder)
+        p = subprocess.run(command, stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE)
+        os.chdir(old_cwd)
         check_subprocess_output(p, "Generation of tutorial file failed.")
         clean_auxiliary_files(folder)
