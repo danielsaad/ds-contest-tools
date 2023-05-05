@@ -14,6 +14,7 @@ LANGUAGE = 'english'
 ENCODING = 'utf-8'
 TESTSET = 'tests'
 VERIFY_IO_STATEMENT = True
+IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'svg', 'bmp', 'ico'}
 
 
 def update_info(problem_metadata: dict) -> tuple:
@@ -98,17 +99,20 @@ def save_statement_resources() -> List[Tuple[str, dict]]:
         A list of tuples, where each tuple contains the method and the 
         parameters for the request.
     """
-    statement_dir: str = os.path.join(
-        Paths().get_problem_dir(), 'statement')
+    problem_dir: str = os.path.join(Paths().get_problem_dir())
 
     parameters_list = []
-    for file in os.listdir(statement_dir):
-        if file.endswith('.tex'):
+    for file_name in os.listdir(problem_dir):
+        filepath = os.path.join(problem_dir, file_name)
+        if os.path.isdir(filepath):
             continue
-        with open(os.path.join(statement_dir, file), 'rb') as f:
-            file_content = b''.join(f.readlines())
+        _, extension = os.path.splitext(file_name)
+        if extension.lower()[1:] not in IMAGE_EXTENSIONS:
+            continue
+        with open(filepath, 'rb') as file:
+            file_content = file.read()
         params = {
-            'name': file,
+            'name': file_name,
             'file': file_content
         }
         parameters_list.append(('problem.saveStatementResource', params))
