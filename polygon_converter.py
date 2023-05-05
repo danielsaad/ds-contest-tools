@@ -279,9 +279,9 @@ def init_problem(interactive: bool) -> None:
         os.remove(os.path.join(problem_folder, 'statement', 'interactor.tex'))
 
 
-def write_statement(package_data: dict, interactive: bool) -> None:
+def copy_statement_files(package_data: dict, interactive: bool, language=DEFAULT_LANGUAGE) -> None:
     """Write statement files in the problem folder."""
-    info_log("Writing statement files.")
+    info_log("Copying statement files.")
     problem_folder = Paths().get_problem_dir()
     statement_dir = os.path.join(problem_folder, 'statement')
 
@@ -299,6 +299,15 @@ def write_statement(package_data: dict, interactive: bool) -> None:
     if interactive:
         with open(statement_files[5], 'w') as f:
             f.writelines(package_data['interaction'])
+    
+    package_folder = os.path.join(
+        Paths().get_output_dir(), 'statement-sections', language)
+    ignored_extensions = {'.tex', '.log'}
+    ignored_prefixes = {'example'}
+    for f in os.listdir(package_folder):
+        if not any(f.endswith(ext) for ext in ignored_extensions) and not any(f.startswith(prefix) for prefix in ignored_prefixes):
+            file_path = os.path.join(package_folder, f)
+            shutil.copy(file_path, os.path.join(problem_folder, f))
 
 
 def get_package_data(interactive: bool) -> dict:
@@ -427,6 +436,7 @@ def update_problem_metadata(title: str, solutions: dict, interactive: bool, prob
         interactive: Whether the problem is interactive.
         problem_id: Problem ID.
     """
+    info_log("Updating problem metadata.")
     package_folder = Paths().get_output_dir()
     problem_folder = Paths().get_problem_dir()
 
@@ -494,7 +504,7 @@ def convert_problem(local: bool, problem_id: Optional[str] = '') -> None:
             copy_interactive_files()
 
     copy_generator(xml_data['script'])
-    write_statement(package_data, interactive)
+    copy_statement_files(package_data, interactive)
     update_problem_metadata(''.join(package_data['title']),
                             xml_data['solutions'], interactive, problem_id)
     # Clean up temporary package folder
@@ -511,8 +521,8 @@ def get_polygon_problem(problem_folder: str, problem_id: str, local: Optional[bo
         problem_id: The ID of the problem to download (default None).
     """
     if local:
-        verify_path(local)
         instance_paths(problem_folder, problem_id)
+        verify_path(local)
     else:
         instance_paths(problem_folder, os.path.join(
             problem_folder, 'temp_package'))

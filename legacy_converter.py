@@ -142,8 +142,8 @@ if __name__ == '__main__':
     parser = create_parser()
     args = parser.parse_args()
 
-    verify_path(args.problem_dir)
     instance_paths(args.problem_dir)
+    verify_path(args.problem_dir)
 
     convert_problem()
 

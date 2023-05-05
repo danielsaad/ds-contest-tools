@@ -52,16 +52,11 @@ def check_subprocess_output(p: CompletedProcess, message: str) -> None:
         p (CompletedProcess): The completed process returned by the 'subprocess.run' function.
         message (str): The message to be printed in case of an error.
     """
+    debug_log(p.stdout)
+    debug_log(p.stderr)
     if p.returncode:
-        error_log(p.stdout, print_text=False)
-        error_log(p.stderr, print_text=False)
         error_log(message)
         sys.exit(1)
-
-    if p.stdout and p.stdout != '':
-        debug_log(p.stdout)
-    if p.stderr and p.stderr != '':
-        debug_log(p.stderr)
 
 
 def instance_paths(problem_dir: Union[str, list], output_dir: Optional[str] = '') -> None:
@@ -160,12 +155,3 @@ def generate_timestamp() -> str:
     current_time: datetime = datetime.fromtimestamp(datetime.now().timestamp())
     timestamp: str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
     return timestamp
-
-
-def generate_tmp_directory() -> str:
-    """Generate path to a temporary directory.
-
-    Returns:
-        Path to the temporary directory.
-    """
-    return os.path.join('/', 'tmp', f'ds-contest-tools-{generate_timestamp()}')

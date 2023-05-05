@@ -43,9 +43,9 @@ def info_log(text: str) -> None:
         text: The information to be logged.
     """
     tool = logging.getLogger('tool')
-    text = text.rstrip()
-    if text is not None and text != '':
-        tool.info(text)
+    info = get_string(text)
+    if len(info) > 0:
+        tool.info(info)
         print(text)
 
 
@@ -56,20 +56,35 @@ def debug_log(text: str) -> None:
         text: The debug information to be logged.
     """
     debug = logging.getLogger('debug')
-    if text is not None and text.rstrip() != '':
-        debug.debug(text.rstrip())
+    info = get_string(text)
+    if len(info) > 0:
+        debug.info(info)
 
 
-def error_log(text: str, print_text: bool = True) -> None:
+def error_log(text: str) -> None:
     """Logs errors that occur during tool execution.
 
     Args:
         text: The error information to be logged.
     """
     tool = logging.getLogger('tool')
-    text = text.rstrip()
-    if text is not None and text != '':
-        tool.error(text)
-        if print_text:
-            print(text)
-        
+    info = get_string(text)
+    if len(info) > 0:
+        tool.error(info)
+        print(text)
+
+
+def get_string(x):
+    """Converts x to string.
+
+    Args:
+        x: Text to be converted to string.
+
+    Returns:
+        The string representation of x.
+    """
+    try:
+        x = str(x)
+        return x.rstrip()
+    except:
+        return ""

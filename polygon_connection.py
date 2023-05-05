@@ -19,7 +19,7 @@ from jsonutils import parse_json, write_to_json
 from logger import debug_log, error_log, info_log
 from metadata import Paths
 from toolchain import get_manual_tests
-from utils import convert_to_bytes, generate_tmp_directory, verify_path
+from utils import convert_to_bytes, verify_path
 
 URL = 'https://polygon.codeforces.com/api/'
 RETRIES = 3
@@ -339,7 +339,7 @@ def print_ordered_requests(q: multiprocessing.Queue) -> None:
         q: Queue with the requests.
         max_indice: Maximum indice of the requests.
     """
-    tmp_folder = os.path.join(generate_tmp_directory(), 'scripts')
+    tmp_folder = os.path.join(Paths().get_tmp_output_dir(), 'scripts')
     os.makedirs(tmp_folder, exist_ok=True)
     indexes: list = [os.path.basename(f) for f in get_manual_tests(tmp_folder)]
     indexes.sort(key=custom_key)

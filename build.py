@@ -104,10 +104,10 @@ if __name__ == "__main__":
     if not args.problem_id:
         parser.error(args.mode + ' mode requires a problem id. Usage: ' +
                      sys.argv[0] + ' ' + args.mode + ' <problem ID>')
+    instance_paths(args.problem_id)
     if args.mode != 'init':
         verify_path(args.problem_id)
 
-    instance_paths(args.problem_id)
     if (args.mode == 'init'):
         info_log('Initializing problem ' + args.problem_id)
         init(args.interactive)

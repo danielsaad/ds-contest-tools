@@ -8,13 +8,13 @@ from logger import error_log, info_log
 from metadata import Paths
 from polygon_connection import check_polygon_id, submit_requests_list
 from toolchain import generate_inputs, get_manual_tests
-from utils import (check_problem_metadata, generate_tmp_directory,
-                   instance_paths, verify_path)
+from utils import check_problem_metadata, instance_paths, verify_path
 
 LANGUAGE = 'english'
 ENCODING = 'utf-8'
 TESTSET = 'tests'
 VERIFY_IO_STATEMENT = True
+IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'svg', 'bmp', 'ico'}
 
 
 def update_info(problem_metadata: dict) -> tuple:
@@ -99,17 +99,20 @@ def save_statement_resources() -> List[Tuple[str, dict]]:
         A list of tuples, where each tuple contains the method and the 
         parameters for the request.
     """
-    statement_dir: str = os.path.join(
-        Paths().get_problem_dir(), 'statement')
+    problem_dir: str = os.path.join(Paths().get_problem_dir())
 
     parameters_list = []
-    for file in os.listdir(statement_dir):
-        if file.endswith('.tex'):
+    for file_name in os.listdir(problem_dir):
+        filepath = os.path.join(problem_dir, file_name)
+        if os.path.isdir(filepath):
             continue
-        with open(os.path.join(statement_dir, file), 'rb') as f:
-            file_content = b''.join(f.readlines())
+        _, extension = os.path.splitext(file_name)
+        if extension.lower()[1:] not in IMAGE_EXTENSIONS:
+            continue
+        with open(filepath, 'rb') as file:
+            file_content = file.read()
         params = {
-            'name': file,
+            'name': file_name,
             'file': file_content
         }
         parameters_list.append(('problem.saveStatementResource', params))
@@ -454,7 +457,7 @@ def get_requests_list() -> List[Tuple[str, dict]]:
     problem_metadata = parse_json(path_json)
     check_problem_metadata(problem_metadata)
 
-    tmp_folder = os.path.join(generate_tmp_directory(), 'scripts')
+    tmp_folder = os.path.join(Paths().get_tmp_output_dir(), 'scripts')
     generate_inputs(move=False, output_folder=tmp_folder)
 
     requests_list = []
@@ -491,8 +494,8 @@ def send_to_polygon(problem_folder: str, problem_id: Union[str, None]) -> None:
         problem_folder: Path to the problem folder.
         problem_id: ID of the Polygon problem.
     """
-    verify_path(problem_folder)
     instance_paths(problem_folder)
+    verify_path(problem_folder)
     problem_id = check_polygon_id(problem_id)
 
     requests_list: List[Tuple[str, dict]] = get_requests_list()
