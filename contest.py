@@ -85,39 +85,44 @@ def build_boca_packages() -> None:
                    'event': True}
         # Build PDF and move it to contest folder
         build_pdf(folder, folder, options)
-        boca_pack(folder)
         boca_file_path = os.path.join(folder, 'boca.zip')
+        if not os.path.exists(boca_file_path):
+            boca_pack(folder)
         boca_file = os.path.join(
             output_folder, os.path.basename(folder) + '-boca.zip')
         shutil.copy(boca_file_path, boca_file)
 
 
-def verify_problem(problem: str, mode: str) -> None:
+def verify_problem(problem: str, mode: str, boca: bool) -> None:
     """Check if the problem is ready to be used"""
     verify_path(problem)
     verify_path(os.path.join(problem, 'statement'))
-
-    # Verify I/O for statements
-    if mode == 'genpdf':
-        verify_path(os.path.join(problem, 'input'))
-        verify_path(os.path.join(problem, 'output'))
-        return
+    verify_path(os.path.join(problem, 'input'))
+    verify_path(os.path.join(problem, 'output'))
     
-    tool_directory = os.path.dirname(os.path.abspath(__file__))
-    # Build problem if it is only initialized
-    if not os.path.exists(os.path.join(problem, 'bin')):
-        info_log(f"Building {problem} problem.")
-        command = ['python3', os.path.join(tool_directory, 'build.py'), 'build', problem]
-        p = subprocess.run(command, stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE, text=True)
-        check_subprocess_output(p, f"Error building problem {problem}.")
+    if mode == 'genpdf':
+        return
 
-    if not os.path.exists(os.path.join(problem, 'boca.zip')):
+    tool_directory = os.path.dirname(os.path.abspath(__file__))
+    if boca:
+        # Build problem if BOCA package is not available
+        checker_path = os.path.join(problem, 'bin', 'checker-boca')
+        if not os.path.exists(checker_path):
+            info_log(f"BOCA checker not found. Building {problem} problem.")
+            command = ['python3', os.path.join(
+                tool_directory, 'build.py'), 'build', problem]
+            p = subprocess.run(
+                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            check_subprocess_output(p, f"Error building problem {problem}.")
+
+        # Generate BOCA package
         info_log(f"Generating BOCA package for problem {problem}.")
-        command = ['python3', os.path.join(tool_directory,'convert.py'), 'convert_to', 'boca', problem]
+        command = ['python3', os.path.join(
+            tool_directory, 'convert.py'), 'convert_to', 'boca', problem]
         p = subprocess.run(command, stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE, text=True)
-        check_subprocess_output(p, f"Error generating BOCA package for problem {problem}.")
+                           stderr=subprocess.PIPE)
+        check_subprocess_output(
+            p, f"Error generating BOCA package for problem {problem}.")
 
 
 if __name__ == '__main__':
@@ -126,9 +131,10 @@ if __name__ == '__main__':
 
     instance_paths(args.problem_path, args.contest_folder)
     for problem in args.problem_path:
-            verify_problem(problem, args.mode)
+        verify_problem(problem, args.mode, args.boca)
     os.makedirs(args.contest_folder, exist_ok=True)
 
+    info_log("Creating contest files")
     if (args.mode == 'build' and args.boca):
         build_boca_packages()
         build_contest_pdf()

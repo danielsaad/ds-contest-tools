@@ -25,7 +25,7 @@ def build_executables() -> None:
 
     info_log("Compiling executables")
     p = subprocess.run(['make', '-j'],
-                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     check_subprocess_output(p, "Makefile failed.")
     os.chdir(old_cwd)
 
@@ -103,15 +103,17 @@ def validate_inputs() -> None:
     verify_path(validator_path)
 
     # Check each input file with the validator
-    input_files = [f for f in os.listdir(input_folder) if not f.endswith('.interactive')]
+    input_files = [f for f in os.listdir(
+        input_folder) if not f.endswith('.interactive')]
     input_files.sort(key=custom_key)
     input_files = [os.path.join(input_folder, f) for f in input_files]
     for fpath in input_files:
         with open(fpath) as f:
             p = subprocess.run([validator_path],
-                                 stdin=f, stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE, text=True)
-            check_subprocess_output(p, "Failed validation on input " + os.path.basename(fpath))
+                               stdin=f, stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+            check_subprocess_output(
+                p, "Failed validation on input " + os.path.basename(fpath))
 
     # Check for equal test cases
     equal_tests = 0
@@ -235,7 +237,6 @@ def generate_inputs(move: bool = True, output_folder: str = '') -> None:
         check_subprocess_output(p, "Error generating inputs.")
         os.chdir(cwd)
 
-
         new_script.append(script)
         generator_index.append(len(os.listdir(temporary_folder)))
         # If it is not a multigenerator, create test in script folder
@@ -301,12 +302,11 @@ def produce_outputs(problem_metadata: dict) -> None:
 
                 p: subprocess.CompletedProcess = subprocess.run(
                     ' '.join(command), stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE, text=True, shell=True)
+                    stderr=subprocess.PIPE, shell=True)
                 subprocess.run(['rm', tmp_fifo])
             else:
                 p: subprocess.CompletedProcess = subprocess.run(
-                    [ac_solution], stdin=inf, stdout=ouf, stderr=subprocess.PIPE,
-                    text=True, encoding='utf-8')
+                    [ac_solution], stdin=inf, stdout=ouf, stderr=subprocess.PIPE)
             check_subprocess_output(
                 p, f"Generation of output failed for input {fname}")
     info_log("Outputs produced successfully.")
@@ -320,7 +320,7 @@ def clean_files() -> None:
 
     command: list = ['make', 'clean']
     p: subprocess.CompletedProcess = subprocess.run(
-        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     check_subprocess_output(p, "Error cleaning executables.")
     os.chdir(old_cwd)
 

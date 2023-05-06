@@ -36,6 +36,28 @@ def setup_logger(name: str, log_file: str, level=logging.DEBUG) -> logging.Logge
     return logger
 
 
+def convert_to_string(x) -> str:
+    """Converts x to string.
+
+    Args:
+        x: Text to be converted to string.
+
+    Returns:
+        The string representation of x.
+    """
+    if isinstance(x, bytes):
+        try:
+            return x.decode('utf-8').rstrip()
+        except UnicodeDecodeError:
+            pass
+    try:
+        x = str(x)
+        return x.rstrip()
+    except:
+        pass
+    return ""
+
+
 def info_log(text: str) -> None:
     """Logs information about the tool.
 
@@ -43,7 +65,7 @@ def info_log(text: str) -> None:
         text: The information to be logged.
     """
     tool = logging.getLogger('tool')
-    info = get_string(text)
+    info = convert_to_string(text)
     if len(info) > 0:
         tool.info(info)
         print(text)
@@ -56,7 +78,7 @@ def debug_log(text: str) -> None:
         text: The debug information to be logged.
     """
     debug = logging.getLogger('debug')
-    info = get_string(text)
+    info = convert_to_string(text)
     if len(info) > 0:
         debug.info(info)
 
@@ -68,23 +90,7 @@ def error_log(text: str) -> None:
         text: The error information to be logged.
     """
     tool = logging.getLogger('tool')
-    info = get_string(text)
+    info = convert_to_string(text)
     if len(info) > 0:
         tool.error(info)
         print(text)
-
-
-def get_string(x):
-    """Converts x to string.
-
-    Args:
-        x: Text to be converted to string.
-
-    Returns:
-        The string representation of x.
-    """
-    try:
-        x = str(x)
-        return x.rstrip()
-    except:
-        return ""

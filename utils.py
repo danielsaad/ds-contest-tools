@@ -5,7 +5,8 @@ from operator import mod
 from subprocess import CompletedProcess
 from typing import Optional, Union
 
-from logger import debug_log, error_log, setup_logger
+from logger import debug_log, error_log, setup_logger, convert_to_string
+
 from metadata import Paths
 
 
@@ -52,10 +53,15 @@ def check_subprocess_output(p: CompletedProcess, message: str) -> None:
         p (CompletedProcess): The completed process returned by the 'subprocess.run' function.
         message (str): The message to be printed in case of an error.
     """
-    debug_log(p.stdout)
-    debug_log(p.stderr)
+    stdout = convert_to_string(p.stdout)
+    stderr = convert_to_string(p.stderr)
+    if len(stdout) > 0:
+        debug_log(p.stdout)
+    if len(stderr) > 0:
+        debug_log(p.stderr)
+
     if p.returncode:
-        error_log(message)
+        error_log(f"{message} (return code: {p.returncode})")
         sys.exit(1)
 
 
