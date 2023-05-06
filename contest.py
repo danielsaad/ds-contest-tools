@@ -83,11 +83,10 @@ def build_boca_packages() -> None:
         options = {'display_author': False,
                    'problem_label': label,
                    'event': True}
-        # Build PDF and move it to contest folder
+        # Update PDF with new label and event
         build_pdf(folder, folder, options)
+        boca_pack(folder)
         boca_file_path = os.path.join(folder, 'boca.zip')
-        if not os.path.exists(boca_file_path):
-            boca_pack(folder)
         boca_file = os.path.join(
             output_folder, os.path.basename(folder) + '-boca.zip')
         shutil.copy(boca_file_path, boca_file)
@@ -104,25 +103,16 @@ def verify_problem(problem: str, mode: str, boca: bool) -> None:
         return
 
     tool_directory = os.path.dirname(os.path.abspath(__file__))
-    if boca:
-        # Build problem if BOCA package is not available
-        checker_path = os.path.join(problem, 'bin', 'checker-boca')
-        if not os.path.exists(checker_path):
-            info_log(f"BOCA checker not found. Building {problem} problem.")
-            command = ['python3', os.path.join(
-                tool_directory, 'build.py'), 'build', problem]
-            p = subprocess.run(
-                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            check_subprocess_output(p, f"Error building problem {problem}.")
-
-        # Generate BOCA package
-        info_log(f"Generating BOCA package for problem {problem}.")
+    checker_path = os.path.join(problem, 'bin', 'checker-boca')
+    # Verify if the checker-boca exists
+    if boca and not os.path.exists(checker_path):
+        info_log(f"BOCA checker not found. Building {problem} problem.")
         command = ['python3', os.path.join(
-            tool_directory, 'convert.py'), 'convert_to', 'boca', problem]
-        p = subprocess.run(command, stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE)
-        check_subprocess_output(
-            p, f"Error generating BOCA package for problem {problem}.")
+            tool_directory, 'build.py'), 'build', problem]
+        p = subprocess.run(
+            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        check_subprocess_output(p, f"Error building problem {problem}.")
+
 
 
 if __name__ == '__main__':

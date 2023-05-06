@@ -41,7 +41,7 @@ def generate_boca_pack(problem_dir: str, output_dir: str = ''):
 def boca_pack(problem_folder: str, output_folder: str = '') -> None:
     """Convert a DS problem to a BOCA problem."""
     # Verify if it is a conversion from a contest
-    info_log(f"Starting DS -> BOCA conversion for problem {os.path.basename(problem_folder)}.")
+    info_log(f"Starting BOCA conversion for problem {os.path.basename(problem_folder)}.")
     if not output_folder:
         output_folder = problem_folder
     os.makedirs(output_folder, exist_ok=True)
