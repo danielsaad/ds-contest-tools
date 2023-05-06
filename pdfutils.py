@@ -60,7 +60,6 @@ def build_pdf(problem_folder: Optional[str] = '', output_directory: Optional[str
     if problem_folder == '':
         problem_folder = Paths().get_problem_dir()
     verify_path(os.path.join(problem_folder, 'maratona.cls'))
-    old_cwd = os.getcwd()
 
     # Generate PDF from tex file
     print_to_latex(problem_folder, options)
@@ -68,21 +67,28 @@ def build_pdf(problem_folder: Optional[str] = '', output_directory: Optional[str
 
     tex_filename = os.path.basename(problem_folder) + '.tex'
     tex_filepath = os.path.join(problem_folder, tex_filename)
-    command = ["pdflatex", '--output-directory', folder, tex_filepath]
-    os.chdir(problem_folder)
-    p = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    os.chdir(old_cwd)
-    check_subprocess_output(p, "Generation of problem file failed.")
-    clean_auxiliary_files(folder)
+    generate_pdf(problem_folder, folder, tex_filepath)
 
     # Generate tutorial PDF from tex file
     tutorial_filename = os.path.basename(problem_folder)+'-tutorial.tex'
     tutorial_filepath = os.path.join(problem_folder, tutorial_filename)
     if os.path.isfile(tutorial_filepath):
-        command = ['pdflatex', '--output-directory', folder, tutorial_filepath]
-        os.chdir(problem_folder)
-        p = subprocess.run(command, stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE)
-        os.chdir(old_cwd)
-        check_subprocess_output(p, "Generation of tutorial file failed.")
-        clean_auxiliary_files(folder)
+        generate_pdf(problem_folder, folder, tutorial_filepath)
+
+
+def generate_pdf(problem_folder: str, output_folder: str, tex_path: str) -> None:
+    """Generates a PDF from a tex file.
+
+    Args:
+        output_folder: The path to the output folder.
+        tex_path: The path to the tex file.
+    """
+    old_cwd = os.getcwd()
+    command = ["pdflatex", '--output-directory', output_folder, tex_path]
+
+    os.chdir(problem_folder)
+    p = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    os.chdir(old_cwd)
+
+    check_subprocess_output(p, "Generation of problem file failed.")
+    clean_auxiliary_files(output_folder)
