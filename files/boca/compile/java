@@ -73,7 +73,7 @@ if [ "${name##*.}" == "zip" -a "${name##*.}" == "ZIP" ]; then
 		name=`basename $name .ZIP`
 	fi
 else
-	cp $name src
+	cp "$name" src
 fi
 chown -R $bocau src
 chmod -R 700 src
@@ -87,16 +87,17 @@ if [ ! -x $sf ]; then
     exit 46
 fi
 
-time=$4
-if [ "$time" -gt "0" ]; then
-  let "ttime = $time + 30"
+# setting up the timelimit according to the problem
+if [ "$3" == "" ]; then
+  time=5
 else
-  time=1
-  ttime=30
+  time=$3
 fi
+time=10
+let "ttime = $time + 30"
 
 maxm=512
-if [ "$4" != "" -a "$4" -gt "0" ]; then
+if [ "$4" != "" -a "$4" -gt "512" ]; then
 maxm=$4
 fi
 
@@ -105,9 +106,14 @@ if [ "$2" == "" ]; then
 else
   jarfile=$2
 fi
+jarfile=run.jar
 
 cdir=`pwd`
 echo "Current directory is $cdir" >&2
+mainname=`echo $name | cut -d'.' -f1`
+if [ "$mainname" == "" ]; then
+  mainname=Main
+fi
 
 cat <<EOF > compileit.sh
 #!/bin/bash
@@ -134,7 +140,7 @@ find . -name "*.java" | while read lin; do
   echo \$? > ../compileit.retcode
 done
 rm -f ../$jarfile
-\$jar cvf ../$jarfile *
+\$jar cvfe ../$jarfile $mainname *
 exit 0
 EOF
 chmod 755 compileit.sh
@@ -149,7 +155,7 @@ cd "$cdir"
 #/bin/mount --bind /dev /dev
 [ -d /sys/kernel ] || /bin/mount -t sysfs sysfs /sys
 
-$sf -r1 -t$time -T$ttime -F256 -u256 -ostdout0 -estderr0 -U$bocau -G$bocag -n0 -C. -f20000 -d20000000 -m20000000 ./compileit.sh
+$sf -r1 -t$time -T$ttime -F256 -u256 -ostdout0 -estderr0 -U$bocau -G$bocag -n0 -C. -d20000000 -m20000000 ./compileit.sh
 echo \$? > runit.retcode
 if [ ! -d /bocajail ]; then
   /bin/umount /proc 2>/dev/null

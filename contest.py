@@ -18,9 +18,10 @@ def create_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-b', '--boca', action='store_true',
                         default=False, help='build contest in BOCA format.')
-    parser.add_argument('mode', choices=['build', 'genpdf'],
+    parser.add_argument('mode', choices=['build', 'genpdf', 'genio'],
                         help='build: build problems and create contest PDFs.\n' +
-                        'genpdf: generates problem and tutorial PDFs.\n')
+                        'genpdf: generates problem and tutorial PDFs.\n'
+                        'genio: generates problem input and output files.')
     parser.add_argument('problem_path', help='path to the problem.',
                         nargs='+')
     parser.add_argument(
@@ -92,14 +93,31 @@ def build_boca_packages() -> None:
         shutil.copy(boca_file_path, boca_file)
 
 
+def build_input_output() -> None:
+    """Copy problem input and output to the output folder.
+    """
+    problems_dir: list = Paths().get_problem_dir()
+    output_dir: str = Paths().get_output_dir()
+    for problem in problems_dir:
+        info_log(f"Generating I/O files for problem {os.path.basename(problem)}")
+        test_path = os.path.join(output_dir, os.path.basename(problem))
+        test_path_input = os.path.join(test_path, 'input')
+        test_path_output = os.path.join(test_path, 'output')
+        os.makedirs(test_path, exist_ok=True)
+        os.makedirs(test_path_input, exist_ok=True)
+        os.makedirs(test_path_output, exist_ok=True)
+        shutil.copytree(os.path.join(problem, 'input'), test_path_input, dirs_exist_ok=True)
+        shutil.copytree(os.path.join(problem, 'output'), test_path_output, dirs_exist_ok=True)
+
+
 def verify_problem(problem: str, mode: str, boca: bool) -> None:
     """Check if the problem is ready to be used"""
     verify_path(problem)
     verify_path(os.path.join(problem, 'statement'))
     verify_path(os.path.join(problem, 'input'))
     verify_path(os.path.join(problem, 'output'))
-    
-    if mode == 'genpdf':
+
+    if mode == 'genpdf' or mode == 'genio':
         return
 
     tool_directory = os.path.dirname(os.path.abspath(__file__))
@@ -114,7 +132,6 @@ def verify_problem(problem: str, mode: str, boca: bool) -> None:
         check_subprocess_output(p, f"Error building problem {problem}.")
 
 
-
 if __name__ == '__main__':
     parser = create_parser()
     args = parser.parse_args()
@@ -124,8 +141,9 @@ if __name__ == '__main__':
         verify_problem(problem, args.mode, args.boca)
     os.makedirs(args.contest_folder, exist_ok=True)
 
-    info_log("Creating contest files")
-    if (args.mode == 'build' and args.boca):
+    if args.mode == 'genio':
+        build_input_output()
+    elif (args.mode == 'build' and args.boca):
         build_boca_packages()
         build_contest_pdf()
         info_log("Contest build successfully.")
