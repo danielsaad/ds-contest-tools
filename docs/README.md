@@ -119,6 +119,12 @@ Generates folder with merged problems PDFs. Does the same as build without the f
 
 Usage: `python3 contest.py genpdf <problem_id [problem_id...]> <contest_folder>` 
 
+### genio
+
+Generates input and output files of the problems inside the contest folder.
+
+Usage: `python3 contest.py genio <problem_id [problem_id...]> <contest_folder>`
+
 ## legacy_converter.py
 
 Converts a legacy problem to the new version. Removes the testlib folder and CMake file, and saves statement.md.
