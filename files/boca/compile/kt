@@ -1,7 +1,7 @@
 #!/bin/bash
 # ////////////////////////////////////////////////////////////////////////////////
 # //BOCA Online Contest Administrator
-# //    Copyright (C) 2003-2014 by BOCA System (bocasystem@gmail.com)
+# //    Copyright (C) 2003-2012 by BOCA System (bocasystem@gmail.com)
 # //
 # //    This program is free software: you can redistribute it and/or modify
 # //    it under the terms of the GNU General Public License as published by
@@ -15,12 +15,12 @@
 # //    You should have received a copy of the GNU General Public License
 # //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # ////////////////////////////////////////////////////////////////////////////////
-#Last modified: 06/september/2016 by brunoribas@utfpr.edu.br
+#Last modified: 21/july/2012 by cassio@ime.usp.br
 #
 # parameters are:
 # $1 source_file
-# $2 exe_file (default run.exe)
-# $3 timelimit
+# $2 exe_file (default run.jar)
+# $3 timelimit (optional, limit to run all the repetitions, by default only one repetition)
 # $4 maximum allowed memory (in MBytes)
 #
 # the output of the submission should be directed to the standard output
@@ -40,26 +40,14 @@
 #                                  last line of standard output to the judge
 
 umask 0022
-
 if [ "$1" == "" ]; then
     echo "parameter problem"
     exit 43
-fi
-if [ ! -r "$1" ]; then
-    echo "$1 not found or it's not readable"
-    exit 44
 fi
 name="$1"
 if [ ! -r "$1" ]; then
     echo "$1 not found or it's not readable"
     exit 44
-fi
-mkdir -p src
-if [ "${name##*.}" == "zip" -a "${name##*.}" == "ZIP" ]; then
-	unzip "$name" -d src
-	name="*.c"
-else
-	cp "$name" src
 fi
 id -u bocajail >/dev/null 2>/dev/null
 if [ $? == 0 ]; then
@@ -76,6 +64,20 @@ if [ "$bocau" == "" -o "$bocag" == "" ]; then
 	exit 43
 fi
 
+mkdir -p src
+if [ "${name##*.}" == "zip" -a "${name##*.}" == "ZIP" ]; then
+	unzip "$name" -d src
+    if [ "${name##*.}" == "zip" ]; then
+		name=`basename $name .zip`
+	else
+		name=`basename $name .ZIP`
+	fi
+else
+	cp "$name" src
+fi
+chown -R $bocau src
+chmod -R 700 src
+
 # this script makes use of safeexec to execute the code with less privilegies
 # make sure that directories below are correct.
 sf=`which safeexec`
@@ -84,83 +86,64 @@ if [ ! -x $sf ]; then
     echo "$sf not found or it's not executable"
     exit 46
 fi
-maxm=512000
-if [ "$4" != "" ]; then
-  if [ "$4" -gt "0" ]; then
-    maxm=${4}000
-  fi
-fi
 
 # setting up the timelimit according to the problem
 if [ "$3" == "" ]; then
-time=5
+  time=5
 else
-time=$3
+  time=$3
 fi
 let "ttime = $time + 30"
 
-if [ "$2" == "" ]; then
-  exe=run.exe
-else
-  exe=$2
+maxm=1024
+if [ "$4" != "" -a "$4" -gt "1024" ]; then
+maxm=$4
 fi
 
-rm -f "$exe" compileit.retcode runit.retcode 2>/dev/null
+maxms=100
+
+if [ "$2" == "" ]; then
+  jarfile=run.jar
+else
+  jarfile=$2
+fi
+jarfile=run.jar
+
+cdir=`pwd`
+echo "Current directory is $cdir" >&2
+mainname=`echo $name | cut -d'.' -f1`
+if [ "$mainname" == "" ]; then
+  mainname=Main
+fi
+
 cat <<EOF > compileit.sh
 #!/bin/bash
-cc=\`which python2\`
-[ -x "\$cc" ] || cc=/usr/bin/python2
-if [ ! -x "\$cc" ]; then
-    echo "\$cc not found or it's not executable"
+kotlinc=/snap/kotlin/24/bin/kotlinc
+[ -x "\$kotlinc" ] || kotlinc=/snap/bin/kotlinc
+if [ ! -x \$kotlinc ]; then
+    echo "\$kotlinc not found or it's not executable"
     exit 47
 fi
 cd src
-echo "#!/usr/bin/python2" | cat - "$name" > "../$exe"
-chmod 755 "../$exe"
+\$kotlinc -J-Xmx${maxm}M -J-Xss${maxms}M -J-Xms${maxm}M -d ../$jarfile -include-runtime $name
 echo \$? > ../compileit.retcode
+
 exit 0
 EOF
 chmod 755 compileit.sh
 
-cdir=`pwd`
-echo "Current directory is $cdir" >&2
-echo $cdir | grep -q "/bocajail"
-if [ $? == 0 ]; then
-    cdir=`echo $cdir | sed "s/.*\/bocajail//"`
-    echo "Internal directory is $cdir"
-    cat <<EOF > runit.sh
-#!/bin/bash
-cd "$cdir"
-[ -f /proc/cpuinfo ] || /bin/mount -t proc proc /proc
-#/bin/mount --bind /dev /dev
-[ -d /sys/kernel ] || /bin/mount -t sysfs sysfs /sys
-$sf -r1 -F1000 -n0 -U$bocau -G$bocag -C. -ostdout0 -estderr0 -d$maxm -m$maxm -f20000 -t$ttime -T$ttime ./compileit.sh
-echo \$? > runit.retcode
-if [ ! -d /bocajail ]; then
-  /bin/umount /proc 2>/dev/null
-  #/bin/umount /dev
-  /bin/umount /sys 2>/dev/null
-fi
-EOF
-    chmod 755 runit.sh
-    chroot /bocajail "$cdir/runit.sh"
-    if [ -r runit.retcode ]; then
-    	ret=`cat runit.retcode`
-    else
-		ret=99
-    fi
-else
-	echo "COMPILATION IS NOT BEING CHROOTED -- THIS IS NOT AN IDEAL SETTING"
-	$sf -r1 -F1000 -n0 -U$bocau -G$bocag -C. -ostdout0 -estderr0 -d$maxm -m$maxm -f20000 -t$ttime -T$ttime ./compileit.sh
-	ret=$?
-fi
+echo "COMPILATION IS NOT BEING CHROOTED -- THIS IS NOT AN IDEAL SETTING"
+#$kotlinc "$name"
+#$sf -r1 -t20 -T32 -istdin0 -F512 -u512 -U$bocau -G$bocag -n0 -C. -d40000000000 -m40000000000 ./compileit.sh
+./compileit.sh
+ret=$?
 if [ -f "stdout0" ]; then
 	cat "stdout0"
 fi
 if [ -f "stderr0" ]; then
 	cat "stderr0"
 fi
-rm -rf src/
+#rm -rf src/
 if [ "$ret" != "0" ]; then
 	echo "Compilation Error: $ret"
 	exit $ret
@@ -171,3 +154,4 @@ if [ "$ret" != "0" ]; then
 	ret=1
 fi
 exit $ret
+

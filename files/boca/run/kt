@@ -16,7 +16,6 @@
 # //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # ////////////////////////////////////////////////////////////////////////////////
 #Last modified: 04/nov/2014 by cassio@ime.usp.br
-#Last modified: 06/sep/2016 by brunoribas@utfpr.edu.br
 #
 # parameters are:
 # $1 main_class
@@ -67,7 +66,28 @@ if [ "$1" == "" -o "$2" == "" -o "$3" == "" ]; then
     echo "parameter problem"
     exit 43
 fi
+if [ -r run.exe ]; then
+  rm -f run.jar
+  cp run.exe run.jar
+fi
+if [ -r "$1" ]; then
+  rm -f run.jar
+  cp "$1" run.jar
+fi
+if [ ! -r run.jar ]; then
+  echo "ERROR: file run.jar not found - possible error during compilation"
+  exit 1
+fi
 name=`basename "$1"`
+if [ "${name##*.}" == "class" -a "${name##*.}" == "CLASS" ]; then
+    echo "WARNING: removing .class file extension"
+fi
+if [ "${name##*.}" == "class" ]; then
+	name=`basename "$1" .class`
+fi
+if [ "${name##*.}" == "CLASS" ]; then
+	name=`basename "$1" .CLASS`
+fi
 if [ ! -r "$2" ]; then
     echo "$2 not found (or is not in the current dir) or it's not readable"
     exit 45
@@ -115,17 +135,19 @@ if [ $? == 0 ]; then
     cdir=`echo $cdir | sed "s/.*\/bocajail//"`
     cat <<EOF > runit.sh
 #!/bin/bash
+exec >&2
 cd "$cdir"
 [ -f /proc/cpuinfo ] || /bin/mount -t proc proc /proc
 #/bin/mount --bind /dev /dev
 [ -d /sys/kernel ] || /bin/mount -t sysfs sysfs /sys
-python2=`which python2`
-[ -x "\$python2" ] || python2=/usr/bin/python2
-if [ ! -x "\$python2" ]; then
-    echo "\$python2 not found or it's not executable"
+java=`which java`
+[ -x "\$java" ] || java=/usr/bin/java
+if [ ! -x "\$java" ]; then
+    echo "\$java not found or it's not executable"
     exit 47
 fi
-"$sf" -r$nruns -t$time -T$ttime -istdin0 -F256 -u256 -ostdout0 -estderr0 -U$bocau -G$bocag -n0 -C. -f$maxf -d$maxm -m$maxm -- "\$python2" "$name"
+export CLASSPATH=.:./run.jar:$CLASSPATH
+"$sf" -r$nruns -t$time -T$ttime -istdin0 -F256 -u256 -ostdout0 -estderr0 -U$bocau -G$bocag -n0 -C. -f20000 -d20000000 -m20000000 -- "\$java" -Xmx${maxm}K -Xss${maxms}K -Xms${maxm}K "${name}Kt"
 retval=\$?
 echo \$retval > runit.retcode
 if [ ! -d /bocajail ]; then
@@ -147,18 +169,25 @@ else
     echo "CODE NOT BEING CHROOTED. DO NOT RUN THIS ON THE MAIN SERVER" >&2
     echo "CODE NOT BEING CHROOTED. DO NOT RUN THIS ON THE MAIN SERVER" >&2
     echo "CODE NOT BEING CHROOTED. DO NOT RUN THIS ON THE MAIN SERVER" >&2
-	python2=`which python2`
-	[ -x "$python2" ] || python2=/usr/bin/python2
-	if [ ! -x "$python2" ]; then
-		echo "$python2 not found or it's not executable"
+	java=`which java`
+	[ -x "$java" ] || java=/usr/bin/java
+	if [ ! -x "$java" ]; then
+		echo "$java not found or it's not executable"
 		exit 47
 	fi
-	"$sf" -r$nruns -t$time -T$ttime -istdin0 -F256 -u256 -U$bocau -G$bocag -ostdout0 -estderr0 -n0 -C. -d$maxm -m$maxm -f$maxf -- "$python2" "$name"
+	"$sf" -r$nruns -t$time -T$ttime -istdin0 -F256 -u256 -U$bocau -G$bocag -ostdout0 -estderr0 -n0 -C. -d20000000 -m20000000 -- "$java" -cp run.jar -Xmx${maxm}K -Xss${maxms}K -Xms${maxm}K "$name.Kt"
 	ret=$?
 fi
 if [ $ret -gt 10 ]; then
-	echo "> > > > > > > Nonzero return code - possible runtime error - I'M GUESSING IT IS RUNTIME ERROR < < < < < < < <"
+    if [ -r stderr0 ]; then
+	grep -q "not find or load main class" stderr0
+	if [ $? == 0 ]; then
+	    echo "> > > Nonzero return code - possible class name mismatch - do check < < <"
+	else
+	    echo "> > > Nonzero return code - possible runtime error - do check < < <"
+	fi
 	ret=9
+    fi
 fi
 if [ -f stdout0 ]; then
   cat stdout0
