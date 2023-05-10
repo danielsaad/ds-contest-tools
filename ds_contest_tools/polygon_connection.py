@@ -13,13 +13,12 @@ import zipfile
 from typing import Dict, List, Optional, Tuple, Union
 
 import requests
-
-from config import custom_key
-from jsonutils import parse_json, write_to_json
-from logger import debug_log, error_log, info_log
-from metadata import Paths
-from toolchain import get_manual_tests
-from utils import convert_to_bytes, verify_path
+from .config import custom_key
+from .jsonutils import parse_json, write_to_json
+from .logger import debug_log, error_log, info_log
+from .metadata import Paths
+from .toolchain import get_manual_tests
+from .utils import convert_to_bytes, verify_path
 
 URL = 'https://polygon.codeforces.com/api/'
 RETRIES = 3

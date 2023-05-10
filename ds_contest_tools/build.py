@@ -4,11 +4,11 @@ import shutil
 import sys
 from math import floor
 
-from logger import error_log, info_log
-from metadata import Paths
-from pdfutils import build_pdf
-from toolchain import build_executables, clean_files, run_programs
-from utils import instance_paths, verify_path
+from .logger import error_log, info_log
+from .metadata import Paths
+from .pdfutils import build_pdf
+from .toolchain import build_executables, clean_files, run_programs
+from .utils import instance_paths, verify_path
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -59,38 +59,6 @@ def build(all_solutions=False, specific_solution: str = '', cpu_number: int = 1)
     genpdf()
 
 
-def init(interactive=False) -> None:
-    """Initialize a competitive problem."""
-    problem_folder = Paths().get_problem_dir()
-    if os.path.exists(os.path.join(problem_folder, 'src')):
-        error_log("Problem ID already exists in the directory")
-        sys.exit(1)
-
-    folder = os.path.join(os.path.dirname(
-        os.path.abspath(__file__)), 'files')
-    shutil.copytree(folder, problem_folder,
-                    ignore=shutil.ignore_patterns('boca'), dirs_exist_ok=True)
-    # Rename files and folders if the problem is interactive
-    interactor = os.path.join(*[problem_folder, 'src', 'interactor.cpp'])
-    interactive_json = os.path.join(problem_folder, 'problem-interactive.json')
-    interactor_tex = os.path.join(
-        *[problem_folder, 'statement', 'interactor.tex'])
-    os.remove(os.path.join(problem_folder, 'sqtpm.sh'))
-    if (interactive):
-        shutil.move(interactive_json, os.path.join(
-            problem_folder, 'problem.json'))
-        # Create .interactive files for statement
-        os.makedirs(os.path.join(problem_folder, 'input'))
-        os.makedirs(os.path.join(problem_folder, 'output'))
-        open(os.path.join(
-            *[problem_folder, 'input', '1.interactive']), 'w').close()
-        open(os.path.join(
-            *[problem_folder, 'output', '1.interactive']), 'w').close()
-    else:
-        os.remove(interactor_tex)
-        os.remove(interactive_json)
-        os.remove(interactor)
-
 
 def clean() -> None:
     """Call functions to clean executables"""
@@ -110,7 +78,6 @@ if __name__ == "__main__":
 
     if (args.mode == 'init'):
         info_log('Initializing problem ' + args.problem_id)
-        init(args.interactive)
         info_log('Problem ' + args.problem_id + ' initialized.')
     elif (args.mode == 'build'):
         info_log("Building problem " + args.problem_id)

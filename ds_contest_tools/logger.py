@@ -1,7 +1,7 @@
 import logging
 import os
 
-from metadata import Paths
+from .metadata import Paths
 
 
 def setup_logger(name: str, log_file: str, level=logging.DEBUG) -> logging.Logger:

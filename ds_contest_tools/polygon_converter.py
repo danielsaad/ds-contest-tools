@@ -4,12 +4,12 @@ import shutil
 import xml.etree.ElementTree as ET
 from typing import Optional
 
-from fileutils import get_statement_files
-from jsonutils import parse_json, write_to_json
-from logger import error_log, info_log
-from metadata import Paths
-from polygon_connection import download_package_polygon, make_api_request
-from utils import instance_paths, verify_path
+from .fileutils import get_statement_files
+from .jsonutils import parse_json, write_to_json
+from .logger import error_log, info_log
+from .metadata import Paths
+from .polygon_connection import download_package_polygon, make_api_request
+from .utils import instance_paths, verify_path
 
 DEFAULT_LANGUAGE = 'english'
 

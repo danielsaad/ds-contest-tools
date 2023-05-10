@@ -1,8 +1,8 @@
 import io
 import os
 
-from logger import info_log
-from metadata import Problem, ProblemAnswer, Solution, Status, Test
+from .logger import info_log
+from .metadata import Problem, ProblemAnswer, Solution, Status, Test
 
 
 def write_head(problem_name: str, f_out: io.TextIOWrapper) -> None:

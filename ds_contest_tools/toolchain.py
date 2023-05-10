@@ -5,13 +5,46 @@ import subprocess
 import sys
 from typing import Dict
 
-from checker import run_solutions
-from config import custom_key
-from htmlutils import print_to_html
-from jsonutils import parse_json
-from logger import debug_log, error_log, info_log
-from metadata import Paths, Problem, Solution
-from utils import check_problem_metadata, check_subprocess_output, verify_path
+from .checker import run_solutions
+from .config import custom_key
+from .htmlutils import print_to_html
+from .jsonutils import parse_json
+from .logger import debug_log, error_log, info_log
+from .metadata import Paths, Problem, Solution
+from .utils import check_problem_metadata, check_subprocess_output, verify_path
+
+
+def init_problem(interactive=False) -> None:
+    """Initialize a competitive problem."""
+    problem_folder = Paths().get_problem_dir()
+    if os.path.exists(os.path.join(problem_folder, 'src')):
+        error_log("Problem ID already exists in the directory")
+        sys.exit(1)
+
+    folder = os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), 'files')
+    shutil.copytree(folder, problem_folder,
+                    ignore=shutil.ignore_patterns('boca'), dirs_exist_ok=True)
+    # Rename files and folders if the problem is interactive
+    interactor = os.path.join(*[problem_folder, 'src', 'interactor.cpp'])
+    interactive_json = os.path.join(problem_folder, 'problem-interactive.json')
+    interactor_tex = os.path.join(
+        *[problem_folder, 'statement', 'interactor.tex'])
+    os.remove(os.path.join(problem_folder, 'sqtpm.sh'))
+    if (interactive):
+        shutil.move(interactive_json, os.path.join(
+            problem_folder, 'problem.json'))
+        # Create .interactive files for statement
+        os.makedirs(os.path.join(problem_folder, 'input'))
+        os.makedirs(os.path.join(problem_folder, 'output'))
+        open(os.path.join(
+            *[problem_folder, 'input', '1.interactive']), 'w').close()
+        open(os.path.join(
+            *[problem_folder, 'output', '1.interactive']), 'w').close()
+    else:
+        os.remove(interactor_tex)
+        os.remove(interactive_json)
+        os.remove(interactor)
 
 
 def build_executables() -> None:

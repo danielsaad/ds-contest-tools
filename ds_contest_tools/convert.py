@@ -4,13 +4,13 @@ import sys
 from getpass import getpass
 from typing import Union
 
-from boca import generate_boca_pack
-from fileutils import check_interactive_problem
-from jsonutils import write_to_json
-from logger import error_log, info_log
-from polygon_converter import get_polygon_problem
-from polygon_submitter import send_to_polygon
-from sqtpm import convert_to_sqtpm
+from .boca import generate_boca_pack
+from .fileutils import check_interactive_problem
+from .jsonutils import write_to_json
+from .logger import error_log, info_log
+from .polygon_converter import get_polygon_problem
+from .polygon_submitter import send_to_polygon
+from .sqtpm import convert_to_sqtpm
 
 
 def create_parser():

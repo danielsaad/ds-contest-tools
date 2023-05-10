@@ -2,11 +2,11 @@ import os
 import subprocess
 from typing import Optional
 
-import config
-from latexutils import clean_auxiliary_files, print_to_latex
-from logger import info_log
-from metadata import Paths
-from utils import check_subprocess_output, verify_path
+from . import config
+from .latexutils import clean_auxiliary_files, print_to_latex
+from .logger import info_log
+from .metadata import Paths
+from .utils import check_subprocess_output, verify_path
 
 MERGE_TOOL = 'pdfjam'
 

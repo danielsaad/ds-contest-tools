@@ -2,13 +2,13 @@ import os
 import sys
 from typing import Dict, List, Tuple, Union
 
-from fileutils import get_statement_files
-from jsonutils import parse_json
-from logger import error_log, info_log
-from metadata import Paths
-from polygon_connection import check_polygon_id, submit_requests_list
-from toolchain import generate_inputs, get_manual_tests
-from utils import check_problem_metadata, instance_paths, verify_path
+from .fileutils import get_statement_files
+from .jsonutils import parse_json
+from .logger import error_log, info_log
+from .metadata import Paths
+from .polygon_connection import check_polygon_id, submit_requests_list
+from .toolchain import generate_inputs, get_manual_tests
+from .utils import check_problem_metadata, instance_paths, verify_path
 
 LANGUAGE = 'english'
 ENCODING = 'utf-8'

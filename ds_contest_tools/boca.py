@@ -3,11 +3,11 @@ import shutil
 import subprocess
 import sys
 
-from fileutils import recursive_overwrite, rename_io
-from jsonutils import parse_json
-from logger import error_log, info_log
-from metadata import Paths
-from utils import (check_problem_metadata, check_subprocess_output,
+from .fileutils import recursive_overwrite, rename_io
+from .jsonutils import parse_json
+from .logger import error_log, info_log
+from .metadata import Paths
+from .utils import (check_problem_metadata, check_subprocess_output,
                    instance_paths, verify_path)
 
 

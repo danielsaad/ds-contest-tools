@@ -5,9 +5,8 @@ from operator import mod
 from subprocess import CompletedProcess
 from typing import Optional, Union
 
-from logger import debug_log, error_log, setup_logger, convert_to_string
-
-from metadata import Paths
+from .logger import convert_to_string, debug_log, error_log, setup_logger
+from .metadata import Paths
 
 
 def convert_idx_to_string(idx: int) -> str:

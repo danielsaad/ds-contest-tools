@@ -11,9 +11,8 @@ from multiprocessing.managers import DictProxy
 from signal import SIGKILL
 
 import psutil
-
-from logger import debug_log, error_log, info_log
-from metadata import Paths, Problem, ProblemAnswer, Solution, Status, Test
+from .logger import debug_log, error_log, info_log
+from .metadata import Paths, Problem, ProblemAnswer, Solution, Status, Test
 
 """ Java definitions """
 JAVA_INTERPRETER = 'java'
