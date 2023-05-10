@@ -1,7 +1,7 @@
 import argparse
 from sys import argv
 
-from .parsers import init, clean
+from .parsers import init, clean, build
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -14,6 +14,7 @@ def create_parser() -> argparse.ArgumentParser:
         required=True
     )
     init.add_parser(subparsers)
+    build.add_parser(subparsers)
     clean.add_parser(subparsers)
     return parser
 

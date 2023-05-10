@@ -1,6 +1,6 @@
 import logging
 import os
-
+import sys
 from .metadata import Paths
 
 
@@ -26,7 +26,11 @@ def setup_logger(name: str, log_file: str, level=logging.DEBUG) -> logging.Logge
     os.chdir(directory)
 
     # Log configurations
-    handler = logging.FileHandler(log_file, mode='w')
+    try:
+        handler = logging.FileHandler(log_file, mode='w')
+    except PermissionError:
+        print(f'Permission denied. Could not create log file in {directory}')
+        sys.exit(0)
     handler.setFormatter(formatter)
     logger = logging.getLogger(name)
     logger.setLevel(level)

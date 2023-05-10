@@ -1,25 +1,23 @@
-import os
-
 from .common import *
 from .. import toolchain
 
 
 def process_init(problem_dir: str, interactive: bool) -> None:
-    """
-    Initialize a problem.
+    """Initialize a problem.
 
     Args:
         problem_dir: The path to the problem directory.
         interactive: Whether the problem is interactive or not.
     """
-    validate_paths(problem_dir)
+    problem_name = get_basename(problem_dir)
+    setup_and_validate_paths(problem_dir)
+    info_log('Initializing problem ' + problem_name)
     toolchain.init_problem(interactive)
-    info_log(f"Problem {os.path.basename(problem_dir)} initialized")
+    info_log(f"Problem {problem_name} initialized")
 
 
 def add_parser(subparsers):
-    """
-    Add a subparser for the 'init' command.
+    """Add a subparser for the 'init' command.
     
     Args:
         subparsers: The argparse subparsers object.
