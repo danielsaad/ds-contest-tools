@@ -1,5 +1,5 @@
-from .common import *
 from .. import toolchain
+from .common import *
 
 
 def process_clean(problem_dir: list) -> None:

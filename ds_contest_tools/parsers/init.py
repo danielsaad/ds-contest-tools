@@ -1,5 +1,5 @@
-from .common import *
 from .. import toolchain
+from .common import *
 
 
 def process_init(problem_dir: str, interactive: bool) -> None:
@@ -9,8 +9,8 @@ def process_init(problem_dir: str, interactive: bool) -> None:
         problem_dir: The path to the problem directory.
         interactive: Whether the problem is interactive or not.
     """
-    problem_name = get_basename(problem_dir)
     setup_and_validate_paths(problem_dir)
+    problem_name = get_basename(problem_dir)
     info_log('Initializing problem ' + problem_name)
     toolchain.init_problem(interactive)
     info_log(f"Problem {problem_name} initialized")

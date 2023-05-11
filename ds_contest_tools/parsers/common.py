@@ -1,5 +1,5 @@
-from typing import Union
 import os.path
+from typing import Union
 
 from .. import logger, utils
 

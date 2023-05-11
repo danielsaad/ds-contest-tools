@@ -63,7 +63,7 @@ def build_executables() -> None:
     os.chdir(old_cwd)
 
 
-def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_number: int = 0) -> None:
+def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_number: int = 1) -> None:
     """
     Run the executables to create the problem.
 

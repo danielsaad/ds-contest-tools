@@ -8,7 +8,7 @@ from .jsonutils import parse_json
 from .logger import error_log, info_log
 from .metadata import Paths
 from .utils import (check_problem_metadata, check_subprocess_output,
-                   instance_paths, verify_path)
+                    instance_paths, verify_path)
 
 
 class default_boca_limits:

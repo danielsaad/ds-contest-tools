@@ -9,7 +9,7 @@ from .logger import info_log
 from .metadata import Paths
 from .pdfutils import build_pdf, merge_pdfs
 from .utils import (check_subprocess_output, convert_idx_to_string,
-                   instance_paths, verify_path)
+                    instance_paths, verify_path)
 
 
 def create_parser() -> argparse.ArgumentParser:

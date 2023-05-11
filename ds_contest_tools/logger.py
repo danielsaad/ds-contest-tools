@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+
 from .metadata import Paths
 
 
@@ -22,7 +23,11 @@ def setup_logger(name: str, log_file: str, level=logging.DEBUG) -> logging.Logge
     directory = Paths().get_problem_dir()
     if isinstance(directory, list):
         directory = Paths().get_output_dir()
-    os.makedirs(directory, exist_ok=True)
+    try:
+        os.makedirs(directory, exist_ok=True)
+    except PermissionError:
+        print(f'Permission denied. Could not create folder in {directory}.')
+        sys.exit()
     os.chdir(directory)
 
     # Log configurations

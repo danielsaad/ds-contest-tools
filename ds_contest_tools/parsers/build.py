@@ -1,9 +1,9 @@
 import os
 from math import floor
 
+from .. import pdfutils, toolchain
 from .common import *
-from .. import toolchain
-from .. import pdfutils
+
 
 def process_build(problem_dir: str, all_solutions: bool, specific_solution: str, cpu_count: int) -> None:
     """Build a problem.
@@ -19,14 +19,7 @@ def process_build(problem_dir: str, all_solutions: bool, specific_solution: str,
 
     info_log(f'Building problem {problem_name}')
     toolchain.build_executables()
-    if all_solutions:
-        toolchain.run_programs(all_solutions=all_solutions,
-                               cpu_number=max(cpu_count, 1))
-    elif specific_solution:
-        toolchain.run_programs(specific_solution=specific_solution,
-                               cpu_number=max(cpu_count, 1))
-    else:
-        toolchain.run_programs()
+    toolchain.run_programs(all_solutions=all_solutions, specific_solution=specific_solution, cpu_number=cpu_count)
     pdfutils.build_pdf()
     info_log(f'Problem {problem_name} built succesfully')
 
@@ -46,7 +39,7 @@ def add_parser(subparsers) -> None:
     mut_ex_group.add_argument('-a', '--all', action='store_true',
                               default=False, help='build problem with all solutions')
     mut_ex_group.add_argument(
-        '-s', '--specific', help='build problem with specific solution')
+        '-s', '--specific', type=str, default='', help='build problem with specific solution')
 
     default_threads = max(floor(os.cpu_count() * 0.7), 1)
     parser_build.add_argument('-c', '--cpu-count', help="number of threads to be used "
