@@ -10,9 +10,11 @@ def process_genio(problem_dir: str) -> None:
         problem_dir: Path to problem directory.
     """
     setup_and_validate_paths(problem_dir)
+    info_log("Generating input/output")
     toolchain.build_executables()
     toolchain.run_programs()
     info_log("Input/output generated successfully")
+
 
 def process_genpdf(problem_dir: str) -> None:
     """
@@ -22,6 +24,7 @@ def process_genpdf(problem_dir: str) -> None:
         problem_dir: Path to problem directory.
     """
     setup_and_validate_paths(problem_dir)
+    info_log('Generating problem PDF')
     pdfutils.build_pdf()
     info_log('Problem PDF generated successfully')
 
@@ -33,10 +36,15 @@ def add_parser(subparsers) -> None:
     Args:
         subparsers: The argparse subparsers object.
     """
-    gen_pdf_parser = subparsers.add_parser('genpdf', help='generate problem pdf')
-    gen_pdf_parser.add_argument('problem_dir', help='path to problem directory')
-    gen_pdf_parser.set_defaults(function=lambda options: process_genpdf(options.problem_dir))
+    gen_pdf_parser = subparsers.add_parser(
+        'genpdf', help='generate problem pdf')
+    gen_pdf_parser.add_argument(
+        'problem_dir', help='path to problem directory')
+    gen_pdf_parser.set_defaults(
+        function=lambda options: process_genpdf(options.problem_dir))
 
-    gen_io_parser = subparsers.add_parser('genio', help='generate problem  input/output')
+    gen_io_parser = subparsers.add_parser(
+        'genio', help='generate problem  input/output')
     gen_io_parser.add_argument('problem_dir', help='path to problem directory')
-    gen_io_parser.set_defaults(function=lambda options: process_genio(options.problem_dir))
+    gen_io_parser.set_defaults(
+        function=lambda options: process_genio(options.problem_dir))
