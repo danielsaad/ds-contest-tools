@@ -1,7 +1,8 @@
 import os
 import subprocess
-from typing import Optional
 import sys
+from typing import Optional
+
 from . import config
 from .latexutils import clean_auxiliary_files, print_to_latex
 from .logger import info_log
@@ -84,11 +85,13 @@ def generate_pdf(problem_folder: str, output_folder: str, tex_path: str) -> None
         tex_path: The path to the tex file.
     """
     old_cwd = os.getcwd()
-    command = ["pdflatex", '--output-directory', output_folder, '-interaction=nonstopmode', tex_path]
+    command = ["pdflatex", '--output-directory',
+               output_folder, '-interaction=nonstopmode', tex_path]
 
     os.chdir(problem_folder)
     try:
-        p = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10)
+        p = subprocess.run(command, stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE, timeout=10)
     except subprocess.TimeoutExpired:
         info_log("Timeout error while generating pdf. Maybe a package is missing?")
         sys.exit(0)
