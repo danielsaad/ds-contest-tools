@@ -4,6 +4,15 @@ from typing import Union
 from .. import logger, utils
 
 
+def error_log(text: str) -> None:
+    """Log an error.
+
+    Args:
+        text: Text to be logged.
+    """
+    logger.error_log(text)
+
+
 def info_log(text: str) -> None:
     """Log information about the tool.
 

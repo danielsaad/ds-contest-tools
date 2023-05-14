@@ -8,7 +8,7 @@ from .logger import error_log, info_log
 from .metadata import Paths
 from .polygon_connection import check_polygon_id, submit_requests_list
 from .toolchain import generate_inputs, get_manual_tests
-from .utils import check_problem_metadata, instance_paths, verify_path
+from .utils import check_problem_metadata, verify_path
 
 LANGUAGE = 'english'
 ENCODING = 'utf-8'
@@ -487,16 +487,13 @@ def get_requests_list() -> List[Tuple[str, dict]]:
     return requests_list
 
 
-def send_to_polygon(problem_folder: str, problem_id: Union[str, None]) -> None:
+def send_to_polygon(problem_id: Union[str, None]) -> None:
     """Send problem to Polygon.
 
     Args:
         problem_folder: Path to the problem folder.
         problem_id: ID of the Polygon problem.
     """
-    instance_paths(problem_folder)
-    verify_path(problem_folder)
     problem_id = check_polygon_id(problem_id)
-
     requests_list: List[Tuple[str, dict]] = get_requests_list()
     submit_requests_list(requests_list, problem_id)

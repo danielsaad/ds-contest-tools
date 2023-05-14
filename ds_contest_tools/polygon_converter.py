@@ -9,7 +9,7 @@ from .jsonutils import parse_json, write_to_json
 from .logger import error_log, info_log
 from .metadata import Paths
 from .polygon_connection import download_package_polygon, make_api_request
-from .utils import instance_paths, verify_path
+from .utils import verify_path
 
 DEFAULT_LANGUAGE = 'english'
 
@@ -512,20 +512,13 @@ def convert_problem(local: bool, problem_id: Optional[str] = '') -> None:
         shutil.rmtree(Paths().get_output_dir())
 
 
-def get_polygon_problem(problem_folder: str, problem_id: str, local: Optional[bool] = False):
+def get_polygon_problem(problem_id: str, local: Optional[bool] = False):
     """Verifies the source and converts a problem package.
 
     Args:
-        problem_folder: The folder where the problem package is located or will be downloaded.
         local: A boolean indicating if the package is local (default False).
         problem_id: The ID of the problem to download (default None).
     """
-    if local:
-        instance_paths(problem_folder, problem_id)
-        verify_path(local)
-    else:
-        instance_paths(problem_folder, os.path.join(
-            problem_folder, 'temp_package'))
+    if not local:
         download_package_polygon(problem_id)
-
     convert_problem(local, problem_id)

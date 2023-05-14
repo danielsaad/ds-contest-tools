@@ -1,10 +1,15 @@
 import argparse
 from sys import argv
 
-from .parsers import build, clean, contest, gen, init
+from .parsers import build, clean, contest, convert, gen, init, set_keys
 
 
 def create_parser() -> argparse.ArgumentParser:
+    """Create parser for ds-contest-tools
+
+    Returns:
+        The parser object.
+    """
     parser = argparse.ArgumentParser(prog="ds-contest-tools")
     subparsers = parser.add_subparsers(
         title='available commands',
@@ -17,6 +22,8 @@ def create_parser() -> argparse.ArgumentParser:
     build.add_parser(subparsers)
     gen.add_parser(subparsers)
     contest.add_parser(subparsers)
+    convert.add_parser(subparsers)
+    set_keys.add_parser(subparsers)
     clean.add_parser(subparsers)
     return parser
 

@@ -1,4 +1,4 @@
-from .. import toolchain
+from ..toolchain import clean_files
 from .common import *
 
 
@@ -9,7 +9,7 @@ def process_clean(problem_dir: list) -> None:
         problem_paths: List of paths to problem directories.
     """
     setup_and_validate_paths(problem_dir)
-    toolchain.clean_files()
+    clean_files()
     info_log(f'Executables cleaned succesfully')
 
 

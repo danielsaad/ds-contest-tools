@@ -1,4 +1,5 @@
-from .. import contest, metadata
+from ..contest import *
+from ..metadata import Paths
 from .common import *
 
 
@@ -14,17 +15,17 @@ def process_contest(problems_dir: list, output_dir: str, pdf: bool, io: bool) ->
     """
     setup_and_validate_paths(problems_dir, output_dir)
     os.makedirs(output_dir, exist_ok=True)
-    for problem in metadata.Paths().get_problem_dir():
-        contest.verify_problem(problem)
+    for problem in Paths().get_problem_dir():
+        verify_problem(problem)
 
     info_log('Generating contest files')
     if io:
-        contest.build_input_output()
+        build_input_output()
     elif pdf:
-        contest.build_contest_pdf()
+        build_contest_pdf()
     else:
-        contest.build_boca_packages()
-        contest.build_contest_pdf()
+        build_boca_packages()
+        build_contest_pdf()
     info_log('Contest files generated successfully')
 
 

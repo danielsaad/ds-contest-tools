@@ -1,7 +1,8 @@
 import os
 from math import floor
 
-from .. import pdfutils, toolchain
+from ..pdfutils import build_pdf
+from ..toolchain import build_executables, run_programs
 from .common import *
 
 
@@ -18,9 +19,9 @@ def process_build(problem_dir: str, all_solutions: bool, specific_solution: str,
     problem_name = get_basename(problem_dir)
 
     info_log(f'Building problem {problem_name}')
-    toolchain.build_executables()
-    toolchain.run_programs(all_solutions=all_solutions, specific_solution=specific_solution, cpu_number=cpu_count)
-    pdfutils.build_pdf()
+    build_executables()
+    run_programs(all_solutions=all_solutions, specific_solution=specific_solution, cpu_number=cpu_count)
+    build_pdf()
     info_log(f'Problem {problem_name} built succesfully')
 
 

@@ -1,4 +1,4 @@
-from .. import toolchain
+from ..toolchain import init_problem
 from .common import *
 
 
@@ -12,7 +12,7 @@ def process_init(problem_dir: str, interactive: bool) -> None:
     setup_and_validate_paths(problem_dir)
     problem_name = get_basename(problem_dir)
     info_log('Initializing problem ' + problem_name)
-    toolchain.init_problem(interactive)
+    init_problem(interactive)
     info_log(f"Problem {problem_name} initialized")
 
 

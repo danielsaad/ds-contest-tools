@@ -1,4 +1,5 @@
-from .. import pdfutils, toolchain
+from ..pdfutils import build_pdf
+from ..toolchain import build_executables, run_programs
 from .common import *
 
 
@@ -11,8 +12,8 @@ def process_genio(problem_dir: str) -> None:
     """
     setup_and_validate_paths(problem_dir)
     info_log("Generating input/output")
-    toolchain.build_executables()
-    toolchain.run_programs()
+    build_executables()
+    run_programs()
     info_log("Input/output generated successfully")
 
 
@@ -25,7 +26,7 @@ def process_genpdf(problem_dir: str) -> None:
     """
     setup_and_validate_paths(problem_dir)
     info_log('Generating problem PDF')
-    pdfutils.build_pdf()
+    build_pdf()
     info_log('Problem PDF generated successfully')
 
 

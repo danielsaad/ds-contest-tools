@@ -1,13 +1,12 @@
 import os
 import shutil
 import sys
-from typing import Union
 
-from jsonutils import parse_json
-from logger import error_log, info_log
-from metadata import Paths
-from toolchain import generate_inputs, get_manual_tests
-from utils import check_problem_metadata, instance_paths, verify_path
+from .jsonutils import parse_json
+from .logger import error_log, info_log
+from .metadata import Paths
+from .toolchain import generate_inputs, get_manual_tests
+from .utils import check_problem_metadata, verify_path
 
 
 def create_config(showcases: str, memory_limit: int, cputime: int) -> None:
@@ -197,12 +196,9 @@ clean:
         f.write(makefile_content)
 
 
-def convert_to_sqtpm(problem_dir: str, output_dir: Union[str, None]) -> None:
+def convert_to_sqtpm() -> None:
     """Convert DS problem to SQTPM."""
-    if not output_dir:
-        output_dir = os.path.join(problem_dir, 'sqtpm')
-    instance_paths(problem_dir, output_dir)
-    info_log("Starting DS -> SQTPM conversion.")
+    info_log("Starting SQTPM conversion.")
     problem_folder = Paths().get_problem_dir()
     output_folder = Paths().get_output_dir()
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
