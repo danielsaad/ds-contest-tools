@@ -67,7 +67,7 @@ def build_boca_packages() -> None:
                    'event': True}
         # Update PDF with new label and event
         build_pdf(folder, folder, options)
-        boca_pack(folder)
+        boca_pack(folder, folder)
         boca_file_path = os.path.join(folder, 'boca.zip')
         boca_file = os.path.join(
             output_folder, os.path.basename(folder) + '-boca.zip')

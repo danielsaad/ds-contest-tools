@@ -15,7 +15,7 @@ def verify_polygon_keys() -> None:
     The function checks whether the `secrets.json` file that contains the 
     Polygon API keys exists in the directory of this script.
     """
-    tool_path = os.path.dirname(os.path.abspath(__file__))
+    tool_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     secrets_path = os.path.join(tool_path, 'secrets.json')
 
     if not os.path.exists(secrets_path):
@@ -66,7 +66,8 @@ def process_convert_from(problem_format: str, problem_dir: str, package_dir: str
             setup_and_validate_paths(problem_dir, package_dir)
         else:
             setup_and_validate_paths(problem_dir, os.path.join(
-                problem_dir, 'temp_polygon_package'))
+                problem_dir, 'temp_polygon_package'), verify_path=False)
+        verify_polygon_keys()
         get_polygon_problem(package_dir, local)
     else:
         error_log('Not implemented yet.')
@@ -89,8 +90,10 @@ def add_parser(subparsers) -> None:
     to_parser.add_argument(
         'problem_dir', help='path to the problem directory')
     to_parser.add_argument('-o', '--output_dir',
-                           help='path to save the converted problem or ID of the Polygon problem, if one is not defined yet.'
-                           'Default output directory is the problem directory.')
+                           help='destination path to save the converted problem or '
+                           'the id of the polygon problem if it has not yet been defined.'
+                           'by default, the output directory is the same as the problem directory, '
+                           'except for polygon problems, which are saved online')
     to_parser.set_defaults(function=lambda options: process_convert_to(
         options.format, options.problem_dir, options.output_dir))
 
@@ -101,8 +104,9 @@ def add_parser(subparsers) -> None:
     from_parser.add_argument(
         'problem_dir', help='path to the converted problem directory')
     from_parser.add_argument(
-        'package_dir', help='path to the problem package or Polygon ID')
+        'package_dir', help='path to the problem package or polygon id')
     from_parser.add_argument('-l', '--local', action='store_true',
-                             help='convert local polygon package. Use the package path instead of ID in package_dir.')
+                             help='convert local polygon package, use the package path '
+                             'instead of the id in "package_dir" argument')
     from_parser.set_defaults(function=lambda options: process_convert_from(
         options.format, options.problem_dir, options.package_dir, options.local))
