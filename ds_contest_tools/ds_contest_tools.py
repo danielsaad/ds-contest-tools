@@ -1,7 +1,7 @@
 import argparse
 from sys import argv
 
-from .parsers import build, clean, contest, convert, gen, init, set_keys
+from .parsers import build, clean, contest, convert, init, set_keys
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -20,7 +20,6 @@ def create_parser() -> argparse.ArgumentParser:
     )
     init.add_parser(subparsers)
     build.add_parser(subparsers)
-    gen.add_parser(subparsers)
     contest.add_parser(subparsers)
     convert.add_parser(subparsers)
     set_keys.add_parser(subparsers)

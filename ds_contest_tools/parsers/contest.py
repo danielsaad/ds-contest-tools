@@ -38,9 +38,10 @@ def add_parser(subparsers) -> None:
     """
     contest_parser = subparsers.add_parser(
         'contest', help='build contest files')
-    contest_parser.add_argument(
+    mut_ex_group = contest_parser.add_mutually_exclusive_group()
+    mut_ex_group.add_argument(
         '-p', '--pdf', action='store_true', default=False, help='generate contest PDFs')
-    contest_parser.add_argument('-i', '--io', action='store_true',
+    mut_ex_group.add_argument('-i', '--io', action='store_true',
                                 default=False, help='generate contest input/output files')
     contest_parser.add_argument(
         'problem_dir', help='path to problem(s)', nargs='+')
