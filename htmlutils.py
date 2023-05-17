@@ -160,7 +160,9 @@ def write_test_cases_tbody(problem_obj: Problem, f_out: io.TextIOWrapper) -> Non
             memory_usage: float = test_case.memory_usage
             memory_usage: float = min(memory_usage, memory_limit) / 1000000
             execution_time: float = min(test_case.exec_time, time_limit)
-            url_parameters = f'id={i + 1}&solution={solution.solution_name}&veredict={test_status}&expected-result={solution.expected_result}&time={test_case.exec_time:.2f}&memory={(test_case.memory_usage / 1000):.2f}&checker-output={test_case.checker_output}'
+            expected_result: str = set_expected_result(
+                solution.expected_result)
+            url_parameters = f'id={i + 1}&solution={solution.solution_name}&veredict={test_status}&expected-result={expected_result}&time={test_case.exec_time:.2f}&memory={(test_case.memory_usage / 1000):.2f}&checker-output={test_case.checker_output}'
             url_link_param = f'input={os.path.join(problem_obj.input_folder, str(i + 1))}&output={os.path.join(solution.output_path, str(i + 1))}&answer={os.path.join(problem_obj.problem_dir, "output", str(i + 1))}'
             td_info = f'\t<td class="{test_color_class}"><a href="./assets/test-case-info.html?{url_parameters}&{url_link_param}" {tooltip_msg}>{test_status} </a> <br>{execution_time:.2f} s / {(memory_usage):.1f} MB </td>'
             f_out.write(td_info)
@@ -173,6 +175,21 @@ def write_test_cases_tbody(problem_obj: Problem, f_out: io.TextIOWrapper) -> Non
                     </div>
     """
     f_out.write(tbody)
+
+
+def set_expected_result(expected_result: str) -> str:
+    convert_expected_result: dict = {
+        "main-ac": 'ACCEPTED',
+        "alternative-ac": 'ACCEPTED',
+        "wrong-answer": 'WRONG ANSWER',
+        "time-limit": 'TIME LIMIT EXCEEDED',
+        "runtime-error": 'RUNTIME ERROR',
+        "memory-limit": 'MEMORY LIMIT EXCEEDED',
+        "presentation-error": 'PRESENTATION ERROR',
+        "time-limit-or-ac": 'TIME LIMIT OR ACCEPTED',
+        "time-limit-or-memory-limit": 'TIME LIMIT OR MEMORY LIMIT  EXCEEDED'
+    }
+    return convert_expected_result[expected_result]
 
 
 def test_case_status(test_case: Test) -> tuple:
