@@ -4,6 +4,8 @@ import os
 from logger import info_log
 from metadata import Problem, ProblemAnswer, Solution, Status, Test
 
+REPORT_NAME = "report.html"
+
 
 def write_head(problem_name: str, f_out: io.TextIOWrapper) -> None:
     """
@@ -165,7 +167,7 @@ def write_test_cases_tbody(problem_obj: Problem, f_out: io.TextIOWrapper) -> Non
             expected_result: str = set_expected_result(
                 solution.expected_result)
             url_params = f'id={i + 1}&solution={solution.solution_name}&veredict={test_status}&expected-result={expected_result}&time={test_case.exec_time:.2f}&memory={(test_case.memory_usage / 1000):.2f}&checker-output={test_case.checker_output}'
-            url_link_params = f'input={os.path.join(problem_obj.input_folder, str(i + 1))}&output={os.path.join(solution.output_path, str(i + 1))}&answer={os.path.join(problem_obj.problem_dir, "output", str(i + 1))}'
+            url_link_params = f'input={os.path.join(problem_obj.input_folder, str(i + 1))}&output={os.path.join(solution.output_path, str(i + 1))}&answer={os.path.join(problem_obj.problem_dir, "output", str(i + 1))}&report-link={os.path.join(problem_obj.problem_dir, REPORT_NAME)}'
             table_data_info = f'\t<td class="{test_color_class}"><a href="{href_path}?{url_params}&{url_link_params}" {tooltip_msg}>{test_status} </a> <br>{execution_time:.2f} s / {(memory_usage):.1f} MB </td>'
             f_out.write(table_data_info)
 
@@ -398,7 +400,7 @@ def print_to_html(problem_obj: Problem) -> None:
 
     """
     problem_folder: str = problem_obj.problem_dir
-    html_filename: str = 'report.html'
+    html_filename: str = REPORT_NAME
     html_filepath: str = os.path.join(problem_folder, html_filename)
     info_log(f'Creating {html_filename}')
     with open(html_filepath, 'w') as f_out:
