@@ -149,6 +149,8 @@ def write_test_cases_tbody(problem_obj: Problem, f_out: io.TextIOWrapper) -> Non
     memory_limit: float = problem_obj.memory_limit
     time_limit: float = problem_obj.time_limit
     test_cases_number: int = problem_obj.get_number_of_tests()
+    href_path: str = os.path.join(os.path.dirname(
+        __file__), 'files', 'assets', 'test-case-info.html')
     for i in range(test_cases_number):
         f_out.write('<tr class="text-center">')
         f_out.write(f'\t<td class="fw-bolder">{i + 1}</td>')
@@ -162,10 +164,10 @@ def write_test_cases_tbody(problem_obj: Problem, f_out: io.TextIOWrapper) -> Non
             execution_time: float = min(test_case.exec_time, time_limit)
             expected_result: str = set_expected_result(
                 solution.expected_result)
-            url_parameters = f'id={i + 1}&solution={solution.solution_name}&veredict={test_status}&expected-result={expected_result}&time={test_case.exec_time:.2f}&memory={(test_case.memory_usage / 1000):.2f}&checker-output={test_case.checker_output}'
-            url_link_param = f'input={os.path.join(problem_obj.input_folder, str(i + 1))}&output={os.path.join(solution.output_path, str(i + 1))}&answer={os.path.join(problem_obj.problem_dir, "output", str(i + 1))}'
-            td_info = f'\t<td class="{test_color_class}"><a href="./assets/test-case-info.html?{url_parameters}&{url_link_param}" {tooltip_msg}>{test_status} </a> <br>{execution_time:.2f} s / {(memory_usage):.1f} MB </td>'
-            f_out.write(td_info)
+            url_params = f'id={i + 1}&solution={solution.solution_name}&veredict={test_status}&expected-result={expected_result}&time={test_case.exec_time:.2f}&memory={(test_case.memory_usage / 1000):.2f}&checker-output={test_case.checker_output}'
+            url_link_params = f'input={os.path.join(problem_obj.input_folder, str(i + 1))}&output={os.path.join(solution.output_path, str(i + 1))}&answer={os.path.join(problem_obj.problem_dir, "output", str(i + 1))}'
+            table_data_info = f'\t<td class="{test_color_class}"><a href="{href_path}?{url_params}&{url_link_params}" {tooltip_msg}>{test_status} </a> <br>{execution_time:.2f} s / {(memory_usage):.1f} MB </td>'
+            f_out.write(table_data_info)
 
         f_out.write('</tr>')
 
