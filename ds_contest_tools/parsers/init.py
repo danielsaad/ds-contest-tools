@@ -9,7 +9,7 @@ def process_init(problem_dir: str, interactive: bool) -> None:
         problem_dir: The path to the problem directory.
         interactive: Whether the problem is interactive or not.
     """
-    setup_and_validate_paths(problem_dir)
+    setup_and_validate_paths(problem_dir, verify_path=False)
     problem_name = get_basename(problem_dir)
     info_log('Initializing problem ' + problem_name)
     init_problem(interactive)
