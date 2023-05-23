@@ -250,6 +250,7 @@ def write_auxiliary_table(problem_obj: Problem, f_out: io.TextIOWrapper) -> None
             <thead class="table-dark">
                 <tr>
                     <th>Solutions</th>
+                    <th>Expected Result</th>
                     <th>Result</th>
                 </tr>
             </thead>
@@ -282,6 +283,8 @@ def write_aux_trow(problem_obj: Problem, f_out: io.TextIOWrapper) -> None:
         row_color, solution_result_symbol = solution_status(
             solution.solution_status)
         f_out.write(f'\t<td>{solution.solution_name}</td>')
+        f_out.write(
+            f'\t<td>{set_expected_result(solution.expected_result)}</td>')
         f_out.write(f'\t<td class="{row_color}">{solution_result_symbol}</td>')
         f_out.write('</tr>')
 
