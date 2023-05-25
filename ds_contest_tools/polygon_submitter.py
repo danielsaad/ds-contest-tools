@@ -7,7 +7,7 @@ from .jsonutils import parse_json
 from .logger import error_log, info_log
 from .metadata import Paths
 from .polygon_connection import check_polygon_id, submit_requests_list
-from .toolchain import generate_inputs, get_manual_tests
+from .toolchain import generate_inputs
 from .utils import check_problem_metadata, verify_path
 
 LANGUAGE = 'english'
@@ -130,38 +130,33 @@ def save_testcases(tests_in_statement: int, interactive: bool, tmp_folder: str) 
     Returns:
         A list of tuples, where each tuple contains the method and the parameters for the request.
     """
-    manual_tests_requests: list = save_manual_tests(tmp_folder)
-
-    manual_tests_index = set([int(params[1]['testIndex'])
-                             for params in manual_tests_requests])
-    script_requests: tuple = save_script(manual_tests_index, tmp_folder)
+    script_requests: tuple = save_script(tmp_folder)
 
     statement_tests = define_statement_tests(tests_in_statement, interactive)
 
     requests_for_polygon: list = []
-    requests_for_polygon += manual_tests_requests
     requests_for_polygon += script_requests
     requests_for_polygon += statement_tests
     return requests_for_polygon
 
 
-def save_script(manual_tests_index: set, tmp_folder: str) -> List[Tuple[str, dict]]:
+def save_script(tmp_folder: str) -> List[Tuple[str, dict]]:
     """
     Verify if script exists and save it.
 
     Returns:
         A tuple containing the method and the parameters for the request.
     """
-    info_log("Saving script")
     problem_folder: str = Paths().get_problem_dir()
     script_path: str = os.path.join(problem_folder, 'src', 'script.sh')
+
+    # Read scripts
     with open(script_path, 'r') as f:
         scripts: list = f.readlines()
-
     if len(scripts) == 0:
         return []
 
-    # Get number of testcases generated for each script
+    # Get number of testcases per generator
     gen_index_path = os.path.join(os.path.dirname(tmp_folder), 'index_gen')
     verify_path(gen_index_path)
     with open(gen_index_path, 'r') as f:
@@ -172,22 +167,11 @@ def save_script(manual_tests_index: set, tmp_folder: str) -> List[Tuple[str, dic
     source: str = ''
     for i in range(min(len(scripts), len(gen_index))):
         if int(gen_index[i]) == 0:
-            while index in manual_tests_index:
-                index += 1
+            # Unique generator
             testcases = str(index)
             index += 1
-        # If it is a multigenerator
-        else:
-            for num in range(index, index + int(gen_index[i])):
-                if num not in manual_tests_index:
-                    continue
-                gen_name = scripts[i].split()[0]
-                error_log(
-                    f"Manual test can't have index {num} due to tests of '{gen_name}' generator.\n"
-                    f"Please change the index of the manual test to a value less than {index} or "
-                    f"greater than {str(int(gen_index[i]))}.")
-                sys.exit(0)
-
+        else: 
+            # Multigenerator
             testcases = '{' + f'{index}-{index + int(gen_index[i]) - 1}' + '}'
             index += int(gen_index[i])
 
@@ -358,45 +342,6 @@ def save_tags(tag_list: List[str]) -> Tuple[str, dict]:
     tags: str = ','.join(tag_list)
     params: dict = {'tags': tags}
     return ('problem.saveTags', params)
-
-
-def save_manual_tests(tmp_folder: str) -> list:
-    """Get parameters of the manual tests of the problem.
-
-    Args:
-        tmp_folder: Path to the temporary folder.
-
-    Returns:
-        A list of tuples containing the method and parameters for the request.
-    """
-    info_log('Saving manual tests')
-    problem_folder: str = Paths().get_problem_dir()
-    input_folder: str = os.path.join(problem_folder, 'input')
-    verify_path(input_folder)
-
-    parameters_list: list = []
-    total_inputs: int = len(os.listdir(input_folder))
-    manual_tests: list = [os.path.basename(
-        f) for f in get_manual_tests(tmp_folder)]
-    for input_file in manual_tests:
-        test_description: str = f'Manual test {input_file} from DS contest tools.'
-        input_path: str = os.path.join(input_folder, input_file)
-        with open(input_path, 'r') as f:
-            test_input = f.read()
-
-        # Index has leading zeros in order to sort them for requests
-        params: dict = {
-            'testset': TESTSET,
-            'testIndex': input_file.zfill(len(str(total_inputs))),
-            'testInput': test_input,
-            'checkExisting': 'false',
-            'testDescription': test_description,
-        }
-        parameters_list.append(('problem.saveTest', params))
-
-    # Sort params by the test index
-    sorted_list = sorted(parameters_list, key=lambda x: x[1]['testIndex'])
-    return sorted_list
 
 
 def define_statement_tests(tests_in_statement: int, interactive: bool) -> List[Tuple[list, bool]]:

@@ -162,32 +162,6 @@ def validate_inputs() -> None:
         sys.exit(0)
 
 
-def get_manual_tests(temporary_folder: str) -> list:
-    """Get manual tests generated without the source generators.
-
-    Args:
-        temporary_folder: Path to the temporary input folder.
-
-    Returns:
-        A list containing the absolute path of manual tests of the problem.
-    """
-    problem_dir = Paths().get_problem_dir()
-
-    temporary_encoded_tests: dict = get_encoded_tests(temporary_folder)
-    original_encoded_tests: dict = get_encoded_tests(
-        os.path.join(problem_dir, 'input'))
-
-    manual_tests = set()
-    for key, value in original_encoded_tests.items():
-        if key in temporary_encoded_tests:
-            continue
-
-        for test in value:
-            manual_tests.add(test)
-
-    return list(manual_tests)
-
-
 def move_inputs(temporary_folder: str) -> None:
     """
     Move input tests to the problem folder.
@@ -195,28 +169,16 @@ def move_inputs(temporary_folder: str) -> None:
     Args:
         temporary_folder: Path to the temporary input folder.
     """
-    info_log("Moving input tests to problem folder.")
     problem_dir = Paths().get_problem_dir()
     input_folder: str = os.path.join(problem_dir, 'input')
+    
+    # Reset input folder
+    shutil.rmtree(input_folder)
+    os.makedirs(input_folder)
 
-    temporary_encoded_tests: dict = get_encoded_tests(temporary_folder)
-    original_encoded_tests: dict = get_encoded_tests(input_folder)
-
-    # Remove repeated tests from problem folder
-    for key, values in original_encoded_tests.items():
-        if key in temporary_encoded_tests:
-            for value in values:
-                os.remove(value)
-
-    # Move tests to problem folder maintaning manual tests
-    index = 1
-    output_folder = os.listdir(temporary_folder)
-    output_folder.sort(key=custom_key)
-    for input_test in output_folder:
-        while os.path.exists(os.path.join(input_folder, str(index))):
-            index += 1
-        shutil.move(os.path.join(temporary_folder, str(input_test)),
-                    os.path.join(input_folder, str(index)))
+    # Move tests to problem folder
+    for f in os.listdir(temporary_folder):
+        shutil.copy2(os.path.join(temporary_folder, f), os.path.join(input_folder, f.lstrip('0')))
 
 
 def generate_inputs(move: bool = True, output_folder: str = '') -> None:

@@ -5,7 +5,6 @@ import sys
 from .jsonutils import parse_json
 from .logger import error_log, info_log
 from .metadata import Paths
-from .toolchain import generate_inputs, get_manual_tests
 from .utils import check_problem_metadata, verify_path
 
 
@@ -137,18 +136,6 @@ def copy_generator_script() -> None:
                  os.path.join(output_folder, 'genio.sh'))
 
 
-def copy_manual_tests() -> None:
-    """Move manual tests to SQTPM folder."""
-    output_folder = Paths().get_output_dir()
-    tmp_folder = os.path.join(Paths().get_tmp_output_dir(), 'scripts')
-
-    generate_inputs(move=False, output_folder=tmp_folder)
-    manual_tests = get_manual_tests(tmp_folder)
-    for test in manual_tests:
-        shutil.copy2(test, os.path.join(
-            output_folder, os.path.basename(test).zfill(3) + '.in'))
-
-
 def create_makefile() -> None:
     """Create Makefile to compile source files for SQTPM."""
     output_folder = Paths().get_output_dir()
@@ -209,7 +196,6 @@ def convert_to_sqtpm() -> None:
     copy_pdf(pdf_name)
     copy_generator_script()
     copy_source_files(problem_metadata['solutions']['main-ac'])
-    copy_manual_tests()
 
     create_makefile()
     create_html_statement(os.path.basename(
