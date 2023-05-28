@@ -13,7 +13,7 @@ from signal import SIGKILL
 import psutil
 
 from logger import debug_log, error_log, info_log
-from metadata import Paths, Problem, ProblemAnswer, Solution, Status, Test
+from metadata import Paths, Problem, ProblemAnswer, Solution, Status, Test, Statistic
 
 """ Java definitions """
 JAVA_INTERPRETER = 'java'
@@ -275,7 +275,8 @@ def write_to_log(output_dict: DictProxy) -> None:
 
 def solution_status(solution: Solution) -> None:
     """
-    Sets the solution status based on the status of its tests.
+    Sets the solution status based on the status of its tests and 
+    set solution statistics.
 
     Args:
         solution: The solution object to be evaluated.
@@ -283,11 +284,18 @@ def solution_status(solution: Solution) -> None:
     """
     test_cases_status: dict = dict()
     solution_result: ProblemAnswer = ProblemAnswer.WRONG
-
+    max_runtime: float = 0
+    max_memory_usage: float = 0
+    test: Test
     for _, test in solution.tests.items():
         test_cases_status[test.status] = test_cases_status.get(
             test.status, 0) + 1
+        max_runtime = max(max_runtime, test.exec_time)
+        max_memory_usage = max(max_memory_usage, test.memory_usage)
+    ac_count: int = test_cases_status[Status.AC]
 
+    statistics: Statistic = Statistic(
+        ac_count, max_runtime, max_memory_usage)
     expected_status = {
         "main-ac": [Status.AC],
         "alternative-ac": [Status.AC],
@@ -307,6 +315,7 @@ def solution_status(solution: Solution) -> None:
             solution_result = ProblemAnswer.WRONG
             break
     solution.solution_status = solution_result
+    solution.statistics = statistics
 
 
 def memory_monitor(pids: Queue, memory_limit: int, stop_monitor: Event) -> None:
