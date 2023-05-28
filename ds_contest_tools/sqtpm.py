@@ -9,7 +9,7 @@ from .utils import check_problem_metadata, verify_path
 
 
 def create_config(showcases: str, memory_limit: int, cputime: int) -> None:
-    """Create default config file with problem informations."""
+    """Create default config file with problem information."""
     output_folder = Paths().get_output_dir()
     info_log("Creating config file.")
 
@@ -25,7 +25,7 @@ virtmem = {memory_limit * 1000}
 # startup = aaaa/mm/dd hh:mm:ss
 # deadline = aaaa/mm/dd hh:mm:ss
 # penalty = n
-# grading = {total, porportional}
+# grading = {total, proportional}
 # keep-open = n
 # hide-grades = {on,off}
 # tries = n

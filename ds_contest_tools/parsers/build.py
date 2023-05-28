@@ -34,7 +34,7 @@ def process_build(problem_dir: str, all_solutions: bool, specific_solution: str,
         run_programs(all_solutions=all_solutions,
                      specific_solution=specific_solution, cpu_number=cpu_count)
         build_pdf()
-        info_log(f'Problem {problem_name} built succesfully')
+        info_log(f'Problem {problem_name} built successfully')
 
 
 def add_parser(subparsers) -> None:

@@ -218,7 +218,7 @@ def create_processes(problem_obj: Problem, solution: Solution, cpu_number: int) 
     Args:
         problem_obj: A Problem object representing the problem being solved.
         solution: A Solution object representing the solution being tested.
-        cpu_number: An integer representing the maximun number of CPUs to use for running the solution.
+        cpu_number: An integer representing the maximum number of CPUs to use for running the solution.
 
     """
     n_threads = process_cpu_number(solution.expected_result, cpu_number)

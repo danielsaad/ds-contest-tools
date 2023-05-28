@@ -10,7 +10,7 @@ def process_clean(problem_dir: list) -> None:
     """
     setup_and_validate_paths(problem_dir)
     clean_files()
-    info_log(f'Executables cleaned succesfully')
+    info_log(f'Executables cleaned successfully')
 
 
 def add_parser(subparsers) -> None:

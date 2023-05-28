@@ -10,8 +10,8 @@ def process_contest(problems_dir: list, output_dir: str, pdf: bool, io: bool) ->
     Args:
         problems_dir: list of problems directories.
         output_dir: output directory.
-        pdf: Wheter is to generate contest PDFs.
-        io: Wheter is to generate contest input/output files.
+        pdf: Whether is to generate contest PDFs.
+        io: Whether is to generate contest input/output files.
     """
     setup_and_validate_paths(problems_dir, output_dir)
     os.makedirs(output_dir, exist_ok=True)

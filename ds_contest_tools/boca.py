@@ -24,7 +24,7 @@ def boca_zip(boca_folder: str) -> None:
     zip_filename = os.path.basename(boca_folder)+'.zip'
     p = subprocess.run('zip'+' -r ' + zip_filename + ' . ', shell=True,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    check_subprocess_output(p, "Error ziping BOCA file.")
+    check_subprocess_output(p, "Error zipping BOCA file.")
     os.rename(zip_filename, os.path.join('..', zip_filename))
     os.chdir(old_cwd)
 

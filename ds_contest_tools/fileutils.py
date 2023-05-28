@@ -85,7 +85,7 @@ def get_statement_files(statement_folder: str, interactive: Optional[bool] = Fal
 
     Args:
         statement_folder: Path to the statement folder.
-        interactive : Wheter the problem is interactive. Defaults to False.
+        interactive : Whether the problem is interactive. Defaults to False.
 
     Returns:
         A list containing the absolute path to the statement files.

@@ -281,7 +281,7 @@ def save_solution(file_path: str, tag: str) -> Tuple[str, dict]:
 
 
 def save_files(solutions: dict) -> List[Dict[str, dict]]:
-    """Save auxiliar, source and solution files of a problem.
+    """Save auxiliary, source and solution files of a problem.
 
     Args:
         solutions: Dictionary containing the solutions of the problem.
@@ -309,7 +309,7 @@ def save_files(solutions: dict) -> List[Dict[str, dict]]:
             parameters_list.append(save_solution(solution_path, key))
             solutions_saved.add(solution)
 
-    # Save source, resource and auxiliar files
+    # Save source, resource and auxiliary files
     ignored_files: set = {'testlib.h', 'script.sh'}
     for file in os.listdir(source_dir):
         if file in solutions_saved or file in ignored_files:
@@ -322,7 +322,7 @@ def save_files(solutions: dict) -> List[Dict[str, dict]]:
             # Save resource files
             parameters_list.append(save_file(file_path, 'resource'))
         elif file.endswith(('.aux', '.sh')):
-            # Save auxiliar files
+            # Save auxiliary files
             parameters_list.append(save_file(file_path, 'aux'))
         else:
             # Save source files

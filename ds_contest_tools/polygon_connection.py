@@ -205,7 +205,7 @@ def get_method_information(method: str, params: dict) -> str:
         A message containing information about the method.
     """
     method_messages = {
-        'problem.updateInfo': 'General informations saved',
+        'problem.updateInfo': 'General information saved',
         'problem.saveTags': 'Tags saved',
         'problem.setInteractor': 'Interactor set',
         'problem.setChecker': 'Checker set',
@@ -248,9 +248,9 @@ def verify_response(response: requests.Response, params: Dict[str, List[bytes]])
         params: Parameters used in the request.
 
     Returns: 
-        A string with informations about the request
+        A string with information about the request
     """
-    response_information = ['Request informations:']
+    response_information = ['Request information:']
     try:
         content = json.loads(response.content.decode())
         response_information.append(f"    API status: {content['status']}")
@@ -298,7 +298,7 @@ def single_api_connection(method: str, request_params: dict, session: Optional[r
             info_log(get_method_information(method, request_params))
             return response
         elif response.status_code == requests.codes.bad_request:
-            error_log(f"Error submitting {method} method. Stoping requests.\n"
+            error_log(f"Error submitting {method} method. Stopping requests.\n"
                       + verify_response(response, request_params))
             sys.exit(0)
 
