@@ -85,4 +85,4 @@ Onde `problem_dir` é o diretório onde o problema será inicializado e compilad
 
 Para o primeiro uso ao converter problemas do Polygon, será necessário definir as chaves da API do Polygon. Tais chaves são armazenadas localmente no diretório raiz da ferramenta em um arquivo JSON.
 
-Para mais informações sobre os comandos ou a ferramenta, leia a documentação na [wiki](https://github.com/danielsaad/ds-contest-tools).
+Para mais informações sobre os comandos ou sobre a ferramenta, leia a documentação na [wiki](https://github.com/danielsaad/ds-contest-tools/wiki).
