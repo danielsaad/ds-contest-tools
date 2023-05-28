@@ -262,7 +262,7 @@ def write_auxiliary_table(problem_obj: Problem, f_out: io.TextIOWrapper) -> None
     <div class="col-md-2 col-lg-2 col-xl-2 position-fixed end-0">
         <table class="table table-hover table-bordered">
             <thead class="table-dark">
-                <tr>
+                <tr class="text-center">
                     <th>Solutions</th>
                     <th>Expected Result</th>
                     <th>Result</th>
@@ -293,7 +293,7 @@ def write_aux_trow(problem_obj: Problem, f_out: io.TextIOWrapper) -> None:
     """
     solution: Solution
     for solution in problem_obj.get_list_solution():
-        f_out.write('<tr>')
+        f_out.write('<tr class="text-center">')
         row_color, solution_result_symbol = solution_status(
             solution.solution_status)
         f_out.write(f'\t<td>{solution.solution_name}</td>')
