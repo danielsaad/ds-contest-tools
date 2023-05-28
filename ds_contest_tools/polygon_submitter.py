@@ -234,8 +234,8 @@ def save_file(file_path: str, file_type: str) -> tuple:
     Returns:
         A tuple containing the method and the parameters for the request.
     """
-    with open(file_path, 'r') as f:
-        file_content = ''.join(f.readlines())
+    with open(file_path, 'rb') as f:
+        file_content = f.read()
 
     params = {
         'name': os.path.basename(file_path),
@@ -255,8 +255,8 @@ def save_solution(file_path: str, tag: str) -> Tuple[str, dict]:
     Returns:
         A tuple containing the method and the parameters for the request.
     """
-    with open(file_path, 'r') as f:
-        file_content = ''.join(f.readlines())
+    with open(file_path, 'rb') as f:
+        file_content = f.read()
 
     solution_tags: dict = {
         'main-ac': 'MA',
@@ -287,47 +287,54 @@ def save_files(solutions: dict) -> List[Dict[str, dict]]:
         solutions: Dictionary containing the solutions of the problem.
 
     Returns:
-        list: _description_
+        A list of tuples, where each tuple contains the method and the 
+        parameters for the request.
     """
-    src_dir: str = os.path.join(Paths().get_problem_dir(), 'src')
+    source_dir: str = os.path.join(Paths().get_problem_dir(), 'src')
+    verify_path(source_dir)
+    
+    # Save solutions parameters
+    solutions_saved = set()
     parameters_list: list = []
-    solution_files: set = set()
-    for key in solutions:
+    for key, solution_list in solutions.items():
         if key == 'main-ac':
-            solutions[key] = list(solutions[key].split(' '))
+            solution_list = [solution_list]
 
-        for solution in solutions[key]:
+        for solution in solution_list:
+            # Skip if solution is an empty string
             if not solution:
                 continue
-            solution_path: str = os.path.join(src_dir, solution)
+            solution_path: str = os.path.join(source_dir, solution)
             verify_path(solution_path)
             parameters_list.append(save_solution(solution_path, key))
-            solution_files.add(solution)
+            solutions_saved.add(solution)
 
-    # Save resource, source and aux files
-    setters: list = []
-    for file in os.listdir(src_dir):
-        if file in solution_files or file.endswith('.sh') or file == 'testlib.h':
+    # Save source, resource and auxiliar files
+    ignored_files: set = {'testlib.h', 'script.sh'}
+    for file in os.listdir(source_dir):
+        if file in solutions_saved or file in ignored_files:
             continue
-        file_path: str = os.path.join(src_dir, file)
+
+        file_path: str = os.path.join(source_dir, file)
         verify_path(file_path)
 
-        # Save resource files
         if file.endswith('.h'):
-            parameters_list.append(
-                save_file(file_path, 'resource'))
-            continue
+            # Save resource files
+            parameters_list.append(save_file(file_path, 'resource'))
+        elif file.endswith(('.aux', '.sh')):
+            # Save auxiliar files
+            parameters_list.append(save_file(file_path, 'aux'))
+        else:
+            # Save source files
+            parameters_list.append(save_file(file_path, 'source'))
+            if file == 'checker.cpp':
+                parameters_list.append(set_checker(file))
+            elif file == 'validator.cpp':
+                parameters_list.append(set_validator(file))
+            elif file == 'interactor.cpp':
+                parameters_list.append(set_interactor(file))
 
-        # Save source files
-        parameters_list.append(save_file(file_path, 'source'))
-        if file.startswith('checker'):
-            setters.append(set_checker(file))
-        elif file.startswith('validator'):
-            setters.append(set_validator(file))
-        elif file.startswith('interactor'):
-            setters.append(set_interactor(file))
-
-    return parameters_list + setters
+    return parameters_list
 
 
 def save_tags(tag_list: List[str]) -> Tuple[str, dict]:
