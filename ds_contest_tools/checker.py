@@ -289,12 +289,15 @@ def solution_status(solution: Solution) -> None:
             test.status, 0) + 1
 
     expected_status = {
-        "ACCEPTED": [Status.AC],
-        'WRONG ANSWER': [Status.WA],
-        'TIME LIMIT EXCEEDED': [Status.HARD_TLE, Status.SOFT_TLE],
-        'RUNTIME ERROR': [Status.RE],
-        'MEMORY LIMIT EXCEEDED': [Status.MLE],
-        'PRESENTATION ERROR': [Status.PE]
+        "main-ac": [Status.AC],
+        "alternative-ac": [Status.AC],
+        'wrong-answer': [Status.WA],
+        'time-limit': [Status.HARD_TLE, Status.SOFT_TLE],
+        'time-limit-or-ac': [Status.AC, Status.SOFT_TLE, Status.HARD_TLE],
+        "time-limit-or-memory-limit": [Status.SOFT_TLE, Status.HARD_TLE, Status.MLE],
+        'runtime-error': [Status.RE],
+        'memory-limit': [Status.MLE],
+        'presentation-error': [Status.PE]
     }
 
     for result_status, _ in test_cases_status.items():

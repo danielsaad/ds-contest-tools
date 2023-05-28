@@ -212,8 +212,7 @@ class Solution:
 
         """
         self.__solution_name: str = solution_name
-        self.__expected_result: str = self.__set_expected_result(
-            expected_result)
+        self.__expected_result: str = expected_result
         self.__output_path: str = self.__generate_output_folder()
         self.__solution_status: ProblemAnswer = None
         self.__exec_args: list = None
@@ -349,18 +348,6 @@ class Solution:
         output_folder: str = os.path.join(
             root_tmp_path, self.get_file_extension(), self.get_binary_name())
         return output_folder
-
-    def __set_expected_result(self, expected_result: str) -> str:
-        convert_expected_result: dict = {
-            "main-ac": 'ACCEPTED',
-            "alternative-ac": 'ACCEPTED',
-            "wrong-answer": 'WRONG ANSWER',
-            "time-limit": 'TIME LIMIT EXCEEDED',
-            "runtime-error": 'RUNTIME ERROR',
-            "memory-limit": 'MEMORY LIMIT EXCEEDED',
-            "presentation-error": 'PRESENTATION ERROR'
-        }
-        return convert_expected_result[expected_result]
 
 
 class Test:

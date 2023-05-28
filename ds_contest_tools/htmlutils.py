@@ -4,6 +4,8 @@ import os
 from .logger import info_log
 from .metadata import Problem, ProblemAnswer, Solution, Status, Test
 
+REPORT_NAME = "report.html"
+
 
 def write_head(problem_name: str, f_out: io.TextIOWrapper) -> None:
     """
@@ -149,6 +151,8 @@ def write_test_cases_tbody(problem_obj: Problem, f_out: io.TextIOWrapper) -> Non
     memory_limit: float = problem_obj.memory_limit
     time_limit: float = problem_obj.time_limit
     test_cases_number: int = problem_obj.get_number_of_tests()
+    href_path: str = os.path.join(os.path.dirname(
+        __file__), 'files', 'assets', 'test-case-info.html')
     for i in range(test_cases_number):
         f_out.write('<tr class="text-center">')
         f_out.write(f'\t<td class="fw-bolder">{i + 1}</td>')
@@ -160,10 +164,12 @@ def write_test_cases_tbody(problem_obj: Problem, f_out: io.TextIOWrapper) -> Non
             memory_usage: float = test_case.memory_usage
             memory_usage: float = min(memory_usage, memory_limit) / 1000000
             execution_time: float = min(test_case.exec_time, time_limit)
-            url_parameters = f'id={i + 1}&solution={solution.solution_name}&veredict={test_status}&expected-result={solution.expected_result}&time={test_case.exec_time:.2f}&memory={(test_case.memory_usage / 1000):.2f}&checker-output={test_case.checker_output}'
-            url_link_param = f'input={os.path.join(problem_obj.input_folder, str(i + 1))}&output={os.path.join(solution.output_path, str(i + 1))}&answer={os.path.join(problem_obj.problem_dir, "output", str(i + 1))}'
-            td_info = f'\t<td class="{test_color_class}"><a href="./assets/test-case-info.html?{url_parameters}&{url_link_param}" {tooltip_msg}>{test_status} </a> <br>{execution_time:.2f} s / {(memory_usage):.1f} MB </td>'
-            f_out.write(td_info)
+            expected_result: str = set_expected_result(
+                solution.expected_result)
+            url_params = f'id={i + 1}&solution={solution.solution_name}&veredict={test_status}&expected-result={expected_result}&time={test_case.exec_time:.2f}&memory={(test_case.memory_usage / 1000):.2f}&checker-output={test_case.checker_output}'
+            url_link_params = f'input={os.path.join(problem_obj.input_folder, str(i + 1))}&output={os.path.join(solution.output_path, str(i + 1))}&answer={os.path.join(problem_obj.problem_dir, "output", str(i + 1))}&report-link={os.path.join(problem_obj.problem_dir, REPORT_NAME)}'
+            table_data_info = f'\t<td class="{test_color_class}"><a href="{href_path}?{url_params}&{url_link_params}" {tooltip_msg}>{test_status} </a> <br>{execution_time:.2f} s / {(memory_usage):.1f} MB </td>'
+            f_out.write(table_data_info)
 
         f_out.write('</tr>')
 
@@ -173,6 +179,21 @@ def write_test_cases_tbody(problem_obj: Problem, f_out: io.TextIOWrapper) -> Non
                     </div>
     """
     f_out.write(tbody)
+
+
+def set_expected_result(expected_result: str) -> str:
+    convert_expected_result: dict = {
+        "main-ac": 'ACCEPTED',
+        "alternative-ac": 'ACCEPTED',
+        "wrong-answer": 'WRONG ANSWER',
+        "time-limit": 'TIME LIMIT EXCEEDED',
+        "runtime-error": 'RUNTIME ERROR',
+        "memory-limit": 'MEMORY LIMIT EXCEEDED',
+        "presentation-error": 'PRESENTATION ERROR',
+        "time-limit-or-ac": 'TIME LIMIT OR ACCEPTED',
+        "time-limit-or-memory-limit": 'TIME LIMIT OR MEMORY LIMIT  EXCEEDED'
+    }
+    return convert_expected_result[expected_result]
 
 
 def test_case_status(test_case: Test) -> tuple:
@@ -379,7 +400,7 @@ def print_to_html(problem_obj: Problem) -> None:
 
     """
     problem_folder: str = problem_obj.problem_dir
-    html_filename: str = 'report.html'
+    html_filename: str = REPORT_NAME
     html_filepath: str = os.path.join(problem_folder, html_filename)
     info_log(f'Creating {html_filename}')
     with open(html_filepath, 'w') as f_out:
