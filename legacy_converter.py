@@ -4,11 +4,6 @@ import json
 import os
 import shutil
 
-from .jsonutils import parse_json
-from .logger import info_log
-from .metadata import Paths
-from .utils import instance_paths, verify_path
-
 
 def create_parser() -> argparse.ArgumentParser:
     """Create parser of the tool.
@@ -19,8 +14,27 @@ def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
         description="Convert legacy problems to newer version.")
-    parser.add_argument('problem_dir', help='Path to the problem.')
+    parser.add_argument('problem_dir', help='path to the problem')
     return parser
+
+
+def parse_json(json_file: str) -> dict:
+    """Converts a JSON file to a Python dictionary.
+
+    Args:
+        json_file: The path to the JSON file.
+
+    Returns:
+        dict: The contents of the JSON file as a dictionary.
+    """
+    if not os.path.isfile(json_file):
+        print(f'{os.path.basename(json_file)} does not exist.')
+        exit(1)
+
+    with open(json_file) as f:
+        json_data = json.load(f)
+
+    return json_data
 
 
 def write_file(statement_file: str, statement: io.TextIOWrapper) -> str:
@@ -43,15 +57,14 @@ def write_file(statement_file: str, statement: io.TextIOWrapper) -> str:
             text += line
 
 
-def convert_statement() -> None:
+def convert_statement(problem_dir: str) -> None:
     """Create statement directory and its files."""
-    problem_path = Paths().get_problem_dir()
-    statement_dir = os.path.join(problem_path, 'statement')
-    statement_path = os.path.join(problem_path, 'statement.md')
+    statement_dir = os.path.join(problem_dir, 'statement')
+    statement_path = os.path.join(problem_dir, 'statement.md')
     if not os.path.exists(statement_path):
         return
 
-    info_log('Converting statement.md to TeX files.')
+    print('Converting statement.md to TeX files.')
     os.makedirs(statement_dir, exist_ok=True)
     with open(statement_path, 'r') as statement:
         statement.readline()
@@ -72,42 +85,40 @@ def convert_statement() -> None:
                                         'interactor.tex'), statement)
 
 
-def move_makefile() -> None:
+def move_makefile(problem_dir : str) -> None:
     """Change CMake to Makefile"""
-    problem_dir = Paths().get_problem_dir()
+
     tool_folder = os.path.dirname(os.path.abspath(__file__))
 
-    info_log('Creating Makefile')
+    print('Creating Makefile')
     cmake_path = os.path.join(problem_dir, 'CMakeLists.txt')
     if os.path.exists(cmake_path):
         os.remove(cmake_path)
     shutil.copy2(os.path.join(tool_folder, 'files', 'Makefile'), problem_dir)
 
 
-def update_testlib() -> None:
+def update_testlib(problem_dir: str) -> None:
     """Move updated testlib to src folder and remove the old one."""
-    problem_dir = Paths().get_problem_dir()
     tool_folder = os.path.dirname(os.path.abspath(__file__))
     testlib_folder = os.path.join(problem_dir, 'include')
 
     if os.path.exists(testlib_folder):
         shutil.rmtree(testlib_folder)
 
-    info_log('Moving testlib.h')
+    print('Updating testlib')
     shutil.copy2(os.path.join(tool_folder, 'files', 'src', 'testlib.h'),
                  os.path.join(problem_dir, 'src', 'testlib.h'))
 
 
-def convert_problem_json() -> None:
+def convert_problem_json(problem_dir: str) -> None:
     """Convert problem.json to new version."""
-    problem_dir = Paths().get_problem_dir()
     tool_folder = os.path.dirname(os.path.abspath(__file__))
 
     metadata_path = os.path.join(problem_dir, 'problem.json')
     if not os.path.exists(metadata_path):
         return
 
-    info_log('Converting problem.json')
+    print('Converting problem.json')
     old_problem_metadata = parse_json(metadata_path)
     shutil.copy2(os.path.join(tool_folder, 'files',
                  'problem.json'), metadata_path)
@@ -130,22 +141,22 @@ def convert_problem_json() -> None:
         f.write(json.dumps(new_problem_metadata, ensure_ascii=False))
 
 
-def convert_problem() -> None:
+def convert_problem(problem_dir: str) -> None:
     """Convert legacy problem to newer version."""
-    move_makefile()
-    update_testlib()
-    convert_statement()
-    convert_problem_json()
+    move_makefile(problem_dir)
+    update_testlib(problem_dir)
+    convert_statement(problem_dir)
+    convert_problem_json(problem_dir)
 
 
 if __name__ == '__main__':
     parser = create_parser()
     args = parser.parse_args()
 
-    instance_paths(args.problem_dir)
-    verify_path(args.problem_dir)
+    if not os.path.exists(args.problem_dir):
+        print(f'Problem directory {args.problem_dir} does not exist.')
+        exit(1)
 
-    convert_problem()
+    convert_problem(problem_dir=args.problem_dir)
 
-    info_log('Update the solutions in problem.json file.')
-    info_log('Problem converted successfully.')
+    print('Update the solutions in problem.json file.\nProblem converted successfully.')
