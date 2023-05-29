@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ds-contest-tools"
+version = "0.1.0"
+description = "Tools for contest preparation."
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Daniel Saad Nogueira Nunes", email = "daniel.nunes@ifb.edu.br"}
+]
+maintainers = [
+    {name = "Matheus Loiola Pinto Curado Silva", email = "matheus.silva18@estudante.ifb.edu.br"},
+    {name = "Leonam Knupp", email = "leonam.knupp@estudante.ifb.edu.br"}
+]
+keywords = ["contest", "competitive programming", "tools"]
+classifiers = [
+    "Programming Language :: Python :: 3.8",
+    "Operating System :: Unix"
+]
+dependencies = [
+    "requests",
+    "psutil"
+]
+
+[project.scripts]
+ds-contest-tools = "ds_contest_tools:main"
+
+
+[project.urls]
+repository = "https://github.com/danielsaad/ds-contest-tools/"

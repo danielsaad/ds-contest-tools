@@ -5,13 +5,46 @@ import subprocess
 import sys
 from typing import Dict
 
-from checker import run_solutions
-from config import custom_key
-from htmlutils import print_to_html
-from jsonutils import parse_json
-from logger import debug_log, error_log, info_log
-from metadata import Paths, Problem, Solution
-from utils import check_problem_metadata, check_subprocess_output, verify_path
+from .checker import run_solutions
+from .config import custom_key
+from .htmlutils import print_to_html
+from .jsonutils import parse_json
+from .logger import debug_log, error_log, info_log
+from .metadata import Paths, Problem, Solution
+from .utils import check_problem_metadata, check_subprocess_output, verify_path
+
+
+def init_problem(interactive=False) -> None:
+    """Initialize a competitive problem."""
+    problem_folder = Paths().get_problem_dir()
+    if os.path.exists(os.path.join(problem_folder, 'src')):
+        error_log("Problem ID already exists in the directory")
+        sys.exit(1)
+
+    folder = os.path.join(os.path.dirname(
+        os.path.abspath(__file__)), 'files')
+    shutil.copytree(folder, problem_folder,
+                    ignore=shutil.ignore_patterns('boca'), dirs_exist_ok=True)
+    # Rename files and folders if the problem is interactive
+    interactor = os.path.join(*[problem_folder, 'src', 'interactor.cpp'])
+    interactive_json = os.path.join(problem_folder, 'problem-interactive.json')
+    interactor_tex = os.path.join(
+        *[problem_folder, 'statement', 'interactor.tex'])
+    os.remove(os.path.join(problem_folder, 'sqtpm.sh'))
+    if (interactive):
+        shutil.move(interactive_json, os.path.join(
+            problem_folder, 'problem.json'))
+        # Create .interactive files for statement
+        os.makedirs(os.path.join(problem_folder, 'input'))
+        os.makedirs(os.path.join(problem_folder, 'output'))
+        open(os.path.join(
+            *[problem_folder, 'input', '1.interactive']), 'w').close()
+        open(os.path.join(
+            *[problem_folder, 'output', '1.interactive']), 'w').close()
+    else:
+        os.remove(interactor_tex)
+        os.remove(interactive_json)
+        os.remove(interactor)
 
 
 def build_executables() -> None:
@@ -30,7 +63,7 @@ def build_executables() -> None:
     os.chdir(old_cwd)
 
 
-def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_number: int = 0) -> None:
+def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_number: int = 1) -> None:
     """
     Run the executables to create the problem.
 
@@ -129,32 +162,6 @@ def validate_inputs() -> None:
         sys.exit(0)
 
 
-def get_manual_tests(temporary_folder: str) -> list:
-    """Get manual tests generated without the source generators.
-
-    Args:
-        temporary_folder: Path to the temporary input folder.
-
-    Returns:
-        A list containing the absolute path of manual tests of the problem.
-    """
-    problem_dir = Paths().get_problem_dir()
-
-    temporary_encoded_tests: dict = get_encoded_tests(temporary_folder)
-    original_encoded_tests: dict = get_encoded_tests(
-        os.path.join(problem_dir, 'input'))
-
-    manual_tests = set()
-    for key, value in original_encoded_tests.items():
-        if key in temporary_encoded_tests:
-            continue
-
-        for test in value:
-            manual_tests.add(test)
-
-    return list(manual_tests)
-
-
 def move_inputs(temporary_folder: str) -> None:
     """
     Move input tests to the problem folder.
@@ -162,28 +169,16 @@ def move_inputs(temporary_folder: str) -> None:
     Args:
         temporary_folder: Path to the temporary input folder.
     """
-    info_log("Moving input tests to problem folder.")
     problem_dir = Paths().get_problem_dir()
     input_folder: str = os.path.join(problem_dir, 'input')
+    
+    # Reset input folder
+    shutil.rmtree(input_folder)
+    os.makedirs(input_folder)
 
-    temporary_encoded_tests: dict = get_encoded_tests(temporary_folder)
-    original_encoded_tests: dict = get_encoded_tests(input_folder)
-
-    # Remove repeated tests from problem folder
-    for key, values in original_encoded_tests.items():
-        if key in temporary_encoded_tests:
-            for value in values:
-                os.remove(value)
-
-    # Move tests to problem folder maintaning manual tests
-    index = 1
-    output_folder = os.listdir(temporary_folder)
-    output_folder.sort(key=custom_key)
-    for input_test in output_folder:
-        while os.path.exists(os.path.join(input_folder, str(index))):
-            index += 1
-        shutil.move(os.path.join(temporary_folder, str(input_test)),
-                    os.path.join(input_folder, str(index)))
+    # Move tests to problem folder
+    for f in os.listdir(temporary_folder):
+        shutil.copy2(os.path.join(temporary_folder, f), os.path.join(input_folder, f.lstrip('0')))
 
 
 def generate_inputs(move: bool = True, output_folder: str = '') -> None:

@@ -1,12 +1,13 @@
 import os
 import subprocess
+import sys
 from typing import Optional
 
-import config
-from latexutils import clean_auxiliary_files, print_to_latex
-from logger import info_log
-from metadata import Paths
-from utils import check_subprocess_output, verify_path
+from . import config
+from .latexutils import clean_auxiliary_files, print_to_latex
+from .logger import info_log
+from .metadata import Paths
+from .utils import check_subprocess_output, verify_path
 
 MERGE_TOOL = 'pdfjam'
 
@@ -84,10 +85,16 @@ def generate_pdf(problem_folder: str, output_folder: str, tex_path: str) -> None
         tex_path: The path to the tex file.
     """
     old_cwd = os.getcwd()
-    command = ["pdflatex", '--output-directory', output_folder, tex_path]
+    command = ["pdflatex", '--output-directory',
+               output_folder, '-interaction=nonstopmode', tex_path]
 
     os.chdir(problem_folder)
-    p = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    try:
+        p = subprocess.run(command, stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE, timeout=10)
+    except subprocess.TimeoutExpired:
+        info_log("Timeout error while generating pdf. Maybe a package is missing?")
+        sys.exit(0)
     os.chdir(old_cwd)
 
     check_subprocess_output(p, "Generation of problem file failed.")

@@ -1,8 +1,8 @@
 import io
 import os
 
-from logger import info_log
-from metadata import Problem, ProblemAnswer, Solution, Status, Test
+from .logger import info_log
+from .metadata import Problem, ProblemAnswer, Solution, Status, Test
 
 REPORT_NAME = "report.html"
 

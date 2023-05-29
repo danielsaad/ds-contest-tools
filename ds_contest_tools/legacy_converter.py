@@ -4,10 +4,10 @@ import json
 import os
 import shutil
 
-from jsonutils import parse_json
-from logger import info_log
-from metadata import Paths
-from utils import instance_paths, verify_path
+from .jsonutils import parse_json
+from .logger import info_log
+from .metadata import Paths
+from .utils import instance_paths, verify_path
 
 
 def create_parser() -> argparse.ArgumentParser:

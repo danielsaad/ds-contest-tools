@@ -4,9 +4,9 @@ import sys
 from math import floor, log10
 from typing import Optional
 
-from jsonutils import parse_json
-from logger import error_log
-from utils import verify_path
+from .jsonutils import parse_json
+from .logger import error_log
+from .utils import verify_path
 
 
 def rename_io(io_folder: str) -> None:
@@ -85,7 +85,7 @@ def get_statement_files(statement_folder: str, interactive: Optional[bool] = Fal
 
     Args:
         statement_folder: Path to the statement folder.
-        interactive : Wheter the problem is interactive. Defaults to False.
+        interactive : Whether the problem is interactive. Defaults to False.
 
     Returns:
         A list containing the absolute path to the statement files.
