@@ -94,7 +94,8 @@ def move_makefile(problem_dir : str) -> None:
     cmake_path = os.path.join(problem_dir, 'CMakeLists.txt')
     if os.path.exists(cmake_path):
         os.remove(cmake_path)
-    shutil.copy2(os.path.join(tool_folder, 'files', 'Makefile'), problem_dir)
+    makefile_path = os.path.join(tool_folder, 'ds_contest_tools', 'files', 'Makefile')
+    shutil.copy2(makefile_path, problem_dir)
 
 
 def update_testlib(problem_dir: str) -> None:
@@ -106,7 +107,7 @@ def update_testlib(problem_dir: str) -> None:
         shutil.rmtree(testlib_folder)
 
     print('Updating testlib')
-    shutil.copy2(os.path.join(tool_folder, 'files', 'src', 'testlib.h'),
+    shutil.copy2(os.path.join(tool_folder, 'ds_contest_tools', 'files', 'src', 'testlib.h'),
                  os.path.join(problem_dir, 'src', 'testlib.h'))
 
 
@@ -120,7 +121,7 @@ def convert_problem_json(problem_dir: str) -> None:
 
     print('Converting problem.json')
     old_problem_metadata = parse_json(metadata_path)
-    shutil.copy2(os.path.join(tool_folder, 'files',
+    shutil.copy2(os.path.join(tool_folder, 'ds_contest_tools', 'files',
                  'problem.json'), metadata_path)
     new_problem_metadata = parse_json(metadata_path)
 
@@ -159,4 +160,4 @@ if __name__ == '__main__':
 
     convert_problem(problem_dir=args.problem_dir)
 
-    print('Update the solutions in problem.json file.\nProblem converted successfully.')
+    print('Problem converted successfully. Update the solutions in problem.json file.')
