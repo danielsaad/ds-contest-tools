@@ -1,17 +1,15 @@
 import os
 import shutil
 import sys
-from typing import Union
 
-from jsonutils import parse_json
-from logger import error_log, info_log
-from metadata import Paths
-from toolchain import generate_inputs, get_manual_tests
-from utils import check_problem_metadata, instance_paths, verify_path
+from .jsonutils import parse_json
+from .logger import error_log, info_log
+from .metadata import Paths
+from .utils import check_problem_metadata, verify_path
 
 
 def create_config(showcases: str, memory_limit: int, cputime: int) -> None:
-    """Create default config file with problem informations."""
+    """Create default config file with problem information."""
     output_folder = Paths().get_output_dir()
     info_log("Creating config file.")
 
@@ -27,7 +25,7 @@ virtmem = {memory_limit * 1000}
 # startup = aaaa/mm/dd hh:mm:ss
 # deadline = aaaa/mm/dd hh:mm:ss
 # penalty = n
-# grading = {total, porportional}
+# grading = {total, proportional}
 # keep-open = n
 # hide-grades = {on,off}
 # tries = n
@@ -138,18 +136,6 @@ def copy_generator_script() -> None:
                  os.path.join(output_folder, 'genio.sh'))
 
 
-def copy_manual_tests() -> None:
-    """Move manual tests to SQTPM folder."""
-    output_folder = Paths().get_output_dir()
-    tmp_folder = os.path.join(Paths().get_tmp_output_dir(), 'scripts')
-
-    generate_inputs(move=False, output_folder=tmp_folder)
-    manual_tests = get_manual_tests(tmp_folder)
-    for test in manual_tests:
-        shutil.copy2(test, os.path.join(
-            output_folder, os.path.basename(test).zfill(3) + '.in'))
-
-
 def create_makefile() -> None:
     """Create Makefile to compile source files for SQTPM."""
     output_folder = Paths().get_output_dir()
@@ -197,12 +183,9 @@ clean:
         f.write(makefile_content)
 
 
-def convert_to_sqtpm(problem_dir: str, output_dir: Union[str, None]) -> None:
+def convert_to_sqtpm() -> None:
     """Convert DS problem to SQTPM."""
-    if not output_dir:
-        output_dir = os.path.join(problem_dir, 'sqtpm')
-    instance_paths(problem_dir, output_dir)
-    info_log("Starting DS -> SQTPM conversion.")
+    info_log("Starting SQTPM conversion.")
     problem_folder = Paths().get_problem_dir()
     output_folder = Paths().get_output_dir()
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
@@ -213,7 +196,6 @@ def convert_to_sqtpm(problem_dir: str, output_dir: Union[str, None]) -> None:
     copy_pdf(pdf_name)
     copy_generator_script()
     copy_source_files(problem_metadata['solutions']['main-ac'])
-    copy_manual_tests()
 
     create_makefile()
     create_html_statement(os.path.basename(

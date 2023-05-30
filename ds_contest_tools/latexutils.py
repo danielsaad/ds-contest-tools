@@ -2,11 +2,11 @@ import io
 import os
 import re
 
-import config
-from fileutils import get_statement_files
-from jsonutils import parse_json
-from logger import info_log
-from utils import check_problem_metadata, verify_path
+from . import config
+from .fileutils import get_statement_files
+from .jsonutils import parse_json
+from .logger import info_log
+from .utils import check_problem_metadata, verify_path
 
 
 def print_line(line: str, f_out: io.TextIOWrapper) -> None:

@@ -5,8 +5,8 @@ from operator import mod
 from subprocess import CompletedProcess
 from typing import Optional, Union
 
-from logger import convert_to_string, debug_log, error_log, setup_logger
-from metadata import Paths
+from .logger import convert_to_string, debug_log, error_log, setup_logger
+from .metadata import Paths
 
 
 def convert_idx_to_string(idx: int) -> str:
@@ -103,7 +103,6 @@ def verify_solutions(solutions_dict: dict) -> None:
             continue
         # Verify others solutions
         for file in solutions:
-            # print(file)
             verify_path(os.path.join(problem_folder, 'src', file))
             verify_file(os.path.join(problem_folder, 'src', file))
 
