@@ -280,7 +280,7 @@ def save_solution(file_path: str, tag: str) -> Tuple[str, dict]:
     return ('problem.saveSolution', params)
 
 
-def save_files(solutions: dict) -> List[Dict[str, dict]]:
+def save_files(solutions: dict, interactive: bool) -> List[Dict[str, dict]]:
     """Save auxiliary, source and solution files of a problem.
 
     Args:
@@ -324,6 +324,8 @@ def save_files(solutions: dict) -> List[Dict[str, dict]]:
         elif file.endswith(('.aux', '.sh')):
             # Save auxiliary files
             parameters_list.append(save_file(file_path, 'aux'))
+        elif file == 'interactor.cpp' and not interactive:
+            continue
         else:
             # Save source files
             parameters_list.append(save_file(file_path, 'source'))
@@ -430,7 +432,7 @@ def get_requests_list() -> List[Tuple[str, dict]]:
     requests_list += save_statement_resources()
 
     # Get source and solution files of the problem
-    requests_list += save_files(problem_metadata['solutions'])
+    requests_list += save_files(problem_metadata['solutions'], interactive)
 
     # Get test parameters of the problem
     requests_list += save_testcases(
