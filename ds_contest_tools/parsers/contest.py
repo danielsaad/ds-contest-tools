@@ -13,7 +13,7 @@ def process_contest(problems_dir: list, output_dir: str, pdf: bool, io: bool) ->
         pdf: Whether is to generate contest PDFs.
         io: Whether is to generate contest input/output files.
     """
-    setup_and_validate_paths(problems_dir, output_dir)
+    setup_and_validate_paths(problems_dir, output_dir, additional_verification=['pdfjam'])
     os.makedirs(output_dir, exist_ok=True)
     for problem in Paths().get_problem_dir():
         verify_problem(problem)
