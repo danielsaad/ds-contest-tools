@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 import sys
+from distutils.dir_util import copy_tree
 from typing import Dict
 
 from .checker import run_solutions
@@ -171,10 +172,11 @@ def move_inputs(temporary_folder: str) -> None:
     """
     problem_dir = Paths().get_problem_dir()
     input_folder: str = os.path.join(problem_dir, 'input')
-    
+
     # Reset input folder
-    shutil.rmtree(input_folder)
-    os.makedirs(input_folder)
+    for file in os.listdir(input_folder):
+        if not file.endswith('.interactive'):
+            os.remove(os.path.join(input_folder, file))
 
     # Move tests to problem folder
     for f in os.listdir(temporary_folder):
@@ -295,7 +297,7 @@ def produce_outputs(problem_metadata: dict) -> None:
                 command: list = [interactor, inf_path, ouf_path, '<',
                                  tmp_fifo, '|', ac_solution, '>', tmp_fifo]
 
-                p: subprocess.CompletedProcess = subprocess.run(
+                p: subprocess.CompletedProcess = subprocess.Popen(
                     ' '.join(command), stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE, shell=True)
                 subprocess.run(['rm', tmp_fifo])

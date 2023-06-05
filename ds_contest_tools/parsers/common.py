@@ -36,14 +36,14 @@ def get_basename(path: str) -> str:
     return os.path.basename(path)
 
 
-def setup_and_validate_paths(problem_dir: Union[str, list], output_dir: str = '', verify_path: bool = True) -> None:
+def setup_and_validate_paths(problem_dir: Union[str, list], output_dir: str = '', verify_path: bool = True, additional_verification: list = []) -> None:
     """Instance logger and verify paths.
 
     Args:
         problem_dir: Path(s) to the problem directory(ies)
         output_dir: Path to the output directory. Defaults to ''.
     """
-    verify_binaries()
+    verify_binaries(additional_verification)
     if verify_path:
         if isinstance(problem_dir, list):
             for path in problem_dir:
@@ -57,10 +57,10 @@ def setup_and_validate_paths(problem_dir: Union[str, list], output_dir: str = ''
     utils.instance_paths(problem_dir, output_dir)
 
 
-def verify_binaries() -> None:
+def verify_binaries(additional_verification: list = []) -> None:
     """Before running the tool, verify if the binaries are installed.
     """
-    binaries = ['pdfjam', 'pdflatex', 'make', 'g++', 'zip']
+    binaries = ['pdflatex', 'make', 'g++', 'zip'] + additional_verification
     for binary in binaries:
         if not which(binary):
             print(f'{binary} is not installed.')
