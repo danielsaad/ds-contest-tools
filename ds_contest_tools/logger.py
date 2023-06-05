@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import io
 
 from .metadata import Paths
 
@@ -49,7 +50,7 @@ def convert_to_string(x) -> str:
     """Converts x to string.
 
     Args:
-        x: Text to be converted to string.
+        x: Object to be converted to string.
 
     Returns:
         The string representation of x.
@@ -59,6 +60,8 @@ def convert_to_string(x) -> str:
             return x.decode('utf-8').rstrip()
         except UnicodeDecodeError:
             pass
+    elif isinstance(x, io.BufferedReader):
+        return ""
     try:
         x = str(x)
         return x.rstrip()
