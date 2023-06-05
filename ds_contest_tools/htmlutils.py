@@ -1,6 +1,7 @@
 import io
 import os
 
+from math import inf, floor
 from .logger import info_log
 from .metadata import Problem, ProblemAnswer, Solution, Status, Test
 
@@ -153,25 +154,38 @@ def write_test_cases_tbody(problem_obj: Problem, f_out: io.TextIOWrapper) -> Non
     test_cases_number: int = problem_obj.get_number_of_tests()
     href_path: str = os.path.join(os.path.dirname(
         __file__), 'files', 'assets', 'test-case-info.html')
+    memory_usage: float = None
+    execution_time: float = None
+    solution: Solution
     for i in range(test_cases_number):
         f_out.write('<tr class="text-center">')
         f_out.write(f'\t<td class="fw-bolder">{i + 1}</td>')
-        solution: Solution
         for solution in problem_obj.get_list_solution():
             test_case: Test = solution.tests[i]
             test_color_class, test_status, tooltip_msg = test_case_status(
                 test_case)
-            memory_usage: float = test_case.memory_usage
-            memory_usage: float = min(memory_usage, memory_limit) / 1000000
-            execution_time: float = min(test_case.exec_time, time_limit)
+            memory_usage = min(test_case.memory_usage, memory_limit) / 1000000
+            execution_time = min(test_case.exec_time, time_limit)
             expected_result: str = set_expected_result(
                 solution.expected_result)
             url_params = f'id={i + 1}&solution={solution.solution_name}&veredict={test_status}&expected-result={expected_result}&time={test_case.exec_time:.2f}&memory={(test_case.memory_usage / 1000):.2f}&checker-output={test_case.checker_output}'
             url_link_params = f'input={os.path.join(problem_obj.input_folder, str(i + 1))}&output={os.path.join(solution.output_path, str(i + 1))}&answer={os.path.join(problem_obj.problem_dir, "output", str(i + 1))}&report-link={os.path.join(problem_obj.problem_dir, REPORT_NAME)}'
             table_data_info = f'\t<td class="{test_color_class}"><a href="{href_path}?{url_params}&{url_link_params}" {tooltip_msg}>{test_status} </a> <br>{execution_time:.2f} s / {(memory_usage):.1f} MB </td>'
             f_out.write(table_data_info)
-
         f_out.write('</tr>')
+
+    f_out.write('<tr class="text-center table-secondary">')
+    f_out.write(f'\t<td class="fw-bolder ">Total</td>')
+    for solution in problem_obj.get_list_solution():
+        ac_count: int = solution.statistics.ac_count
+        ac_percentage: int = ac_count / test_cases_number * 100
+        memory_usage = min(
+            solution.statistics.max_memory_usage, memory_limit) / 1000000
+        execution_time = min(
+            solution.statistics.max_exec_time, time_limit)
+        table_data_info = f'\t<td> {floor(ac_percentage)} %<br>{execution_time:.2f} s / {(memory_usage):.1f} MB </td>'
+        f_out.write(table_data_info)
+    f_out.write('</tr>')
 
     tbody = """
                             </tbody>
@@ -248,8 +262,9 @@ def write_auxiliary_table(problem_obj: Problem, f_out: io.TextIOWrapper) -> None
     <div class="col-md-2 col-lg-2 col-xl-2 position-fixed end-0">
         <table class="table table-hover table-bordered">
             <thead class="table-dark">
-                <tr>
+                <tr class="text-center">
                     <th>Solutions</th>
+                    <th>Expected Result</th>
                     <th>Result</th>
                 </tr>
             </thead>
@@ -278,10 +293,12 @@ def write_aux_trow(problem_obj: Problem, f_out: io.TextIOWrapper) -> None:
     """
     solution: Solution
     for solution in problem_obj.get_list_solution():
-        f_out.write('<tr>')
+        f_out.write('<tr class="text-center">')
         row_color, solution_result_symbol = solution_status(
             solution.solution_status)
         f_out.write(f'\t<td>{solution.solution_name}</td>')
+        f_out.write(
+            f'\t<td>{set_expected_result(solution.expected_result)}</td>')
         f_out.write(f'\t<td class="{row_color}">{solution_result_symbol}</td>')
         f_out.write('</tr>')
 

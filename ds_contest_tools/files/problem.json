@@ -32,14 +32,14 @@
     },
     "solutions" : {
         "main-ac" : "ac.cpp",
-        "alternative-ac" : [""],
-        "wrong-answer" : [""],
-        "time-limit" : [""],
-        "time-limit-or-ac" : [""],
-        "time-limit-or-memory-limit" : [""],
-        "memory-limit" : [""],
-        "presentation-error" : [""],
-        "runtime-error" : [""]
+        "alternative-ac" : [],
+        "wrong-answer" : [],
+        "time-limit" : [],
+        "time-limit-or-ac" : [],
+        "time-limit-or-memory-limit" : [],
+        "memory-limit" : [],
+        "presentation-error" : [],
+        "runtime-error" : []
     },
     "polygon_config" : {
         "id" : ""

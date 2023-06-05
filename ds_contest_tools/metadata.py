@@ -2,6 +2,7 @@ import os
 from enum import Enum
 from sys import exit
 from typing import Union
+from dataclasses import dataclass
 
 
 class Status(Enum):
@@ -176,11 +177,17 @@ class Problem:
         return self.get_number_of_solutions() == 0
 
     def get_number_of_tests(self) -> int:
+        """
+        Get the number of tests of a given problem
+
+        Returns:
+            int: The number of tests
+        """
+        from .logger import info_log
         try:
             solution: Solution = self.get_list_solution()[0]
         except:
-            # info_log(
-            print(
+            info_log(
                 f'The solution list for problem {self.problem_name} is empty.')
             exit(1)
         return len(solution.tests)
@@ -192,12 +199,11 @@ class Solution:
 
     Attributes:
         solution_name: The name of the solution file.
-        binary_file_name: The name of the binary file generated from the solution.
-        file_extension: The extension of the solution file.
         expected_result: The expected result of running the solution.
         output_path: The path to the folder where the output files generated 
-            by the solution are stored.
         solution_status: The status of the solution.
+        statistics: The statistics of a given solution.
+        exec_args: The command line arguments to be executed.
         tests: The dictionary of tests that were run on the solution.
 
     """
@@ -215,6 +221,7 @@ class Solution:
         self.__expected_result: str = expected_result
         self.__output_path: str = self.__generate_output_folder()
         self.__solution_status: ProblemAnswer = None
+        self.__statistics: Statistic = None
         self.__exec_args: list = None
         self.__tests: dict = {}
 
@@ -262,7 +269,6 @@ class Solution:
             Status: The status of the solution.
         """
         return self.__solution_status
-    # TODO: Review the docs
 
     @solution_status.setter
     def solution_status(self, solution_status: ProblemAnswer) -> None:
@@ -275,12 +281,45 @@ class Solution:
         self.__solution_status = solution_status
 
     @property
+    def statistics(self) -> 'Statistic':
+        """
+        Gets the statistics (max execution time, max memory usage...) 
+        of the solution
+
+        Returns:
+            Statistic: The statistics of the solution
+        """
+        return self.__statistics
+
+    @statistics.setter
+    def statistics(self, statistics: 'Statistic') -> None:
+        """
+        Sets the statistics information for a given problem
+
+        Args:
+            statistics: The statistics information to set
+        """
+        self.__statistics = statistics
+
+    @property
     def exec_args(self) -> list:
+        """
+        Gets the command line arguments to be executed
+
+        Returns:
+            list: A list of the arguments
+        """
         return self.__exec_args
 
     @exec_args.setter
     def exec_args(self, exec_args: str) -> None:
-        self.__exec_args = exec_args.split(' ')
+        """
+        Sets the command line arguments
+
+        Args:
+            exec_args: A string of line arguments divided by spaces
+        """
+        self.__exec_args = exec_args.split()
 
     @property
     def tests(self) -> dict:
@@ -428,6 +467,21 @@ class Test:
             str: The output of the checker.
         """
         return self.__checker_output
+
+
+@dataclass
+class Statistic:
+    """
+    Represents a statistical summary of a solution.
+
+    Attributes:
+        ac_count: The count of accepted tests statuses.
+        max_exec_time: The maximum execution time of a solution.
+        max_memory_usage: The maximum memory usage of a solution.
+    """
+    ac_count: int
+    max_exec_time: float
+    max_memory_usage: float
 
 
 def singleton(cls):

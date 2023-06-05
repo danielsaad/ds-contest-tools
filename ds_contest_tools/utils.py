@@ -92,17 +92,25 @@ def verify_solutions(solutions_dict: dict) -> None:
         solutions_dict (dict): Dictionary containing the solutions of the problem.
     """
     problem_folder: Union[list, str] = Paths().get_problem_dir()
+    # Ignore verification due to creation of contest
+    if isinstance(problem_folder, list):
+        return
     for _, solutions in solutions_dict.items():
-        # Ignore verification due to creation of contest
-        if isinstance(problem_folder, list):
-            break
         # Verify main solution
         if isinstance(solutions, str):
             verify_path(os.path.join(problem_folder, 'src', solutions))
+            verify_file(os.path.join(problem_folder, 'src', solutions))
             continue
         # Verify others solutions
         for file in solutions:
             verify_path(os.path.join(problem_folder, 'src', file))
+            verify_file(os.path.join(problem_folder, 'src', file))
+
+
+def verify_file(filepath: str) -> None:
+    if not os.path.isfile(filepath):
+        error_log(f'Solutions paths cannot be empty.')
+        sys.exit(1)
 
 
 def check_problem_metadata(problem_metadata: dict) -> None:
