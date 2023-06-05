@@ -373,9 +373,10 @@ def define_statement_tests(tests_in_statement: int, interactive: bool) -> List[T
     parameters_list: list = []
     for input_file in range(1, tests_in_statement + 1):
         # Index has leading zeros in order to sort them for requests
+        input_file = str(input_file)
         params: dict = {
             'testset': TESTSET,
-            'testIndex': str(input_file).zfill(len(str(total_inputs))),
+            'testIndex': input_file.zfill(len(str(total_inputs))),
             'checkExisting': 'false',
             'testUseInStatements': 'true',
         }
