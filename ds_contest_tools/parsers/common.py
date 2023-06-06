@@ -37,11 +37,13 @@ def get_basename(path: str) -> str:
 
 
 def setup_and_validate_paths(problem_dir: Union[str, list], output_dir: str = '', verify_path: bool = True, additional_verification: list = []) -> None:
-    """Instance logger and verify paths.
+    """Instance loggers and verify paths.
 
     Args:
         problem_dir: Path(s) to the problem directory(ies)
         output_dir: Path to the output directory. Defaults to ''.
+        verify_path: Whether to verify the problem path or not. Defaults to True.
+        additional_verification: Additional binaries to be verified. Defaults to [].
     """
     verify_binaries(additional_verification)
     if verify_path:
@@ -59,6 +61,9 @@ def setup_and_validate_paths(problem_dir: Union[str, list], output_dir: str = ''
 
 def verify_binaries(additional_verification: list = []) -> None:
     """Before running the tool, verify if the binaries are installed.
+    
+    Args:
+        additional_verification: Additional binaries to be verified. Defaults to [].
     """
     binaries = ['pdflatex', 'make', 'g++', 'zip'] + additional_verification
     for binary in binaries:

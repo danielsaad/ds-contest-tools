@@ -5,7 +5,7 @@ from .parsers import build, clean, contest, convert, init, set_keys
 
 
 def create_parser() -> argparse.ArgumentParser:
-    """Create parser for ds-contest-tools
+    """Create a CLI parser of the tool.
 
     Returns:
         The parser object.

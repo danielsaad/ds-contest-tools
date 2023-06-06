@@ -18,8 +18,7 @@ IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'svg', 'bmp', 'ico'}
 
 
 def update_info(problem_metadata: dict) -> tuple:
-    """
-    Get general information parameters of the problem.
+    """Get general information parameters of the problem.
 
     Args:
         problem_metadata: A dictionary containing metadata about the problem.
@@ -50,8 +49,7 @@ def update_info(problem_metadata: dict) -> tuple:
 
 
 def save_statement(name: str, interactive: bool) -> tuple:
-    """
-    Get statement parameters of the problem.
+    """Get statement parameters of the problem.
 
     Args:
         name: The name of the statement file.
@@ -92,8 +90,7 @@ def save_statement(name: str, interactive: bool) -> tuple:
 
 
 def save_statement_resources() -> List[Tuple[str, dict]]:
-    """
-    Get statement resource files of the problem, e.g, images or PDFs.
+    """Get statement resource files of the problem, e.g, images or PDFs.
 
     Returns:
         A list of tuples, where each tuple contains the method and the 
@@ -141,8 +138,7 @@ def save_testcases(tests_in_statement: int, interactive: bool, tmp_folder: str) 
 
 
 def save_script(tmp_folder: str) -> List[Tuple[str, dict]]:
-    """
-    Verify if script exists and save it.
+    """Verify if script exists and save it.
 
     Returns:
         A tuple containing the method and the parameters for the request.

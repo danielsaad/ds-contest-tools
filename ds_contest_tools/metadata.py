@@ -1,8 +1,8 @@
 import os
+from dataclasses import dataclass
 from enum import Enum
 from sys import exit
 from typing import Union
-from dataclasses import dataclass
 
 
 class Status(Enum):
