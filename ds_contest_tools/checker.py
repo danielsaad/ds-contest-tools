@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 import os
 import queue
 import subprocess
@@ -13,7 +11,8 @@ from signal import SIGKILL
 import psutil
 
 from .logger import debug_log, error_log, info_log
-from .metadata import Paths, Problem, ProblemAnswer, Solution, Status, Test, Statistic
+from .metadata import (Paths, Problem, ProblemAnswer, Solution, Statistic,
+                       Status, Test)
 
 """ Java definitions """
 JAVA_INTERPRETER = 'java'

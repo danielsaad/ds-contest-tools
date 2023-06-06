@@ -3,7 +3,6 @@ import os
 import shutil
 import subprocess
 import sys
-from distutils.dir_util import copy_tree
 from typing import Dict
 
 from .checker import run_solutions
@@ -16,7 +15,11 @@ from .utils import check_problem_metadata, check_subprocess_output, verify_path
 
 
 def init_problem(interactive=False) -> None:
-    """Initialize a competitive problem."""
+    """Initialize a competitive problem.
+
+    Args:
+        interactive: Boolean indicating whether the problem is interactive.
+    """
     problem_folder = Paths().get_problem_dir()
     if os.path.exists(os.path.join(problem_folder, 'src')):
         error_log("Problem ID already exists in the directory")
@@ -71,6 +74,7 @@ def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_n
     Args:
         all_solutions: Boolean indicating whether to run all solution files.
         specific_solution: String containing name of the solution to run.
+        cpu_number: Number of CPUs to use.
     """
     problem_folder = Paths().get_problem_dir()
     input_folder = os.path.join(problem_folder, 'input')
@@ -180,11 +184,12 @@ def move_inputs(temporary_folder: str) -> None:
 
     # Move tests to problem folder
     for f in os.listdir(temporary_folder):
-        shutil.copy2(os.path.join(temporary_folder, f), os.path.join(input_folder, f.lstrip('0')))
+        shutil.copy2(os.path.join(temporary_folder, f),
+                     os.path.join(input_folder, f.lstrip('0')))
 
 
 def generate_inputs(move: bool = True, output_folder: str = '') -> None:
-    """Generate input tests for the problem.
+    """Generate input tests of the problem in a temporary folder.
 
     Args:
         move: Whether to move the input tests to the problem folder.
@@ -270,7 +275,7 @@ def produce_outputs(problem_metadata: dict) -> None:
     Run main solution on inputs to produce the outputs.
 
     Args:
-        problem_metadata (dict): Dictionary containing the values of problem.json.
+        problem_metadata: Dictionary containing the values of problem.json.
     """
     info_log("Producing outputs")
     problem_dir = Paths().get_problem_dir()
@@ -323,6 +328,14 @@ def clean_files() -> None:
 
 
 def parse_solutions(problem_obj: Problem, solutions: dict, all_solutions, specific_solution: str) -> None:
+    """Parse the solutions from the problem.json file.
+
+    Args:
+        problem_obj: Problem object.
+        solutions: Dictionary containing the solutions from the problem.json file.
+        all_solutions: Boolean indicating whether to run all solution files.
+        specific_solution: String containing name of the solution to run.
+    """
     solution: Solution = None
     if all_solutions:
         for expected_result, files in solutions.items():

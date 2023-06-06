@@ -14,6 +14,8 @@ def process_build(problem_dir: str, all_solutions: bool, specific_solution: str,
         all_solutions: Whether to build all solutions or not.
         specific_solution: Name of the solution to be checked.
         cpu_count: Number of threads to be used when checking solutions.
+        io: Whether to generate only input/output files or not.
+        pdf: Whether to generate only PDFs or not.
     """
     setup_and_validate_paths(problem_dir)
     problem_name = get_basename(problem_dir)
