@@ -169,7 +169,7 @@ def write_test_cases_tbody(problem_obj: Problem, f_out: io.TextIOWrapper) -> Non
             expected_result: str = set_expected_result(
                 solution.expected_result)
             url_params = f'id={i + 1}&solution={solution.solution_name}&veredict={test_status}&expected-result={expected_result}&time={test_case.exec_time:.2f}&memory={(test_case.memory_usage / 1000):.2f}&checker-output={test_case.checker_output}'
-            url_link_params = f'input={os.path.join(problem_obj.input_folder, str(i + 1))}&output={os.path.join(solution.output_path, str(i + 1))}&answer={os.path.join(problem_obj.problem_dir, "output", str(i + 1))}&report-link={os.path.join(problem_obj.problem_dir, REPORT_NAME)}'
+            url_link_params = f'title={problem_obj.problem_name}&input={os.path.join(problem_obj.input_folder, str(i + 1))}&output={os.path.join(solution.output_path, str(i + 1))}&answer={os.path.join(problem_obj.problem_dir, "output", str(i + 1))}&report-link={os.path.join(problem_obj.problem_dir, REPORT_NAME)}'
             table_data_info = f'\t<td class="{test_color_class}"><a href="{href_path}?{url_params}&{url_link_params}" {tooltip_msg}>{test_status} </a> <br>{execution_time:.2f} s / {(memory_usage):.1f} MB </td>'
             f_out.write(table_data_info)
         f_out.write('</tr>')
