@@ -3,6 +3,7 @@ const urlParams = new URLSearchParams(window.location.search);
 
 // Get the value of each query parameter and store it in a variable
 const testUrl = urlParams.get('id');
+const titleUrl = urlParams.get('title')
 const expectedResultUrl = urlParams.get('expected-result');
 const solutionUrl = urlParams.get('solution');
 const veredictUrl = urlParams.get('veredict');
@@ -17,6 +18,10 @@ const reportLinkUrl = urlParams.get('report-link')
 // Update the content of an HTML element with the value of a variable
 const sourceName = document.getElementById('source-file');
 sourceName.textContent = solutionUrl;
+
+// Update the content of an HTML element with the value of a variable
+const problemTitle = document.getElementById('problem-title')
+problemTitle.textContent = titleUrl;
 
 // Update the content of an HTML element with the value of a variable
 const expectedResult = document.getElementById('expected-result');

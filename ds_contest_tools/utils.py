@@ -95,16 +95,32 @@ def verify_solutions(solutions_dict: dict) -> None:
         if isinstance(solutions, str):
             verify_path(os.path.join(problem_folder, 'src', solutions))
             verify_file(os.path.join(problem_folder, 'src', solutions))
+            verify_supported_languages(solutions)
             continue
         # Verify others solutions
         for file in solutions:
             verify_path(os.path.join(problem_folder, 'src', file))
             verify_file(os.path.join(problem_folder, 'src', file))
+            verify_supported_languages(file)
 
 
 def verify_file(filepath: str) -> None:
     if not os.path.isfile(filepath):
         error_log(f'Solutions paths cannot be empty.')
+        sys.exit(1)
+
+
+def verify_supported_languages(solution_file: str):
+    suported_languages: dict[str, bool] = {
+        'c': True,
+        'cpp': True,
+        'java': True,
+        'py': True
+    }
+    _, ext = solution_file.split('.')
+    if not suported_languages.get(ext, False):
+        error_log(
+            f'Programming language for solution {solution_file} is not supported or has an invalid extension')
         sys.exit(1)
 
 
