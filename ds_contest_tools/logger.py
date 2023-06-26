@@ -1,7 +1,7 @@
+import io
 import logging
 import os
 import sys
-import io
 
 from .metadata import Paths
 

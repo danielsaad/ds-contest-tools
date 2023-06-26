@@ -12,7 +12,7 @@ def parse_json(json_file: str) -> dict:
         json_file: The path to the JSON file.
 
     Returns:
-        dict: The contents of the JSON file as a dictionary.
+        The contents of the JSON file as a dictionary.
     """
     json_data = {}
 

@@ -75,8 +75,7 @@ def build_boca_packages() -> None:
 
 
 def build_input_output() -> None:
-    """Copy problem input and output to the output folder.
-    """
+    """Copy problem input and output to the output folder."""
     problems_dir: list = Paths().get_problem_dir()
     output_dir: str = Paths().get_output_dir()
     for problem in problems_dir:
@@ -95,7 +94,12 @@ def build_input_output() -> None:
 
 
 def verify_problem(problem: str) -> None:
-    """Check if the problem is ready to be used"""
+    """Check if the problem has the necessary files to create a BOCA package.
+    If not, build the problem.
+    
+    Args:
+        problem: Path to the problem folder.
+    """
     verify_path(os.path.join(problem, 'statement'))
 
     input_dir = os.path.join(problem, 'input')

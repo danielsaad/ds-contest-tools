@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 import os
 import queue
 import subprocess
@@ -13,7 +11,8 @@ from signal import SIGKILL
 import psutil
 
 from .logger import debug_log, error_log, info_log
-from .metadata import Paths, Problem, ProblemAnswer, Solution, Status, Test, Statistic
+from .metadata import (Paths, Problem, ProblemAnswer, Solution, Statistic,
+                       Status, Test)
 
 """ Java definitions """
 JAVA_INTERPRETER = 'java'
@@ -286,13 +285,18 @@ def solution_status(solution: Solution) -> None:
     solution_result: ProblemAnswer = ProblemAnswer.WRONG
     max_runtime: float = 0
     max_memory_usage: float = 0
+    ac_count: int = None
     test: Test
     for _, test in solution.tests.items():
         test_cases_status[test.status] = test_cases_status.get(
             test.status, 0) + 1
         max_runtime = max(max_runtime, test.exec_time)
         max_memory_usage = max(max_memory_usage, test.memory_usage)
-    ac_count: int = test_cases_status[Status.AC]
+
+        try:
+            ac_count = test_cases_status[Status.AC]
+        except KeyError:
+            ac_count = 0
 
     statistics: Statistic = Statistic(
         ac_count, max_runtime, max_memory_usage)
