@@ -134,13 +134,13 @@ def identify_language(problem_obj: Problem, solution: Solution) -> str:
     binary_file: str = solution.get_binary_name()
     ext: str = solution.get_file_extension()
     problem_folder = problem_obj.problem_dir
+    bin_folder = os.path.join(problem_folder, 'bin')
     exec_args: str
 
     if (ext == 'cpp' or ext == 'c'):
-        exec_args = os.path.join(problem_folder, 'bin', binary_file)
+        exec_args = os.path.join(bin_folder, binary_file)
     elif (ext == 'java'):
-        problem_id = os.path.join(problem_folder, 'bin')
-        exec_args = f'{JAVA_INTERPRETER} {JAVA_FLAG} {problem_id} {solution.get_binary_name()}'
+        exec_args = f'{JAVA_INTERPRETER} {JAVA_FLAG} {bin_folder} {solution.get_binary_name()}'
     elif (ext == 'py'):
         submission_file = os.path.join(
             problem_folder, 'src', solution.solution_name)

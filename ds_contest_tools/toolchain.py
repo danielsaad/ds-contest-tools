@@ -5,7 +5,7 @@ import subprocess
 import sys
 from typing import Dict
 
-from .checker import run_solutions
+from .checker import identify_language, run_solutions
 from .config import custom_key
 from .htmlutils import print_to_html
 from .jsonutils import parse_json
@@ -90,7 +90,7 @@ def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_n
         problem_obj, problem_metadata['solutions'], all_solutions, specific_solution)
     generate_inputs()
     validate_inputs()
-    produce_outputs(problem_metadata)
+    produce_outputs(problem_obj, problem_metadata)
 
     info_log("Running solutions")
     run_solutions(problem_obj, cpu_number)
@@ -270,7 +270,7 @@ def generate_inputs(move: bool = True, output_folder: str = '') -> None:
     move_inputs(output_folder) if move else None
 
 
-def produce_outputs(problem_metadata: dict) -> None:
+def produce_outputs(problem_obj: Problem, problem_metadata: dict) -> None:
     """
     Run main solution on inputs to produce the outputs.
 
@@ -283,35 +283,39 @@ def produce_outputs(problem_metadata: dict) -> None:
     output_folder = os.path.join(problem_dir, 'output')
     input_files: list = [f for f in os.listdir(input_folder)
                          if not f.endswith('.interactive')]
+    main_solution = Solution(
+        problem_metadata["solutions"]["main-ac"], 'main-ac')
+    command = identify_language(problem_obj, main_solution).split()
+
+    if problem_metadata["problem"]["interactive"]:
+        tmp_fifo = os.path.join(output_folder, 'tmpfifo')
+        if os.path.exists(tmp_fifo):
+            info_log("Removing existing FIFO")
+            subprocess.run(['rm', tmp_fifo])
+        subprocess.run(['mkfifo', tmp_fifo])
+
     for fname in input_files:
         inf_path: str = os.path.join(input_folder, fname)
         ouf_path: str = os.path.join(output_folder, fname)
         with open(inf_path, 'r') as inf, open(ouf_path, 'w') as ouf:
-            ac_solution: str = os.path.join(
-                problem_dir, 'bin', os.path.splitext(problem_metadata["solutions"]["main-ac"])[0])
             if problem_metadata["problem"]["interactive"]:
                 interactor: str = os.path.join(
                     problem_dir, 'bin', 'interactor')
                 verify_path(interactor)
-                tmp_fifo = os.path.join(output_folder, 'tmpfifo')
-                if os.path.exists(tmp_fifo):
-                    info_log("Removing existing FIFO")
-                    subprocess.run(['rm', tmp_fifo])
-                subprocess.run(['mkfifo', tmp_fifo])
-
                 command: list = [interactor, inf_path, ouf_path, '<',
-                                 tmp_fifo, '|', ac_solution, '>', tmp_fifo]
-
-                p: subprocess.CompletedProcess = subprocess.Popen(
-                    ' '.join(command), stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE, shell=True)
-                subprocess.run(['rm', tmp_fifo])
+                                 tmp_fifo, '|', *command, '>', tmp_fifo]
+                p = subprocess.Popen(
+                    ' '.join(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+                p.wait()
             else:
-                p: subprocess.CompletedProcess = subprocess.run(
-                    [ac_solution], stdin=inf, stdout=ouf, stderr=subprocess.PIPE)
+                p = subprocess.run(command, stdin=inf,
+                                   stdout=ouf, stderr=subprocess.PIPE)
             check_subprocess_output(
                 p, f"Generation of output failed for input {fname}")
-    info_log("Outputs produced successfully.")
+
+    if problem_metadata["problem"]["interactive"]:
+        subprocess.run(['rm', tmp_fifo])
+    info_log("Outputs produced in problem folder.")
 
 
 def clean_files() -> None:
