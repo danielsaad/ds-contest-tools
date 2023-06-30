@@ -420,7 +420,8 @@ def get_tags() -> dict:
     package_folder: str = Paths().get_output_dir()
     tags: dict = {'en_us': list()}
     tags_paths = os.path.join(package_folder, 'tags')
-    verify_path(tags_paths)
+    if not os.path.exists(tags_paths):
+        return tags
     with open(tags_paths, 'r') as f:
         for line in f.readlines():
             tags['en_us'].append(line.rstrip())
