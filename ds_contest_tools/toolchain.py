@@ -162,9 +162,8 @@ def validate_inputs() -> None:
             debug_log("Testcases " +
                       ', '.join(encoded_tests[key]) + " are equal.")
     if equal_tests:
-        error_log("All test cases must be different, however there are " +
+        info_log("All test cases must be different, however there are " +
                   f"{equal_tests} equal tests.")
-        sys.exit(0)
 
 
 def move_inputs(temporary_folder: str) -> None:
