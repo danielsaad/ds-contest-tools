@@ -178,9 +178,9 @@ def move_inputs(temporary_folder: str) -> None:
     input_folder: str = os.path.join(problem_dir, 'input')
 
     # Reset input folder
-    for file in os.listdir(input_folder):
-        if not file.endswith('.interactive'):
-            os.remove(os.path.join(input_folder, file))
+    # for file in os.listdir(input_folder):
+    #     if not file.endswith('.interactive'):
+    #         os.remove(os.path.join(input_folder, file))
 
     # Move tests to problem folder
     for f in os.listdir(temporary_folder):
