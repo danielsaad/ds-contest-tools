@@ -50,10 +50,15 @@ def get_package_id(packages: List[dict]) -> int:
     Returns:
         The ID of the latest READY linux package.
     """
-    linux_packages = [p for p in packages if p['state']
-                      == 'READY' and p['type'] == 'linux']
-    if not any(linux_packages):
-        error_log("There is not a ready linux package on Polygon.")
+    if not packages:
+        error_log("No packages found on Polygon.")
+        sys.exit(1)
+
+    linux_packages = [p for p in packages if p.get(
+        'state') == 'READY' and p.get('type') == 'linux']
+    
+    if not linux_packages:
+        error_log("There is no ready linux package on Polygon.")
         sys.exit(1)
 
     most_recent_creation_time = max(
