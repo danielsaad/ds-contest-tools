@@ -66,7 +66,7 @@ def process_convert_from(problem_format: str, problem_dir: str, package_dir: str
             setup_and_validate_paths(problem_dir, package_dir, verify_path=False)
         else:
             setup_and_validate_paths(problem_dir, os.path.join(
-                problem_dir, 'temp_polygon_package'))
+                problem_dir, 'temp_polygon_package'), verify_path=False)
         verify_polygon_keys()
         get_polygon_problem(package_dir, local)
     else:

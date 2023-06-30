@@ -492,10 +492,6 @@ def convert_problem(local: bool, problem_id: Optional[str] = '') -> None:
     # manually.
     if local:
         copy_source_folder()
-        info_log("Change the names of the source files to DS standard:")
-        info_log("checker: checker.cpp")
-        info_log("validator: validator.cpp")
-        info_log("interactor: interactor.cpp")
     else:
         copy_checker(problem_id)
         copy_validator(problem_id)
@@ -510,6 +506,11 @@ def convert_problem(local: bool, problem_id: Optional[str] = '') -> None:
     # Clean up temporary package folder
     if not local:
         shutil.rmtree(Paths().get_output_dir())
+    else:
+        info_log("\033[93mChange the names of the source files to DS standard:\033[0m")
+        info_log("checker: checker.cpp")
+        info_log("validator: validator.cpp")
+        info_log("interactor: interactor.cpp")
 
 
 def get_polygon_problem(problem_id: str, local: Optional[bool] = False):
