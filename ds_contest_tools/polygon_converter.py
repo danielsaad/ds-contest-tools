@@ -4,6 +4,7 @@ import shutil
 import xml.etree.ElementTree as ET
 from typing import Optional
 
+from .config import IGNORED_FILES
 from .fileutils import get_statement_files
 from .jsonutils import parse_json, write_to_json
 from .logger import error_log, info_log
@@ -268,7 +269,7 @@ def init_problem(interactive: bool) -> None:
 
     # Copy problem template files to problem folder
     shutil.copytree(source_folder, problem_folder,
-                    ignore=shutil.ignore_patterns('boca', 'src'),
+                    ignore=shutil.ignore_patterns(*IGNORED_FILES,'src'),
                     dirs_exist_ok=True)
     shutil.copy(os.path.join(source_folder, 'src', 'testlib.h'),
                 os.path.join(problem_folder, 'src', 'testlib.h'))

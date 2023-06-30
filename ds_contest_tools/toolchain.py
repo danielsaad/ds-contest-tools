@@ -6,7 +6,7 @@ import sys
 from typing import Dict
 
 from .checker import identify_language, run_solutions
-from .config import custom_key
+from .config import IGNORED_FILES, custom_key
 from .htmlutils import print_to_html
 from .jsonutils import parse_json
 from .logger import debug_log, error_log, info_log
@@ -28,7 +28,7 @@ def init_problem(interactive=False) -> None:
     folder = os.path.join(os.path.dirname(
         os.path.abspath(__file__)), 'files')
     shutil.copytree(folder, problem_folder,
-                    ignore=shutil.ignore_patterns('boca'), dirs_exist_ok=True)
+                    ignore=shutil.ignore_patterns(*IGNORED_FILES), dirs_exist_ok=True)
     # Rename files and folders if the problem is interactive
     interactor = os.path.join(*[problem_folder, 'src', 'interactor.cpp'])
     interactive_json = os.path.join(problem_folder, 'problem-interactive.json')
