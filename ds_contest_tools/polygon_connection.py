@@ -52,14 +52,12 @@ def get_package_id(packages: List[dict]) -> int:
     """
     if not packages:
         error_log("No packages found on Polygon.")
-        sys.exit(1)
 
     linux_packages = [p for p in packages if p.get(
         'state') == 'READY' and p.get('type') == 'linux']
     
     if not linux_packages:
         error_log("There is no ready linux package on Polygon.")
-        sys.exit(1)
 
     most_recent_creation_time = max(
         p['creationTimeSeconds'] for p in linux_packages)
@@ -115,12 +113,10 @@ def check_polygon_id(problem_id: Union[str, None]) -> str:
 
     if 'polygon_config' not in problem_metadata.keys():
         error_log('File problem.json does not have "polygon_config" key.')
-        sys.exit(0)
 
     if not problem_metadata['polygon_config']['id']:
         error_log(
             'Problem ID is not defined. Specify it in the command line or in problem.json.')
-        sys.exit(0)
 
     return problem_metadata['polygon_config']['id']
 
@@ -297,7 +293,6 @@ def single_api_connection(method: str, request_params: dict, session: Optional[r
         except ConnectionResetError:
             error_log(f"Connection reset error occurred while making the API request. Try again.\n"
                       + verify_response(response, request_params))
-            sys.exit(0)
 
         if response.status_code == requests.codes.ok:
             info_log(get_method_information(method, request_params))
@@ -305,8 +300,6 @@ def single_api_connection(method: str, request_params: dict, session: Optional[r
         elif response.status_code == requests.codes.bad_request:
             error_log(f"Error submitting {method} method. Stopping requests.\n"
                       + verify_response(response, request_params))
-            sys.exit(0)
 
     error_log("Internal server error occurred while making the API request. Try again.\n"
               + verify_response(response, request_params))
-    sys.exit(0)

@@ -90,7 +90,6 @@ def copy_source_files(main_solution: str) -> None:
             generator = os.path.join(problem_folder, 'src', file)
             if not os.path.exists(generator):
                 error_log(f"Generator {file} does not exist.")
-                sys.exit(1)
             info_log(f"Copying {file} file.")
             destination = os.path.join(output_folder, 'src', file)
             shutil.copy(generator, destination)

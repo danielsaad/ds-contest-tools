@@ -183,13 +183,12 @@ class Problem:
         Returns:
             int: The number of tests
         """
-        from .logger import info_log
+        from .logger import error_log
         try:
             solution: Solution = self.get_list_solution()[0]
         except:
-            info_log(
+            error_log(
                 f'The solution list for problem {self.problem_name} is empty.')
-            exit(1)
         return len(solution.tests)
 
 

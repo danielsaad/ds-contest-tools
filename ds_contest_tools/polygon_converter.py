@@ -7,7 +7,7 @@ from typing import Optional
 from .config import IGNORED_FILES
 from .fileutils import get_statement_files
 from .jsonutils import parse_json, write_to_json
-from .logger import error_log, info_log
+from .logger import info_log, warning_log
 from .metadata import Paths
 from .polygon_connection import download_package_polygon, make_api_request
 from .utils import verify_path
@@ -140,7 +140,7 @@ def copy_generator(script: str) -> None:
         f.write(script)
 
     if script == '':
-        info_log("No script found.")
+        warning_log("No script found.")
         return
 
     script_lines = script.split('\n')
@@ -152,8 +152,7 @@ def copy_generator(script: str) -> None:
         file += '.cpp'
         generator = os.path.join(*[package_folder, 'files', file])
         if not os.path.exists(generator):
-            error_log(f"Generator {os.path.relpath(generator)} not found.")
-            continue
+            warning_log(f"Generator {os.path.relpath(generator)} not found.")
         destination = os.path.join(problem_folder, 'src', file)
         shutil.copy(generator, destination)
 
@@ -509,10 +508,10 @@ def convert_problem(local: bool, problem_id: Optional[str] = '') -> None:
     if not local:
         shutil.rmtree(Paths().get_output_dir())
     else:
-        info_log("\033[93mChange the names of the source files to DS standard:\033[0m")
-        info_log("checker: checker.cpp")
-        info_log("validator: validator.cpp")
-        info_log("interactor: interactor.cpp")
+        warning_log("Change the names of the source files to DS standard:")
+        warning_log("checker: checker.cpp")
+        warning_log("validator: validator.cpp")
+        warning_log("interactor: interactor.cpp")
 
 
 def get_polygon_problem(problem_id: str, local: Optional[bool] = False):

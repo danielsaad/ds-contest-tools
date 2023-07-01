@@ -58,7 +58,6 @@ def check_subprocess_output(p: CompletedProcess, message: str) -> None:
 
     if p.returncode:
         error_log(f"{message} (return code: {p.returncode})")
-        sys.exit(1)
 
 
 def instance_paths(problem_dir: Union[str, list], output_dir: Optional[str] = '') -> None:
@@ -106,8 +105,7 @@ def verify_solutions(solutions_dict: dict) -> None:
 
 def verify_file(filepath: str) -> None:
     if not os.path.isfile(filepath):
-        error_log(f'Solutions paths cannot be empty.')
-        sys.exit(1)
+        error_log(f'Solution path can not be empty.')
 
 
 def verify_supported_languages(solution_file: str):
@@ -121,7 +119,6 @@ def verify_supported_languages(solution_file: str):
     if not suported_languages.get(ext, False):
         error_log(
             f'Programming language for solution {solution_file} is not supported or has an invalid extension')
-        sys.exit(1)
 
 
 def check_problem_metadata(problem_metadata: dict) -> None:
@@ -139,13 +136,11 @@ def check_problem_metadata(problem_metadata: dict) -> None:
     for key in expected_types:
         if key not in problem_metadata:
             error_log(f"Variable {key} is not defined in problem.json.")
-            sys.exit(1)
 
         if key == 'io_samples':
             if not isinstance(problem_metadata[key], expected_types[key]):
                 error_log(
                     f"Variable '{key}' is not a(n) {expected_types[key].__name__}.")
-                sys.exit(1)
             continue
 
         for subkey, expected_type in expected_types[key].items():
@@ -153,7 +148,6 @@ def check_problem_metadata(problem_metadata: dict) -> None:
             if not isinstance(value, expected_type):
                 error_log(
                     f"Variable '{subkey}' in '{key}' is not a(n) {expected_type.__name__}.")
-                sys.exit(1)
 
 
 def verify_path(path: str) -> None:
@@ -164,7 +158,6 @@ def verify_path(path: str) -> None:
     """
     if not os.path.exists(path):
         error_log(f'{os.path.relpath(path)} does not exist.')
-        sys.exit(1)
 
 
 def generate_timestamp() -> str:

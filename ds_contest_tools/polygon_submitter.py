@@ -1,10 +1,9 @@
 import os
-import sys
 from typing import Dict, List, Tuple, Union
 
 from .fileutils import get_statement_files
 from .jsonutils import parse_json
-from .logger import error_log, info_log
+from .logger import error_log, warning_log
 from .metadata import Paths
 from .polygon_connection import check_polygon_id, submit_requests_list
 from .toolchain import generate_inputs
@@ -32,11 +31,9 @@ def update_info(problem_metadata: dict) -> tuple:
 
     if not 250 <= time_limit <= 15000:
         error_log("Time limit is only between 0.25s and 15s.")
-        sys.exit(0)
 
     if not 4 <= memory_limit <= 1024:
         error_log("Memory limit is only between 4MB and 1024MB.")
-        sys.exit(0)
 
     params: dict = {
         'inputFile': problem_metadata['input_file'],
@@ -59,7 +56,7 @@ def save_statement(name: str, interactive: bool) -> tuple:
         A tuple containing the method and the parameters for the request.
     """
     if interactive:
-        info_log("Polygon API does not receive interaction statement. "
+        warning_log("Polygon API does not receive interaction statement. "
                  "Manual insertion will be needed.")
 
     statement_dir: str = os.path.join(

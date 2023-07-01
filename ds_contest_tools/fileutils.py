@@ -118,5 +118,4 @@ def check_interactive_problem(problem_dir: str) -> bool:
     problem_metadata = parse_json(metadata_path)
     if 'problem' not in problem_metadata or 'interactive' not in problem_metadata['problem']:
         error_log("Interactive value in problem.json is not defined.")
-        sys.exit(0)
     return problem_metadata['problem']['interactive']

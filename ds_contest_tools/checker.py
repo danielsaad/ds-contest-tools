@@ -1,7 +1,6 @@
 import os
 import queue
 import subprocess
-import sys
 import time
 from multiprocessing import Event, Manager, Pipe, Process, Queue
 from multiprocessing.connection import Connection
@@ -10,7 +9,7 @@ from signal import SIGKILL
 
 import psutil
 
-from .logger import debug_log, error_log, info_log
+from .logger import debug_log, error_log, info_log, warning_log
 from .metadata import (Paths, Problem, ProblemAnswer, Solution, Statistic,
                        Status, Test)
 
@@ -147,7 +146,6 @@ def identify_language(problem_obj: Problem, solution: Solution) -> str:
         exec_args = f'{PYTHON3_INTERPRETER} {submission_file}'
     else:
         error_log(f'{solution.solution_name} has an invalid extension')
-        sys.exit(1)
 
     return exec_args
 
@@ -171,10 +169,8 @@ def run_checker(ans: str, inf: str, ouf: str) -> tuple:
         Paths().get_problem_dir(), 'bin/checker')
     if (not os.path.isfile(inf)):
         error_log('Input ' + fname + ' not available')
-        sys.exit(1)
     if (not os.path.isfile(ans)):
         error_log('Answer ' + fname + ' not available')
-        sys.exit(1)
     command = [checker_file, inf, ouf, ans]
     p = subprocess.run(command, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE)
@@ -184,7 +180,7 @@ def run_checker(ans: str, inf: str, ouf: str) -> tuple:
     elif (checker_output.startswith('wrong answer')):
         status = Status.WA
     elif (checker_output.startswith('FAIL')):
-        error_log('Input ' + fname +
+        warning_log('Input ' + fname +
                   ': FAIL: maybe the jury solution or the checker are not correct')
         status = Status.FAIL
     else:
