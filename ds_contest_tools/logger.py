@@ -125,5 +125,5 @@ def error_log(text: str) -> None:
     info = convert_to_string(text)
     if len(info) > 0:
         tool.error(info)
-        print(f"{tcolors.FAIL}{text}. Exiting...{tcolors.ENDC}")
+        print(f"{tcolors.FAIL}{text} Exiting...{tcolors.ENDC}")
         sys.exit(0)

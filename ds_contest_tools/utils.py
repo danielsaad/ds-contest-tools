@@ -57,7 +57,7 @@ def check_subprocess_output(p: CompletedProcess, message: str) -> None:
         debug_log(p.stderr)
 
     if p.returncode:
-        error_log(f"{message} (return code: {p.returncode})")
+        error_log(f"{message} (return code: {p.returncode}).")
 
 
 def instance_paths(problem_dir: Union[str, list], output_dir: Optional[str] = '') -> None:

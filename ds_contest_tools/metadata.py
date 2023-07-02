@@ -538,3 +538,7 @@ class Paths:
     def get_tmp_output_dir(self) -> str:
         """Get the temporary output root directory"""
         return self.__tmp_output_dir
+    
+    def set_output_dir(self, output_dir: str) -> None:
+        """Set the output directory"""
+        self.__output_dir = output_dir

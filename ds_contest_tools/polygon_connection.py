@@ -55,7 +55,7 @@ def get_package_id(packages: List[dict]) -> int:
 
     linux_packages = [p for p in packages if p.get(
         'state') == 'READY' and p.get('type') == 'linux']
-    
+
     if not linux_packages:
         error_log("There is no ready linux package on Polygon.")
 
@@ -88,9 +88,19 @@ def download_package_polygon(problem_id: str) -> None:
         'problem.package', params, problem_id)
 
     # Convert bytes to zip file
-    package = zipfile.ZipFile(io.BytesIO(response))
-    package.extractall(Paths().get_output_dir())
-    package.close()
+    try:
+        with open(Paths().get_output_dir() + '.zip', 'wb') as f:
+            f.write(response)
+    except:
+        error_log("Error writing zipped package in problem folder.")
+
+    try:
+        package = zipfile.ZipFile(io.BytesIO(response))
+        package.extractall(Paths().get_output_dir())
+        package.close()
+    except:
+        error_log("Error extracting zipped package in problem folder."
+                  "Maybe the package was not downloaded correctly.")
 
 
 def check_polygon_id(problem_id: Union[str, None]) -> str:

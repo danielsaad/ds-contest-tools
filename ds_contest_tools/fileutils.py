@@ -1,6 +1,6 @@
 import os
 import shutil
-import sys
+import zipfile
 from math import floor, log10
 from typing import Optional
 
@@ -119,3 +119,16 @@ def check_interactive_problem(problem_dir: str) -> bool:
     if 'problem' not in problem_metadata or 'interactive' not in problem_metadata['problem']:
         error_log("Interactive value in problem.json is not defined.")
     return problem_metadata['problem']['interactive']
+
+
+def unzip_package(path: str) -> None:
+    """Unzips the package at the given path.
+
+    Args:
+        path: The path to the package.
+    """
+    verify_path(path)
+    if not zipfile.is_zipfile(path):
+        error_log("Package is not a zip file: {}.".format(path))
+    with zipfile.ZipFile(path, 'r') as zip_ref:
+        zip_ref.extractall(path.split('.')[0])
