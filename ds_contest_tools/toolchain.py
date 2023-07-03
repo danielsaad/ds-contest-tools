@@ -2,14 +2,13 @@ import hashlib
 import os
 import shutil
 import subprocess
-import sys
 from typing import Dict
 
 from .checker import identify_language, run_solutions
 from .config import IGNORED_FILES, custom_key
 from .htmlutils import print_to_html
 from .jsonutils import parse_json
-from .logger import debug_log, error_log, info_log
+from .logger import debug_log, error_log, info_log, warning_log
 from .metadata import Paths, Problem, Solution
 from .utils import check_problem_metadata, check_subprocess_output, verify_path
 
@@ -23,7 +22,6 @@ def init_problem(interactive=False) -> None:
     problem_folder = Paths().get_problem_dir()
     if os.path.exists(os.path.join(problem_folder, 'src')):
         error_log("Problem ID already exists in the directory")
-        sys.exit(1)
 
     folder = os.path.join(os.path.dirname(
         os.path.abspath(__file__)), 'files')
@@ -162,7 +160,7 @@ def validate_inputs() -> None:
             debug_log("Testcases " +
                       ', '.join(encoded_tests[key]) + " are equal.")
     if equal_tests:
-        info_log("All test cases must be different, however there are " +
+        warning_log("All test cases must be different, however there are " +
                   f"{equal_tests} equal tests.")
 
 
@@ -257,7 +255,7 @@ def generate_inputs(move: bool = True, output_folder: str = '') -> None:
     os.rmdir(temporary_folder)
 
     if new_script != scripts:
-        info_log("Updating script.sh to avoid repeating multigenerators.")
+        info_log("Rearraging generators order in script.sh")
         with open(script_path, 'w') as f:
             f.writelines(new_script)
 
@@ -371,7 +369,6 @@ def parse_solutions(problem_obj: Problem, solutions: dict, all_solutions, specif
 
             if problem_obj.is_solution_list_empty():
                 error_log(f'Solution {specific_solution} not found.')
-                sys.exit(0)
         else:
             expected_result = "main-ac"
             submission_file = solutions[expected_result]

@@ -20,7 +20,6 @@ def verify_polygon_keys() -> None:
 
     if not os.path.exists(secrets_path):
         error_log("Keys are not defined. Use 'set_keys' to define it.")
-        sys.exit(1)
 
 
 def process_convert_to(problem_format: str, problem_dir: str, output_dir: Union[str, None]) -> None:
@@ -48,7 +47,6 @@ def process_convert_to(problem_format: str, problem_dir: str, output_dir: Union[
         convert_to_sqtpm()
     else:
         error_log('Not implemented yet.')
-        sys.exit(1)
     info_log('Problem converted successfully.')
 
 
@@ -71,7 +69,6 @@ def process_convert_from(problem_format: str, problem_dir: str, package_dir: str
         get_polygon_problem(package_dir, local)
     else:
         error_log('Not implemented yet.')
-        sys.exit(1)
     info_log('Problem converted successfully.')
 
 

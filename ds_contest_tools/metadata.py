@@ -183,13 +183,12 @@ class Problem:
         Returns:
             int: The number of tests
         """
-        from .logger import info_log
+        from .logger import error_log
         try:
             solution: Solution = self.get_list_solution()[0]
         except:
-            info_log(
+            error_log(
                 f'The solution list for problem {self.problem_name} is empty.')
-            exit(1)
         return len(solution.tests)
 
 
@@ -539,3 +538,7 @@ class Paths:
     def get_tmp_output_dir(self) -> str:
         """Get the temporary output root directory"""
         return self.__tmp_output_dir
+    
+    def set_output_dir(self, output_dir: str) -> None:
+        """Set the output directory"""
+        self.__output_dir = output_dir

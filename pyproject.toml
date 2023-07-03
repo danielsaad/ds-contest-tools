@@ -29,7 +29,9 @@ dependencies = [
 [project.scripts]
 ds-contest-tools = "ds_contest_tools:main"
 
-
 [project.urls]
 repository = "https://github.com/danielsaad/ds-contest-tools/"
 documentation = "https://github.com/danielsaad/ds-contest-tools/wiki"
+
+[project.optional-dependencies]
+dev = ["argcomplete"]
