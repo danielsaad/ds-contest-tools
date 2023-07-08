@@ -105,7 +105,7 @@ def verify_solutions(solutions_dict: dict) -> None:
 
 def verify_file(filepath: str) -> None:
     if not os.path.isfile(filepath):
-        error_log(f'Solution path can not be empty.')
+        error_log(f'Solution in problem.json cannot be empty.')
 
 
 def verify_supported_languages(solution_file: str):

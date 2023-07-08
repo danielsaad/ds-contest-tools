@@ -65,7 +65,7 @@ def build_executables() -> None:
     os.chdir(old_cwd)
 
 
-def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_number: int = 1) -> None:
+def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_number: int = 1, no_validator: bool = False, no_generator: bool = False) -> None:
     """
     Run the executables to create the problem.
 
@@ -73,6 +73,8 @@ def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_n
         all_solutions: Boolean indicating whether to run all solution files.
         specific_solution: String containing name of the solution to run.
         cpu_number: Number of CPUs to use.
+        no_validator: Boolean indicating whether to run the validator or not.
+        no_generator: Boolean indicating whether to run the generator or not.
     """
     problem_folder = Paths().get_problem_dir()
     input_folder = os.path.join(problem_folder, 'input')
@@ -86,8 +88,10 @@ def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_n
                           problem_folder, input_folder, problem_metadata["problem"]["time_limit"], problem_metadata["problem"]["memory_limit_mb"])
     parse_solutions(
         problem_obj, problem_metadata['solutions'], all_solutions, specific_solution)
-    generate_inputs()
-    validate_inputs()
+    if not no_generator:
+        generate_inputs()
+    if not no_validator:
+        validate_inputs()
     produce_outputs(problem_obj, problem_metadata)
 
     info_log("Running solutions")
@@ -160,8 +164,7 @@ def validate_inputs() -> None:
             debug_log("Testcases " +
                       ', '.join(encoded_tests[key]) + " are equal.")
     if equal_tests:
-        warning_log("All test cases must be different, however there are " +
-                  f"{equal_tests} equal tests.")
+        warning_log(f"There are {equal_tests} equal tests. Check debug.log for more information.")
 
 
 def move_inputs(temporary_folder: str) -> None:
@@ -175,9 +178,9 @@ def move_inputs(temporary_folder: str) -> None:
     input_folder: str = os.path.join(problem_dir, 'input')
 
     # Reset input folder
-    # for file in os.listdir(input_folder):
-    #     if not file.endswith('.interactive'):
-    #         os.remove(os.path.join(input_folder, file))
+    for file in os.listdir(input_folder):
+        if not file.endswith('.interactive'):
+            os.remove(os.path.join(input_folder, file))
 
     # Move tests to problem folder
     for f in os.listdir(temporary_folder):
