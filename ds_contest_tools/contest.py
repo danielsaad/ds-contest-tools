@@ -10,7 +10,7 @@ from .pdfutils import build_pdf, merge_pdfs
 from .utils import check_subprocess_output, convert_idx_to_string, verify_path
 
 
-def build_contest_pdf() -> None:
+def build_contest_pdf(author: bool = False) -> None:
     """Build contest PDF from PDFs of the list of problems."""
     info_log('Creating contest PDF')
 
@@ -25,7 +25,7 @@ def build_contest_pdf() -> None:
     # Generate problems PDFs
     for i, folder in enumerate(problem_folder_l):
         label = convert_idx_to_string(i)
-        options = {'display_author': False,
+        options = {'display_author': author,
                    'problem_label': label,
                    'event': True}
         build_pdf(folder, output_folder, options)
@@ -55,14 +55,14 @@ def build_contest_pdf() -> None:
         os.remove(os.path.join(output_folder, 'maratona.cls'))
 
 
-def build_boca_packages() -> None:
+def build_boca_packages(author: bool = False) -> None:
     """Build BOCA packages from the list of problems."""
     info_log('Creating BOCA Files')
     problem_folder_l = Paths().get_problem_dir()
     output_folder = Paths().get_output_dir()
     for i, folder in enumerate(problem_folder_l):
         label = convert_idx_to_string(i)
-        options = {'display_author': False,
+        options = {'display_author': author,
                    'problem_label': label,
                    'event': True}
         # Update PDF with new label and event

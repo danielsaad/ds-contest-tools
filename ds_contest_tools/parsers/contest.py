@@ -3,7 +3,7 @@ from ..metadata import Paths
 from .common import *
 
 
-def process_contest(problems_dir: list, output_dir: str, pdf: bool, io: bool) -> None:
+def process_contest(problems_dir: list, output_dir: str, pdf: bool, io: bool, author:bool) -> None:
     """
     Process the contest files.
 
@@ -22,10 +22,10 @@ def process_contest(problems_dir: list, output_dir: str, pdf: bool, io: bool) ->
     if io:
         build_input_output()
     elif pdf:
-        build_contest_pdf()
+        build_contest_pdf(author=author)
     else:
-        build_boca_packages()
-        build_contest_pdf()
+        build_boca_packages(author=author)
+        build_contest_pdf(author=author)
     info_log('Contest files generated successfully')
 
 
@@ -43,9 +43,10 @@ def add_parser(subparsers) -> None:
         '-p', '--pdf', action='store_true', default=False, help='generate contest PDFs')
     mut_ex_group.add_argument('-i', '--io', action='store_true',
                                 default=False, help='generate contest input/output files')
+    contest_parser.add_argument('--author', action='store_true', help='add author name to PDFs')
     contest_parser.add_argument(
         'problem_dir', help='path to problem(s)', nargs='+')
     contest_parser.add_argument(
         'contest_dir', help='directory which the contest will be saved')
     contest_parser.set_defaults(function=lambda options: process_contest(
-        options.problem_dir, options.contest_dir, options.pdf, options.io))
+        options.problem_dir, options.contest_dir, options.pdf, options.io, options.author))
