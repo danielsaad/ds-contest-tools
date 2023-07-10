@@ -1,28 +1,23 @@
 {
     "problem" : {
-        "title" : "Problem Title",
-        "event" : "Event Name",
+        "title" : "",
+        "event" : "",
         "time_limit" : 1,
         "memory_limit_mb": 256,
         "input_file": "stdin",
         "output_file": "stdout",
         "interactive" : false,
-        "time_complexity" : "\\Theta(nW)",
-        "category" : "Beginner",
-        "level" : 1,
-        "subgroup" : "Easy",
         "subject" : {
-            "en_us" : ["Dynamic programming", "Knapsack problem"],
-            "pt_br" : ["Programação Dinâmica", "Problema da mochila"],
-            "es" : ["Programación dinámica", "Problema de la mochila"]
-        },
-        "comments" : "Esse é um problema que pode ser resolvido ao aplicar a programação dinâmica do problema da Mochila"
+            "en_us" : [""],
+            "pt_br" : [""],
+            "es" : [""]
+        }
     },
     "author" : {
-        "name" : "Author name",
-        "affiliation" : "Author Affiliation",
-        "country" : "Brazil",
-        "email" : "email@email.com"
+        "name" : "",
+        "affiliation" : "",
+        "country" : "",
+        "email" : ""
     },
     "io_samples" : 3,
     "boca_config" : {
@@ -31,7 +26,7 @@
         "maximum_output_size_kb" : 4096
     },
     "solutions" : {
-        "main-ac" : "ac.cpp",
+        "main-ac" : "",
         "alternative-ac" : [],
         "wrong-answer" : [],
         "time-limit" : [],
