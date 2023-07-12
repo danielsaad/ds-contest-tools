@@ -152,8 +152,8 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
                     "_": "\\_",
                     "{": "\\{",
                     "}": "\\}",
-                    ">": "\\textless{}",
-                    "<": "\\textgreater{}",
+                    ">": "\\textgreater{}",
+                    "<": "\\textless{}",
                     "^": "\\textasciicircum{}",
                     "\\": "\\textbackslash{}",
                     " ": "~"}
