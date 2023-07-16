@@ -65,7 +65,7 @@ def build_executables() -> None:
     os.chdir(old_cwd)
 
 
-def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_number: int = 1, no_validator: bool = False, no_generator: bool = False) -> None:
+def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_number: int = 1, no_validator: bool = False, no_generator: bool = False, no_checker: bool = False) -> None:
     """
     Run the executables to create the problem.
 
@@ -75,6 +75,7 @@ def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_n
         cpu_number: Number of CPUs to use.
         no_validator: Boolean indicating whether to run the validator or not.
         no_generator: Boolean indicating whether to run the generator or not.
+        no_checker: Boolean indicating whether to run the checker or not.
     """
     problem_folder = Paths().get_problem_dir()
     input_folder = os.path.join(problem_folder, 'input')
@@ -94,9 +95,10 @@ def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_n
         validate_inputs()
     produce_outputs(problem_obj, problem_metadata)
 
-    info_log("Running solutions")
-    run_solutions(problem_obj, cpu_number)
-    print_to_html(problem_obj)
+    if not no_checker:
+        info_log("Running solutions")
+        run_solutions(problem_obj, cpu_number)
+        print_to_html(problem_obj)
 
 
 def get_encoded_tests(folder: str) -> Dict[str, bytes]:
@@ -164,7 +166,8 @@ def validate_inputs() -> None:
             debug_log("Testcases " +
                       ', '.join(encoded_tests[key]) + " are equal.")
     if equal_tests:
-        warning_log(f"There are {equal_tests} equal tests. Check debug.log for more information.")
+        warning_log(
+            f"There are {equal_tests} equal tests. Check debug.log for more information.")
 
 
 def move_inputs(temporary_folder: str) -> None:
