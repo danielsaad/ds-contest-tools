@@ -478,9 +478,9 @@ class Statistic:
         max_exec_time: The maximum execution time of a solution.
         max_memory_usage: The maximum memory usage of a solution.
     """
-    ac_count: int
-    max_exec_time: float
-    max_memory_usage: float
+    ac_count: int = 0
+    max_exec_time: float = 0.0
+    max_memory_usage: float = 0.0
 
 
 def singleton(cls):
