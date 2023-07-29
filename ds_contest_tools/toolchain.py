@@ -65,7 +65,7 @@ def build_executables() -> None:
     os.chdir(old_cwd)
 
 
-def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_number: int = 1, no_validator: bool = False, no_generator: bool = False, no_checker: bool = False) -> None:
+def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_number: int = 1, no_validator: bool = False, no_generator: bool = False, no_checker: bool = False, no_output: bool = False) -> None:
     """
     Run the executables to create the problem.
 
@@ -76,6 +76,7 @@ def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_n
         no_validator: Boolean indicating whether to run the validator or not.
         no_generator: Boolean indicating whether to run the generator or not.
         no_checker: Boolean indicating whether to run the checker or not.
+        no_output: Boolean indicating whether to generate output files or not.
     """
     problem_folder = Paths().get_problem_dir()
     input_folder = os.path.join(problem_folder, 'input')
@@ -93,8 +94,8 @@ def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_n
         generate_inputs()
     if not no_validator:
         validate_inputs()
-    produce_outputs(problem_obj, problem_metadata)
-
+    if not no_output:
+        produce_outputs(problem_obj, problem_metadata)
     if not no_checker:
         info_log("Running solutions")
         run_solutions(problem_obj, cpu_number)

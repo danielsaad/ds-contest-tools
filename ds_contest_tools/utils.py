@@ -52,9 +52,9 @@ def check_subprocess_output(p: CompletedProcess, message: str) -> None:
     stdout = convert_to_string(p.stdout)
     stderr = convert_to_string(p.stderr)
     if len(stdout) > 0:
-        debug_log(p.stdout)
+        debug_log(stdout)
     if len(stderr) > 0:
-        debug_log(p.stderr)
+        debug_log(stderr)
 
     if p.returncode:
         error_log(f"{message} (return code: {p.returncode}).")

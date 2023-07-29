@@ -1,12 +1,13 @@
 import os
 from math import floor
+from enum import Enum, auto
 
 from ..pdfutils import build_pdf
 from ..toolchain import build_executables, run_programs
 from .common import *
 
 
-def process_build(problem_dir: str, all_solutions: bool, specific_solution: str, cpu_count: int, io: bool, pdf: bool, no_validator: bool, no_generator: bool, no_checker: bool) -> None:
+def process_build(problem_dir: str, all_solutions: bool, specific_solution: str, cpu_count: int, io: bool, pdf: bool, no_validator: bool, no_generator: bool, no_checker: bool, no_output: bool, ngvoc: bool) -> None:
     """Build a problem.
 
     Args:
@@ -19,6 +20,8 @@ def process_build(problem_dir: str, all_solutions: bool, specific_solution: str,
         no_validator: Whether to build problem without the validator or not.
         no_generator: Whether to build problem without the generator or not.
         no_checker: Whether to build problem without running the checker or not.
+        no_output: Whether to build problem without generating output or not.
+        ngvoc: Whether to build only problem executables and PDFs or not.
     """
     setup_and_validate_paths(problem_dir)
     problem_name = get_basename(problem_dir)
@@ -30,14 +33,16 @@ def process_build(problem_dir: str, all_solutions: bool, specific_solution: str,
     elif io:
         info_log("Generating input/output")
         build_executables()
-        run_programs(all_solutions=all_solutions, specific_solution=specific_solution,
-                     cpu_number=cpu_count, no_validator=no_validator, no_generator=no_generator)
+        if not ngvoc:
+            run_programs(all_solutions=all_solutions, specific_solution=specific_solution,
+                     cpu_number=cpu_count, no_validator=no_validator, no_generator=no_generator, no_output=no_output)
         info_log("Input/output generated successfully")
     else:
         info_log(f'Building problem {problem_name}')
         build_executables()
-        run_programs(all_solutions=all_solutions, specific_solution=specific_solution,
-                     cpu_number=cpu_count, no_validator=no_validator, no_generator=no_generator, no_checker=no_checker)
+        if not ngvoc:
+            run_programs(all_solutions=all_solutions, specific_solution=specific_solution,
+                        cpu_number=cpu_count, no_validator=no_validator, no_generator=no_generator, no_checker=no_checker, no_output=no_output)
         build_pdf()
         info_log(f'Problem {problem_name} built successfully')
 
@@ -72,8 +77,11 @@ def add_parser(subparsers) -> None:
     parser_build.add_argument(
         '-ng', '--no-generator', help='build problem without the generator', action='store_true')
     parser_build.add_argument(
+        '-no', '--no-output', help='build problem without generating output', action='store_true')
+    parser_build.add_argument(
         '-nc', '--no-checker', help='build problem without running the checker', action='store_true')
     parser_build.add_argument(
-        'problem_dir', help='path to the problem directory')
+        '-ngvoc', help='build only problem executables and PDFs', action='store_true')
+    parser_build.add_argument('problem_dir', help='path to the problem directory')
     parser_build.set_defaults(function=lambda options: process_build(
-        options.problem_dir, options.all, options.specific, options.cpu_count, options.io, options.pdf, options.no_validator, options.no_generator, options.no_checker))
+        options.problem_dir, options.all, options.specific, options.cpu_count, options.io, options.pdf, options.no_validator, options.no_generator, options.no_checker, options.no_output, options.ngvoc))
