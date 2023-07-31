@@ -1,16 +1,20 @@
+import concurrent.futures
 import hashlib
 import io
 import json
+import multiprocessing
 import os
+import queue
 import random
 import string
 import sys
 import time
 import zipfile
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import requests
 
+from .config import custom_key
 from .jsonutils import parse_json, write_to_json
 from .logger import debug_log, error_log, info_log
 from .metadata import Paths
@@ -18,6 +22,10 @@ from .utils import convert_to_bytes, verify_path
 
 URL = 'https://polygon.codeforces.com/api/'
 RETRIES = 3
+
+
+class APICallError(Exception):
+    pass
 
 
 def submit_requests_list(requests_list: List[tuple], problem_id: str) -> None:
@@ -38,6 +46,123 @@ def submit_requests_list(requests_list: List[tuple], problem_id: str) -> None:
         single_api_connection(method, method_params, conn)
 
     conn.close()
+
+
+def submit_concurrent_testcases(problem_id: int, requests: List[Tuple[str, dict]]) -> None:
+    """Submit a list of requests to the Polygon API using concurrent requests.
+
+    Args:
+        problem_id: The ID of the problem to submit requests for.
+        requests: A list of tuples, where each tuple contains a method name 
+        and a dictionary of parameters for that method.
+    """
+    if not requests:
+        return
+    info_log('Submitting testcases to Polygon')
+    method = 'problem.saveTest'
+
+    # Get the API keys
+    tool_path = os.path.dirname(os.path.abspath(__file__))
+    keys = parse_json(os.path.join(tool_path, 'secrets.json'))
+    with multiprocessing.Manager() as manager:
+        # Start queue to print the requests in order
+        q = manager.Queue()
+        process = multiprocessing.Process(
+            target=print_ordered_requests, args=(q, ))
+        process.start()
+
+        # Use batches to avoid exceeding the Polygon API time request limit
+        api_time_limit = 300
+        max_request_time = 10
+        max_workers = max(os.cpu_count() // 3, 1)
+        batch_size = (api_time_limit // max_request_time) * max_workers
+        split_batches = [requests[i:i + batch_size]
+                         for i in range(0, len(requests), batch_size)]
+
+        # Submit requests concurrently
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            for batch in split_batches:
+                batch = [add_auth_parameters(
+                    method, request, problem_id, keys['apikey'], keys['secret']) for request in batch]
+                futures = [executor.submit(
+                    concurrent_api_connection, method, params, q) for params in batch]
+
+                # Check for exceptions in completed futures
+                for future in concurrent.futures.as_completed(futures):
+                    if future.exception() is not None:
+                        for f in futures:
+                            if f != future and not f.done():
+                                f.cancel()
+                        process.join()
+                        sys.exit(0)
+        process.join()
+
+
+def concurrent_api_connection(method: str, request_params: dict, q) -> None:
+    """Make concurrent requests for problem.saveTest method
+
+    Args:
+        method: Method to be used for the connection with the API
+        request_params: Parameters used in the request
+        q: Queue to sort the output messages
+
+    Raises:
+        APICallError: Internal server error from the Polygon API.
+    """
+    testcase_index = str(request_params['testIndex'].decode()).lstrip('0')
+
+    # Make three attempts to connect to the API
+    for retry in range(RETRIES):
+        debug_log(f'Retry {retry + 1} for testcase {testcase_index}')
+        response = requests.post(URL + method, files=request_params)
+
+        if response.status_code == requests.codes.ok:
+            q.put(testcase_index)
+            return
+        elif response.status_code == requests.codes.bad_request:
+            q.put(f"Error submitting testcase {testcase_index}. Stopping requests\n"
+                  + verify_response(response, request_params))
+            raise APICallError
+
+    q.put(f"Internal server error occurred while trying to submit {testcase_index} testcase. Try again\n"
+          + verify_response(response, request_params))
+    raise APICallError
+
+
+def print_ordered_requests(q: multiprocessing.Queue) -> None:
+    """Print the requests in order.
+
+    Args:
+        q: Queue with the requests.
+    """
+    tmp_folder = os.path.join(Paths().get_tmp_output_dir(), 'scripts')
+    input_folder = os.path.join(Paths().get_problem_dir(), 'input')
+    os.makedirs(tmp_folder, exist_ok=True)
+    indexes: list = [f for f in os.listdir(
+        input_folder) if not f.endswith('.interactive')]
+    indexes.sort(key=custom_key)
+
+    pq = queue.PriorityQueue()
+
+    index = 0
+    while True:
+        if index == len(indexes):
+            break
+        try:
+            element = q.get(block=False)
+        except:
+            time.sleep(0.5)
+            continue
+        try:
+            pq.put(int(element))
+        except ValueError:
+            error_log(element)
+            break
+
+        while not pq.empty() and str(pq.queue[0]) == str(indexes[index]):
+            pq.get()
+            info_log(f'Manual testcase {indexes[index]} saved')
+            index += 1
 
 
 def get_package_id(packages: List[dict]) -> int:

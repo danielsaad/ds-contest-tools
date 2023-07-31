@@ -5,7 +5,7 @@ from .fileutils import get_statement_files
 from .jsonutils import parse_json
 from .logger import error_log, warning_log
 from .metadata import Paths
-from .polygon_connection import check_polygon_id, submit_requests_list
+from .polygon_connection import check_polygon_id, submit_requests_list, submit_concurrent_testcases
 from .toolchain import generate_inputs
 from .utils import check_problem_metadata, verify_path
 
@@ -114,7 +114,7 @@ def save_statement_resources() -> List[Tuple[str, dict]]:
 
 
 def save_testcases(tests_in_statement: int, interactive: bool, tmp_folder: str) -> List[Tuple[str, dict]]:
-    """Get list of requests of the manual and script testcases.
+    """Get list of requests to save the script and the statement testcases of the problem.
 
     Args:
         tests_in_statement: Number of tests to be used as example in the statement.
@@ -126,7 +126,7 @@ def save_testcases(tests_in_statement: int, interactive: bool, tmp_folder: str) 
     """
     script_requests: tuple = save_script(tmp_folder)
 
-    statement_tests = define_statement_tests(tests_in_statement, interactive)
+    statement_tests: list = define_statement_tests(tests_in_statement, interactive)
 
     requests_for_polygon: list = []
     requests_for_polygon += script_requests
@@ -394,8 +394,45 @@ def define_statement_tests(tests_in_statement: int, interactive: bool) -> List[T
     return parameters_list
 
 
-def get_requests_list() -> List[Tuple[str, dict]]:
+def save_manual_testcases(problem_id: str, io_samples: int) -> None:
+    """Send testcases manually to Polygon.
+
+    Args:
+        problem_id: ID of the Polygon problem.
+        io_samples: Number of examples testcases.
+    """
+    problem_folder: str = Paths().get_problem_dir()
+    input_folder: str = os.path.join(problem_folder, 'input')
+    output_folder: str = os.path.join(problem_folder, 'output')
+    verify_path(input_folder)
+    verify_path(output_folder)
+
+    parameters: list = []
+    testcases: int = len([f for f in os.listdir(input_folder) if not f.endswith('.interactive')])
+    for input_file in range(testcases):
+        input_file = str(input_file + 1)
+        test_description: str = f'Manual test {input_file} from DS contest tools.'
+        input_path = os.path.join(input_folder, input_file)
+        with open(input_path, 'r') as f:
+            test_input = f.read()
+        params: dict = {
+            'testset': TESTSET,
+            'testIndex': input_file.zfill(len(str(testcases))),
+            'testInput': test_input,
+            'checkExisting': 'false',
+            'testDescription': test_description,
+            'testUseInStatements': 'false' if int(input_file) > io_samples else 'true'
+        }
+        parameters.append(params)
+    parameters = sorted(parameters, key=lambda x: x['testIndex'])
+    submit_concurrent_testcases(problem_id, parameters)
+
+
+def get_requests_list(problem_id: str, manual_testcases: bool) -> List[Tuple[str, dict]]:
     """Get each request needed to convert the problem to Polygon.
+
+    Args:
+        manual_testcases: A boolean indicating whether to send testcases manually to Polygon.
 
     Returns:
         A list of tuples, where each tuple contains the method and the 
@@ -429,19 +466,22 @@ def get_requests_list() -> List[Tuple[str, dict]]:
     requests_list += save_files(problem_metadata['solutions'], interactive)
 
     # Get test parameters of the problem
-    requests_list += save_testcases(
-        problem_metadata['io_samples'], interactive, tmp_folder)
+    if manual_testcases:
+        save_manual_testcases(problem_id, problem_metadata['io_samples'])
+    else:
+        requests_list += save_testcases(
+            problem_metadata['io_samples'], interactive, tmp_folder)
 
     return requests_list
 
 
-def send_to_polygon(problem_id: Union[str, None]) -> None:
+def send_to_polygon(problem_id: Union[str, None], manual_testcases: bool = False) -> None:
     """Send problem to Polygon.
 
     Args:
-        problem_folder: Path to the problem folder.
         problem_id: ID of the Polygon problem.
+        manual_testcases: A boolean indicating whether to send testcases manually to Polygon.
     """
-    problem_id = check_polygon_id(problem_id)
-    requests_list: List[Tuple[str, dict]] = get_requests_list()
+    problem_id: str = check_polygon_id(problem_id)
+    requests_list: List[Tuple[str, dict]] = get_requests_list(problem_id, manual_testcases)
     submit_requests_list(requests_list, problem_id)

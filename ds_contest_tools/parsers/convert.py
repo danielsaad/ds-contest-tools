@@ -22,7 +22,7 @@ def verify_polygon_keys() -> None:
         error_log("Keys are not defined. Use 'set_keys' to define it.")
 
 
-def process_convert_to(problem_format: str, problem_dir: str, output_dir: Union[str, None]) -> None:
+def process_convert_to(problem_format: str, problem_dir: str, output_dir: Union[str, None], manual_testcases: bool) -> None:
     """Convert problem from DS to Polygon, SQTPM or BOCA.
 
     Args:
@@ -34,7 +34,7 @@ def process_convert_to(problem_format: str, problem_dir: str, output_dir: Union[
     if problem_format == 'polygon':
         setup_and_validate_paths(problem_dir)
         verify_polygon_keys()
-        send_to_polygon(output_dir)
+        send_to_polygon(output_dir, manual_testcases)
     elif problem_format == 'boca':
         if not output_dir:
             output_dir = problem_dir
@@ -88,11 +88,13 @@ def add_parser(subparsers) -> None:
         'problem_dir', help='path to the problem directory')
     to_parser.add_argument('-o', '--output_dir',
                            help='destination path to save the converted problem or '
-                           'the id of the polygon problem if it has not yet been defined.'
-                           'by default, the output directory is the same as the problem directory, '
+                           'the id of the polygon problem if it has not yet been defined. '
+                           'By default, the output directory is the same as the problem directory, '
                            'except for polygon problems, which are saved online')
+    to_parser.add_argument('-m', '--manual_tests', action='store_true',
+                           help='send testcases without the script')
     to_parser.set_defaults(function=lambda options: process_convert_to(
-        options.format, options.problem_dir, options.output_dir))
+        options.format, options.problem_dir, options.output_dir, options.manual_tests))
 
     from_parser = subparsers.add_parser(
         'convert_from', help='convert problem to ds format')
