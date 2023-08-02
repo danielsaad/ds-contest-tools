@@ -1,5 +1,5 @@
 import os
-import sys
+import shutil
 from datetime import datetime
 from operator import mod
 from subprocess import CompletedProcess
@@ -169,3 +169,8 @@ def generate_timestamp() -> str:
     current_time: datetime = datetime.fromtimestamp(datetime.now().timestamp())
     timestamp: str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
     return timestamp
+
+def copy_files(src_dir: str, dest_dir: str, files: list):
+    os.makedirs(dest_dir, exist_ok=True)
+    for file in files:
+        shutil.copy2(os.path.join(src_dir, file), os.path.join(dest_dir, file))

@@ -4,7 +4,7 @@ import shutil
 import xml.etree.ElementTree as ET
 from typing import Optional
 
-from .config import IGNORED_FILES
+from .config import IGNORED_DIRS
 from .fileutils import get_statement_files, unzip_package
 from .jsonutils import parse_json, write_to_json
 from .logger import info_log, warning_log

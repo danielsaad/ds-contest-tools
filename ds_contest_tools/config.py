@@ -4,7 +4,7 @@ DEFAULT_PDF_OPTIONS = {
     'event': False
 }
 
-IGNORED_FILES = [
+IGNORED_DIRS = [
     'boca', 'assets'
 ]
 

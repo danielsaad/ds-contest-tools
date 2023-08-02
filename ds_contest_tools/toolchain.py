@@ -5,37 +5,51 @@ import subprocess
 from typing import Dict
 
 from .checker import identify_language, run_solutions
-from .config import IGNORED_FILES, custom_key
+from .config import IGNORED_DIRS, custom_key
 from .htmlutils import print_to_html
-from .jsonutils import parse_json
+from .jsonutils import parse_json, write_to_json
 from .logger import debug_log, error_log, info_log, warning_log
 from .metadata import Paths, Problem, Solution
-from .utils import check_problem_metadata, check_subprocess_output, verify_path
+from .utils import check_problem_metadata, check_subprocess_output, verify_path, copy_files
 
 
-def init_problem(interactive=False) -> None:
-    """Initialize a competitive problem.
+def init_problem(interactive: bool, grader) -> None:
+    """Initialize a problem.
 
     Args:
         interactive: Boolean indicating whether the problem is interactive.
+        grader: Boolean indicating whether the problem is a grader.
     """
     problem_folder = Paths().get_problem_dir()
-    if os.path.exists(os.path.join(problem_folder, 'src')):
+    src_folder = os.path.join(problem_folder, 'src')
+    json_path = os.path.join(problem_folder, 'problem.json')
+    if os.path.exists(src_folder):
         error_log("Problem ID already exists in the directory")
 
-    folder = os.path.join(os.path.dirname(
+    # Copy standard files to problem folder
+    tool_folder = os.path.join(os.path.dirname(
         os.path.abspath(__file__)), 'files')
-    shutil.copytree(folder, problem_folder,
-                    ignore=shutil.ignore_patterns(*IGNORED_FILES), dirs_exist_ok=True)
-    # Rename files and folders if the problem is interactive
-    interactor = os.path.join(*[problem_folder, 'src', 'interactor.cpp'])
-    interactive_json = os.path.join(problem_folder, 'problem-interactive.json')
-    interactor_tex = os.path.join(
-        *[problem_folder, 'statement', 'interactor.tex'])
-    os.remove(os.path.join(problem_folder, 'sqtpm.sh'))
-    if (interactive):
-        shutil.move(interactive_json, os.path.join(
-            problem_folder, 'problem.json'))
+    shutil.copytree(tool_folder, problem_folder,
+                    ignore=shutil.ignore_patterns(*IGNORED_DIRS), dirs_exist_ok=True)
+    remove_src_files = ['sqtpm.sh']
+    for file in remove_src_files:
+        os.remove(os.path.join(problem_folder, file))
+
+    # Verify grader problem
+    problem_json = parse_json(json_path)
+    if grader:
+        problem_json['problem']['grader']['type'] = 'cpp'
+        problem_json['problem']['grader']['lib'] = 'grader.h'
+        shutil.move(os.path.join(problem_folder, 'Makefile_grader'), 
+                    os.path.join(problem_folder, 'Makefile'))
+        write_to_json(json_path, problem_json)
+    else:
+        os.remove(os.path.join(src_folder, 'grader.cpp'))
+        os.remove(os.path.join(src_folder, 'grader.h'))
+        os.remove(os.path.join(problem_folder, 'Makefile_grader'))
+
+    # Verify interactive problem
+    if interactive:
         # Create .interactive files for statement
         os.makedirs(os.path.join(problem_folder, 'input'))
         os.makedirs(os.path.join(problem_folder, 'output'))
@@ -43,11 +57,47 @@ def init_problem(interactive=False) -> None:
             *[problem_folder, 'input', '1.interactive']), 'w').close()
         open(os.path.join(
             *[problem_folder, 'output', '1.interactive']), 'w').close()
+        # Update problem.json to indicate that the problem is interactive
+        problem_json['problem']['interactive'] = True
+        write_to_json(json_path, problem_json)
     else:
+        interactor = os.path.join(src_folder, 'interactor.cpp')
+        interactor_tex = os.path.join(problem_folder, 'statement', 'interactor.tex')
         os.remove(interactor_tex)
-        os.remove(interactive_json)
         os.remove(interactor)
 
+
+def prepare_grader_problem(grader_folder: str, handler_folder: str, problem_json: dict) -> None:
+    """Create temporary folders to compile grader problem.
+
+    Args:
+        grader_folder: Path to the grader folder.
+        handler_folder: Path to the handler folder.
+        problem_json: Dictionary containing the values of problem.json.
+    """
+    src_dir = 'src'
+    grader_files = set()
+    grader_files.add('grader.cpp')
+
+    # Copy grader libs to grader folder
+    all_files = set(os.listdir(src_dir))
+    grader_libs = [f for f in all_files if f.endswith('.h') and f != 'testlib.h']
+    copy_files(src_dir, grader_folder, grader_libs)
+    grader_files.update(grader_libs)
+
+    # Copy solutions to grader folder
+    for solution in problem_json['solutions'].values():
+        if isinstance(solution, str):
+            copy_files(src_dir, grader_folder, [solution])
+            grader_files.add(solution)
+        else:
+            copy_files(src_dir, grader_folder, solution)
+            grader_files.update(solution)
+
+    # Copy other files to handler folder
+    other_files = all_files - grader_files
+    copy_files(src_dir, handler_folder, other_files)
+    
 
 def build_executables() -> None:
     """Run Makefile to create release and debug executables."""
@@ -55,13 +105,28 @@ def build_executables() -> None:
     os.chdir(Paths().get_problem_dir())
 
     # Verify necessary files
+    verify_path('Makefile')
+    verify_path('problem.json')
     verify_path(os.path.join('src', 'testlib.h'))
     verify_path(os.path.join('src', 'checker.cpp'))
 
+    # Verify grader problem
+    problem_json = parse_json('problem.json')
+    grader_problem = problem_json['problem']['grader']['name'] == 'cpp'
+    grader_folder = os.path.join('src', 'grader')
+    handler_folder = os.path.join('src', 'handler')
+    if grader_problem:
+        prepare_grader_problem(grader_folder, handler_folder, problem_json)
+   
     info_log("Compiling executables")
     p = subprocess.run(['make', '-j'],
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     check_subprocess_output(p, "Makefile failed.")
+    
+    if grader_problem:
+        shutil.rmtree(grader_folder)
+        shutil.rmtree(handler_folder)
+    
     os.chdir(old_cwd)
 
 
@@ -87,9 +152,12 @@ def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_n
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
     check_problem_metadata(problem_metadata)
     problem_obj = Problem(problem_metadata["problem"]["title"],
-                          problem_folder, input_folder, problem_metadata["problem"]["time_limit"], problem_metadata["problem"]["memory_limit_mb"])
+                          problem_folder, input_folder, 
+                          problem_metadata["problem"]["time_limit"], 
+                          problem_metadata["problem"]["memory_limit_mb"])
     parse_solutions(
         problem_obj, problem_metadata['solutions'], all_solutions, specific_solution)
+    
     if not no_generator:
         generate_inputs()
     if not no_validator:
