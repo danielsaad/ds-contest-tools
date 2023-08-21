@@ -1,4 +1,3 @@
-import sys
 from getpass import getpass
 
 from ..jsonutils import write_to_json

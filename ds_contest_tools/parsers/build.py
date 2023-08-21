@@ -1,6 +1,5 @@
 import os
 from math import floor
-from enum import Enum, auto
 
 from ..pdfutils import build_pdf
 from ..toolchain import build_executables, run_programs

@@ -1,7 +1,7 @@
-import sys
 from typing import Union
 
 from ..boca import boca_pack
+from ..jsonutils import parse_json
 from ..metadata import Paths
 from ..polygon_converter import get_polygon_problem
 from ..polygon_submitter import send_to_polygon
@@ -22,6 +22,26 @@ def verify_polygon_keys() -> None:
         error_log("Keys are not defined. Use 'set_keys' to define it.")
 
 
+def verify_problem_type(problem_format: str) -> None:
+    """Check if the problem format is valid to convert.
+
+    Args:
+        problem_format: Format to convert the problem.
+    """
+    problem_json = os.path.join(Paths().get_problem_dir(), 'problem.json')
+    problem_json = parse_json(problem_json)
+    
+    interactive = problem_json['problem']['interactive']
+    no_interactive_formats = ['boca', 'sqtpm']
+    if problem_format in no_interactive_formats and interactive:
+        error_log(f'Interactive problems are not supported by {problem_format.upper()}.')
+    
+    grader = problem_json['problem']['grader']
+    no_grader_formats = ['boca', 'sqtpm']
+    if problem_format in no_grader_formats and grader:
+        error_log(f'Grader problems are not supported by {problem_format.upper()}.')
+
+
 def process_convert_to(problem_format: str, problem_dir: str, output_dir: Union[str, None], manual_testcases: bool) -> None:
     """Convert problem from DS to Polygon, SQTPM or BOCA.
 
@@ -33,20 +53,22 @@ def process_convert_to(problem_format: str, problem_dir: str, output_dir: Union[
     """
     if problem_format == 'polygon':
         setup_and_validate_paths(problem_dir)
+        verify_problem_type(problem_format)
         verify_polygon_keys()
         send_to_polygon(output_dir, manual_testcases)
     elif problem_format == 'boca':
         if not output_dir:
             output_dir = problem_dir
         setup_and_validate_paths(problem_dir, output_dir)
+        verify_problem_type(problem_format)
         boca_pack(Paths().get_problem_dir(), Paths().get_output_dir())
     elif problem_format == 'sqtpm':
         if not output_dir:
             output_dir = os.path.join(problem_dir, 'sqtpm')
         setup_and_validate_paths(problem_dir, output_dir)
+        verify_problem_type(problem_format)
         convert_to_sqtpm()
-    else:
-        error_log('Not implemented yet.')
+
     info_log('Problem converted successfully.')
 
 
