@@ -13,7 +13,7 @@ from .metadata import Paths, Problem, Solution
 from .utils import check_problem_metadata, check_subprocess_output, verify_path, copy_files
 
 
-def init_problem(interactive: bool, grader) -> None:
+def init_problem(interactive: bool, grader: bool) -> None:
     """Initialize a problem.
 
     Args:
@@ -38,8 +38,7 @@ def init_problem(interactive: bool, grader) -> None:
     # Verify grader problem
     problem_json = parse_json(json_path)
     if grader:
-        problem_json['problem']['grader']['type'] = 'cpp'
-        problem_json['problem']['grader']['lib'] = 'grader.h'
+        problem_json['problem']['grader'] = True
         shutil.move(os.path.join(problem_folder, 'Makefile_grader'), 
                     os.path.join(problem_folder, 'Makefile'))
         write_to_json(json_path, problem_json)
@@ -80,7 +79,7 @@ def prepare_grader_problem(grader_folder: str, handler_folder: str, problem_json
     grader_files.add('grader.cpp')
 
     # Copy grader libs to grader folder
-    all_files = set(os.listdir(src_dir))
+    all_files = set([f for f in os.listdir(src_dir) if not os.path.isdir(os.path.join(src_dir, f))])
     grader_libs = [f for f in all_files if f.endswith('.h') and f != 'testlib.h']
     copy_files(src_dir, grader_folder, grader_libs)
     grader_files.update(grader_libs)
@@ -88,11 +87,10 @@ def prepare_grader_problem(grader_folder: str, handler_folder: str, problem_json
     # Copy solutions to grader folder
     for solution in problem_json['solutions'].values():
         if isinstance(solution, str):
-            copy_files(src_dir, grader_folder, [solution])
-            grader_files.add(solution)
-        else:
-            copy_files(src_dir, grader_folder, solution)
-            grader_files.update(solution)
+            solution = [solution]
+        solution = [f for f in solution if f.endswith('.cpp')]
+        copy_files(src_dir, grader_folder, solution)
+        grader_files.update(solution)
 
     # Copy other files to handler folder
     other_files = all_files - grader_files
@@ -112,7 +110,7 @@ def build_executables() -> None:
 
     # Verify grader problem
     problem_json = parse_json('problem.json')
-    grader_problem = problem_json['problem']['grader']['name'] == 'cpp'
+    grader_problem = problem_json['problem']['grader']
     grader_folder = os.path.join('src', 'grader')
     handler_folder = os.path.join('src', 'handler')
     if grader_problem:

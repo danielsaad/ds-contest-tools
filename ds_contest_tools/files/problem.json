@@ -7,14 +7,11 @@
         "input_file": "stdin",
         "output_file": "stdout",
         "interactive" : false,
+        "grader": false,
         "subject" : {
             "en_us" : [""],
             "pt_br" : [""],
             "es" : [""]
-        },
-        "grader" : {
-            "type" : "",
-            "lib" : ""
         }
     },
     "author" : {

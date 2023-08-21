@@ -96,5 +96,5 @@ def generate_pdf(problem_folder: str, output_folder: str, tex_path: str) -> None
         error_log("Timeout error while generating pdf. Maybe a package is missing?")
     os.chdir(old_cwd)
 
-    check_subprocess_output(p, "Generation of problem file failed.")
     clean_auxiliary_files(output_folder)
+    check_subprocess_output(p, "Generation of problem file failed.")
