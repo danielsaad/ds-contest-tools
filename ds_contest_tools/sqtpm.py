@@ -1,6 +1,5 @@
 import os
 import shutil
-import sys
 
 from .jsonutils import parse_json
 from .logger import error_log, info_log

@@ -130,7 +130,7 @@ def check_problem_metadata(problem_metadata: dict) -> None:
     verify_solutions(problem_metadata['solutions'])
 
     expected_types = {
-        'problem': {'time_limit': int, 'memory_limit_mb': int, 'interactive': bool},
+        'problem': {'time_limit': int, 'memory_limit_mb': int, 'interactive': bool, 'grader': bool},
         'io_samples': int
     }
     for key in expected_types:
@@ -145,6 +145,9 @@ def check_problem_metadata(problem_metadata: dict) -> None:
 
         for subkey, expected_type in expected_types[key].items():
             value = problem_metadata[key].get(subkey)
+            if subkey not in problem_metadata[key]:
+                error_log(
+                    f"Variable '{subkey}' is not defined in '{key}' in problem.json.")
             if not isinstance(value, expected_type):
                 error_log(
                     f"Variable '{subkey}' in '{key}' is not a(n) {expected_type.__name__}.")

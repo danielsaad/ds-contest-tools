@@ -217,12 +217,13 @@ def set_interactor(name: str) -> Tuple[str, dict]:
     return ('problem.setInteractor', params)
 
 
-def save_file(file_path: str, file_type: str) -> tuple:
+def save_file(file_path: str, file_type: str, grader: bool = False) -> tuple:
     """Get parameters of the files used to compile the problem.
 
     Args:
         file_path: Path to the file to be saved.
         file_type: Type of the file, e.g., 'source', 'resource', 'aux'.
+        grader: A boolean indicating whether the problem has a grader.
 
     Returns:
         A tuple containing the method and the parameters for the request.
@@ -235,6 +236,13 @@ def save_file(file_path: str, file_type: str) -> tuple:
         'file': file_content,
         'type': file_type
     }
+
+    if grader:
+        params['forTypes'] = "cpp.*" if file_path.endswith(('.cpp', '.h')) else "python.*"
+        params['main'] = "false"
+        params['stages'] = "COMPILE"
+        params['assets'] = "SOLUTION"
+
     return ('problem.saveFile', params)
 
 
@@ -273,11 +281,13 @@ def save_solution(file_path: str, tag: str) -> Tuple[str, dict]:
     return ('problem.saveSolution', params)
 
 
-def save_files(solutions: dict, interactive: bool) -> List[Dict[str, dict]]:
+def save_files(solutions: dict, interactive: bool, grader: bool) -> List[Dict[str, dict]]:
     """Save auxiliary, source and solution files of a problem.
 
     Args:
         solutions: Dictionary containing the solutions of the problem.
+        interactive: A boolean indicating whether the problem is interactive.
+        grader: A boolean indicating whether the problem has a grader.
 
     Returns:
         A list of tuples, where each tuple contains the method and the 
@@ -288,7 +298,7 @@ def save_files(solutions: dict, interactive: bool) -> List[Dict[str, dict]]:
     
     # Save solutions parameters
     solutions_saved = set()
-    parameters_list: list = []
+    solutions_parameters: list = []
     for key, solution_list in solutions.items():
         if key == 'main-ac':
             solution_list = [solution_list]
@@ -299,37 +309,42 @@ def save_files(solutions: dict, interactive: bool) -> List[Dict[str, dict]]:
                 continue
             solution_path: str = os.path.join(source_dir, solution)
             verify_path(solution_path)
-            parameters_list.append(save_solution(solution_path, key))
+            solutions_parameters.append(save_solution(solution_path, key))
             solutions_saved.add(solution)
 
     # Save source, resource and auxiliary files
     ignored_files: set = {'testlib.h', 'script.sh'}
+    grader_files: set = {'grader.cpp', 'main.py'}
+    files_parameters: list = []
     for file in os.listdir(source_dir):
-        if file in solutions_saved or file in ignored_files:
+        if file in solutions_saved or file in ignored_files or not os.path.isfile(os.path.join(source_dir, file)):
             continue
 
         file_path: str = os.path.join(source_dir, file)
         verify_path(file_path)
 
-        if file.endswith('.h'):
+        if grader and file in grader_files:
+            # Save grader files
+            files_parameters.append(save_file(file_path, 'resource', grader))
+        elif file.endswith('.h'):
             # Save resource files
-            parameters_list.append(save_file(file_path, 'resource'))
+            files_parameters = [save_file(file_path, 'resource', grader)] + files_parameters
         elif file.endswith(('.aux', '.sh')):
             # Save auxiliary files
-            parameters_list.append(save_file(file_path, 'aux'))
+            files_parameters.append(save_file(file_path, 'aux'))
         elif file == 'interactor.cpp' and not interactive:
             continue
         else:
             # Save source files
-            parameters_list.append(save_file(file_path, 'source'))
+            files_parameters.append(save_file(file_path, 'source'))
             if file == 'checker.cpp':
-                parameters_list.append(set_checker(file))
+                files_parameters.append(set_checker(file))
             elif file == 'validator.cpp':
-                parameters_list.append(set_validator(file))
+                files_parameters.append(set_validator(file))
             elif file == 'interactor.cpp':
-                parameters_list.append(set_interactor(file))
+                files_parameters.append(set_interactor(file))
 
-    return parameters_list
+    return files_parameters + solutions_parameters
 
 
 def save_tags(tag_list: List[str]) -> Tuple[str, dict]:
@@ -463,7 +478,8 @@ def get_requests_list(problem_id: str, manual_testcases: bool) -> List[Tuple[str
     requests_list += save_statement_resources()
 
     # Get source and solution files of the problem
-    requests_list += save_files(problem_metadata['solutions'], interactive)
+    grader = problem_metadata['problem']['grader']
+    requests_list += save_files(problem_metadata['solutions'], interactive, grader)
 
     # Get test parameters of the problem
     if manual_testcases:

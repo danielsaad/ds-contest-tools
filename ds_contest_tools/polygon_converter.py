@@ -269,7 +269,7 @@ def init_problem(interactive: bool) -> None:
 
     # Copy problem template files to problem folder
     shutil.copytree(source_folder, problem_folder,
-                    ignore=shutil.ignore_patterns(*IGNORED_FILES, 'src'),
+                    ignore=shutil.ignore_patterns(*IGNORED_DIRS, 'src'),
                     dirs_exist_ok=True)
     shutil.copy(os.path.join(source_folder, 'src', 'testlib.h'),
                 os.path.join(problem_folder, 'src', 'testlib.h'))
