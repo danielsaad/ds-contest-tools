@@ -150,7 +150,7 @@ def check_problem_metadata(problem_metadata: dict) -> None:
                     f"Variable '{subkey}' is not defined in '{key}' in problem.json.")
             if not isinstance(value, expected_type):
                 error_log(
-                    f"Variable '{subkey}' in '{key}' is not a(n) {expected_type.__name__}.")
+                    f"Variable '{subkey}' in '{key}' is not a(n) {expected_type.__name__} in problem.json.")
 
 
 def verify_path(path: str) -> None:

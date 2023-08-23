@@ -13,7 +13,7 @@ from .metadata import Paths, Problem, Solution
 from .utils import check_problem_metadata, check_subprocess_output, verify_path, copy_files
 
 
-def init_problem(interactive: bool, grader: bool) -> None:
+def init_problem(interactive: bool, grader: bool, verify_folder: bool = True, ignore_patterns: list = IGNORED_DIRS) -> None:
     """Initialize a problem.
 
     Args:
@@ -23,14 +23,14 @@ def init_problem(interactive: bool, grader: bool) -> None:
     problem_folder = Paths().get_problem_dir()
     src_folder = os.path.join(problem_folder, 'src')
     json_path = os.path.join(problem_folder, 'problem.json')
-    if os.path.exists(src_folder):
+    if verify_folder and os.path.exists(src_folder):
         error_log("Problem ID already exists in the directory")
 
     # Copy standard files to problem folder
     tool_folder = os.path.join(os.path.dirname(
         os.path.abspath(__file__)), 'files')
     shutil.copytree(tool_folder, problem_folder,
-                    ignore=shutil.ignore_patterns(*IGNORED_DIRS), dirs_exist_ok=True)
+                    ignore=shutil.ignore_patterns(*ignore_patterns), dirs_exist_ok=True)
     remove_src_files = ['sqtpm.sh']
     for file in remove_src_files:
         os.remove(os.path.join(problem_folder, file))
@@ -39,13 +39,10 @@ def init_problem(interactive: bool, grader: bool) -> None:
     problem_json = parse_json(json_path)
     if grader:
         problem_json['problem']['grader'] = True
-        shutil.move(os.path.join(problem_folder, 'Makefile_grader'), 
-                    os.path.join(problem_folder, 'Makefile'))
         write_to_json(json_path, problem_json)
     else:
         os.remove(os.path.join(src_folder, 'grader.cpp'))
         os.remove(os.path.join(src_folder, 'grader.h'))
-        os.remove(os.path.join(problem_folder, 'Makefile_grader'))
 
     # Verify interactive problem
     if interactive:
@@ -59,7 +56,7 @@ def init_problem(interactive: bool, grader: bool) -> None:
         # Update problem.json to indicate that the problem is interactive
         problem_json['problem']['interactive'] = True
         write_to_json(json_path, problem_json)
-    else:
+    elif verify_folder:
         interactor = os.path.join(src_folder, 'interactor.cpp')
         interactor_tex = os.path.join(problem_folder, 'statement', 'interactor.tex')
         os.remove(interactor_tex)
@@ -110,6 +107,7 @@ def build_executables() -> None:
 
     # Verify grader problem
     problem_json = parse_json('problem.json')
+    check_problem_metadata(problem_json)
     grader_problem = problem_json['problem']['grader']
     grader_folder = os.path.join('src', 'grader')
     handler_folder = os.path.join('src', 'handler')
@@ -117,7 +115,10 @@ def build_executables() -> None:
         prepare_grader_problem(grader_folder, handler_folder, problem_json)
    
     info_log("Compiling executables")
-    p = subprocess.run(['make', '-j'],
+    command = ['make', '-j']
+    if grader_problem:
+        command.append('grader')
+    p = subprocess.run(command,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     check_subprocess_output(p, "Makefile failed.")
     
