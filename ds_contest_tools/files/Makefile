@@ -31,6 +31,8 @@ SRC_JAVA := $(wildcard $(SRC_DIR)/*.java)
 BIN_JAVA := $(patsubst $(SRC_DIR)/%.java, $(BIN_DIR)/%.class, $(SRC_JAVA))
 DBG_JAVA := $(patsubst $(SRC_DIR)/%.java, $(DBG_DIR)/%.class, $(SRC_JAVA))
 
+CHECKER := $(wildcard $(SRC_DIR)/checker.cpp)
+
 C := gcc
 CPP := g++
 CXX_FLAGS := -Wall -O2
@@ -42,13 +44,18 @@ JV_DEBUG = -g
 JV_DIR = -d bin
 JV_DBG_DIR = -d bin/debug
 
-.PHONY: all debug release clean
+.PHONY: all debug release checker clean
 
-all: debug release
+all: debug release checker
 
-debug: $(DBG) $(DBG_C) $(DBG_JAVA) $(GRADER_DBG) $(DBG_DIR)/checker-boca 
+debug: $(DBG) $(DBG_C) $(DBG_JAVA) $(GRADER_DBG) 
 
-release: $(BIN) $(BIN_C) $(BIN_JAVA) $(GRADER_BIN) $(BIN_DIR)/checker-boca
+release: $(BIN) $(BIN_C) $(BIN_JAVA) $(GRADER_BIN) 
+
+ifdef CHECKER
+checker: 
+	$(DBG_DIR)/checker-boca $(BIN_DIR)/checker-boca
+endif
 
 $(BIN): $(BIN_DIR)/% : $(SRC_DIR)/%.cpp | $(BIN_DIR)
 	$(CPP) $(CXX_FLAGS) $^ -o $@
