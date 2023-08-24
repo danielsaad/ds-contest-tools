@@ -2,7 +2,7 @@
 
 Créditos para [Daniel Saad Nogueira Nunes](https://github.com/danielsaad/), por criar a ferramenta.
 
-# Contribuidores
+# Mantenedores
 
 - [Matheus Loiola](https://github.com/loioladev/)
 - [Leonam Knupp](https://github.com/lknupp/)

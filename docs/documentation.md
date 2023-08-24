@@ -1,6 +1,6 @@
 # Estrutura da ferramenta
 
-A estrutura de arquivos da ferramenta foi definida com o objetivo de empacotar a ferramenta e criar uma CLI a partir dela. Dessa forma, a organização de pastas se tornou a seguinte:
+A estrutura de arquivos da ferramenta foi escolhida com o objetivo de empacotar a ferramenta e criar uma CLI a partir dela. Dessa forma, a organização de pastas se tornou a seguinte:
 
 - `LICENSE`: Arquivo de licença da ferramenta.
 - `README.md`: Arquivo de introdução da ferramenta.
@@ -9,22 +9,28 @@ A estrutura de arquivos da ferramenta foi definida com o objetivo de empacotar a
 - `ds_contest_tools/`: Diretório que contém o código fonte e os arquivos da ferramenta.
 - `run.py`: Arquivo de inicialização da CLI sem a necessidade de instalar o pacote.
 - `legacy_converter.py`: Arquivo responsável pela conversão de problemas legados para o novo formato de problemas da ferramenta.
+- `docs/`: Diretório contendo os arquivos da documentação da ferramenta.
+- `mkdocs.yml`: Arquivo de configuração da página do projeto.
 
 # Estrutura dos problemas
 
 A estrutura de arquivo dos problemas foi projetada visando facilitar a criação de novos problemas e o uso da ferramenta. Ao iniciar um problema, os seguintes arquivos e pastas são criados:
 
-- `src/`: Pasta que deve conter as soluções, geradores, validadores, interatores (se aplicável) e checkers do problema.
+- `problem.json`: Arquivo que contém informações do problema, como nome, descrição, limites de tempo e memória, entre outros.
+- `src/`: Pasta que contém as soluções, geradores, validadores, interatores (se aplicável) e checkers do problema.
   - As soluções devem ser definidas no arquivo `problem.json` para que a ferramenta possa reconhecê-las. Isso permite dividir as soluções em categorias específicas.
   - Os validadores, interatores e checkers devem seguir nomes padrão para que a ferramenta possa identificá-los corretamente, dispensando a necessidade de especificá-los no arquivo `problem.json`.
-  - A linha de comando para executar os geradores deve ser incluída no arquivo `script.sh`, que será executado pela ferramenta. A ferramenta aceita multigeradores e geradores únicos.
+  - A linha de comando para executar o(s) gerador(es) deve ser incluída no arquivo `script.sh`, que será executado pela ferramenta. A ferramenta aceita multigeradores e geradores únicos.
 - `statement/`: Pasta que deve conter o enunciado do problema. Está dividida em vários arquivos para facilitar a edição do enunciado.
   - Arquivos de imagem que forem utilizados no enunciado devem ser colocados na pasta raiz do problema.
 - `Makefile`: Arquivo contendo comandos para compilar e executar os binários do problema. Não é necessário rodar o Makefile para utilizar a ferramenta.
-- `problem.json`: Arquivo que contém informações do problema, como nome, descrição, limites de tempo e memória, entre outros.
 - `maratona.cls`: Arquivo que contém a classe LaTeX para gerar o PDF do problema.
 
-Além disso, a ferramenta suporta dois tipos de problemas: interativos e não interativos. A diferença entre eles é que problemas interativos incluem um arquivo `interactor.cpp` e um arquivo `interactor.tex` para a geração do enunciado.
+Além disso, a ferramenta suporta três tipos de problemas: 
+
+- Problemas comuns: 
+- Problemas com grader: Problemas que avaliam funções criadas pelos competidores. Ao criar esse tipo de problema, os arquivos `grader.cpp` e `grader.h` são gerados na pasta `src` do problema, e as soluções devem importar essa biblioteca e implementar as funções dela. Para um grader em Python, o arquivo `main.py` deve ser criado, e ele deve importar o arquivo **solution**, mesmo que as soluções não possuam esse nome.
+- Problemas interativos: Problemas que trocam informações com o usuário. Ao criar esse tipo de problema, os arquivos `interactor.cpp` e `interactor.tex` são criados.
 
 # Estrutura dos módulos
 
