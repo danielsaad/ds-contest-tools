@@ -31,14 +31,14 @@ def process_build(problem_dir: str, all_solutions: bool, specific_solution: str,
         info_log('Problem PDF generated successfully')
     elif io:
         info_log("Generating input/output")
-        build_executables()
+        build_executables(no_checker)
         if not ngvoc:
             run_programs(all_solutions=all_solutions, specific_solution=specific_solution,
                      cpu_number=cpu_count, no_validator=no_validator, no_generator=no_generator, no_output=no_output)
         info_log("Input/output generated successfully")
     else:
         info_log(f'Building problem {problem_name}')
-        build_executables()
+        build_executables(no_checker)
         if not ngvoc:
             run_programs(all_solutions=all_solutions, specific_solution=specific_solution,
                         cpu_number=cpu_count, no_validator=no_validator, no_generator=no_generator, no_checker=no_checker, no_output=no_output)

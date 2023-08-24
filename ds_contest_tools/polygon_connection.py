@@ -198,8 +198,10 @@ def download_package_polygon(problem_id: str) -> None:
     Args:
         problem_id: Polygon problem ID.
     """
-    content: dict = json.loads(make_api_request(
-        'problem.packages', dict(), problem_id))
+    packages = make_api_request('problem.packages', dict(), problem_id)
+    if not packages:
+        error_log("No packages found on Polygon.")
+    content: dict = json.loads(packages)
 
     # Get the LATEST FULL package ID
     package_id: int = get_package_id(content['result'])

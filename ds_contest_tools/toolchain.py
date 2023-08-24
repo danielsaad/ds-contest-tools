@@ -94,7 +94,7 @@ def prepare_grader_problem(grader_folder: str, handler_folder: str, problem_json
     copy_files(src_dir, handler_folder, other_files)
     
 
-def build_executables() -> None:
+def build_executables(no_checker: bool = False) -> None:
     """Run Makefile to create release and debug executables."""
     old_cwd = os.getcwd()
     os.chdir(Paths().get_problem_dir())
@@ -103,7 +103,8 @@ def build_executables() -> None:
     verify_path('Makefile')
     verify_path('problem.json')
     verify_path(os.path.join('src', 'testlib.h'))
-    verify_path(os.path.join('src', 'checker.cpp'))
+    if not no_checker:
+        verify_path(os.path.join('src', 'checker.cpp'))
 
     # Verify grader problem
     problem_json = parse_json('problem.json')
