@@ -1,15 +1,16 @@
 site_name: DS Contest Tools
 
 nav:
-  - Home: index.md
+  - Home: 'index.md'
   - Guia de Uso:
     - 'Visão Geral': 'overview.md'
     - 'Instalação': 'installation.md'
     - 'Comandos': 'commands.md'
   - Sobre:
-    - 'Licença': 'license.md'
-    - 'Notas de versão': 'release-notes.md'
     - 'Contribuindo': 'contributing.md'
+    - 'Notas de versão': 'release-notes.md'
+    - 'Licença': 'license.md'
+    - 'Créditos': 'credits.md'
   - Desenvolvimento:
     - 'Documentação': 'documentation.md'
 
