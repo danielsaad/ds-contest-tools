@@ -1,0 +1,79 @@
+Bem-vindo à página de comandos da ferramenta! Aqui você encontrará informações detalhadas sobre as funcionalidades e recursos dos comandos disponíveis para criar e converter problemas. 
+
+## init
+
+O comando `init` é utilizado para inicializar um problema com os arquivos e diretórios para começar a construção do problema.
+
+Uso: `ds-contest-tools init [-i] <problem_dir>`
+
+Opções:
+- **-i**, **--interactive**: Inicializa um problema interativo. Nesses problemas, os casos de teste utilizados na descrição do problema são definidos por arquivos de entrada/saída com a extensão `.interactive`, caso sejam necessários.
+
+## build
+
+O comando `build` é utilizado para construir os problemas. Por padrão, constrói um problema utilizando apenas a solução principal.
+
+Uso: `ds-contest-tools build [-a] [-s <solucao>] [-c <numero-cpus>] [-p] [-i] [-nv] [-ng] [-nv] [-no] [-ngvoc] <problem_dir>`
+
+Opções:
+- **-a, --all**: Constrói o problema utilizando todas as soluções.
+- **-s, --specific <solucao>**: Constrói o problema utilizando apenas uma solução específica, indicada pelo `<solucao>`.
+- **-c, --cpu-count <qtde-threads>**: Define a quantidade de *threads* a serem criadas na execução das soluções do problema, indicado por `<qtde-threads>`.
+- **-p, --pdf**: Gera apenas os PDFs do problema.
+- **-i, --io**: Gera apenas os arquivos de entrada/saída do problema.
+- **-nv, --no-validator**: Constrói o problema sem validar os casos de teste.
+- **-ng, --no-generator**: Ao compilar um problema, os casos de teste são redefinidos no diretório input. Ao usar essa opção, os casos de teste são mantidos, pois o gerador não é chamado. É importante usá-la caso os testes sejam criados manualmente, caso contrário, eles serão apagados.
+- **-no, --no-output**: Constrói o problema sem gerar as saídas dos casos de teste.
+- **-nc, --no-checker**: Constrói o problema sem utilizar o checker nos casos de teste.
+- **-ngvoc**: Gera apenas os executáveis e os PDFs do problema.
+
+## contest
+
+O comando `contest` é utilizado para gerar um diretório com *n* problemas a serem utilizados em uma maratona. 
+
+Uso: `ds-contest-tools contest [-p] [-i] <problem_dir [problem_dir...]> <contest_dir>`
+
+Opções:
+- **-p, --pdf**: Gera apenas os PDFs da maratona.
+- **-i, --io**: Gera apenas os arquivos de entrada/saída dos problemas da maratona.
+- **--author**: Insere o nome do autor dos problemas no PDF.
+
+## convert_to
+
+Converte o problema para um dos seguintes formatos:
+
+- *BOCA*: Converte o problema para o formato BOCA em um arquivo *zippado*.
+- *SQTPM*: Converte o problema para o formato SQTPM em um novo diretório.
+- *Polygon*: Envia o problema para o Polygon. Inúmeras requisições são feitas para converter o problema. Durante a conversão para o Polygon, as seguintes alterações são feitas:
+    - As informações gerais e textos do enunciado são alterados.
+    - Os arquivos de origem, recursos, auxiliares e solução com o mesmo nome serão sobrescritos.
+    - Os casos de teste com o mesmo índice serão sobrescritos.
+    - O script será sobrescrito se uma solicitação de script foi feita.
+
+Uso: `ds-contest-tools convert_to [-o <diretorio>] [-m] <format> <problem_dir>`
+
+Opções:
+- **-o, --output-dir <diretorio>**: Define um diretório de saída para o problema convertido. No caso da conversão para o Polygon, define o ID do problema no arquivo `problem.json` para uso futuro.
+- **-m, --manual-tests**: Converte os casos de teste para o Polygon sem utilizar o script gerador.
+
+## convert_from
+
+Converte para o formato da ferramenta o problema com um dos seguintes formatos:
+- *Polygon*: Baixa o pacote mais recente e pronto do Linux na pasta do problema e o utiliza para a conversão. Requisições adicionais à API são feitas para encontrar o nome dos arquivos fonte e o tipo do problema.
+
+Uso: `ds-contest-tools [-l <diretorio>] convert_from <format> <problem_dir> <package_dir>`
+
+Opções:
+- **-l, --local <diretorio>**: Converte um pacote local do Polygon para o formato da ferramenta. É possível converter pacotes *FULL* e *STANDARD*. Nenhuma requisição é feita, então o usuário precisa especificar se o problema é interativo ou não e alterar o nome dos arquivos de origem para o padrão da ferramenta.
+
+## set_keys
+
+o comando `set_keys` é responsável por definir as chaves da API do Polygon que serão utilizadas para a conversão dos problemas. Essas chaves são necessárias para acessar e interagir com o Polygon.
+
+Uso: `ds-contest-tools set_keys`
+
+## clean
+
+Remove executáveis ​​criados após a construção do problema.
+
+Uso: `ds-contest-tools clean <problem_dir>`
