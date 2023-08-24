@@ -86,18 +86,20 @@ def verify_solutions(solutions_dict: dict) -> None:
         solutions_dict: Dictionary containing the solutions of the problem.
     """
     problem_folder: Union[list, str] = Paths().get_problem_dir()
+    problem_names: set = {}
     # Ignore verification due to creation of contest
     if isinstance(problem_folder, list):
         return
     for _, solutions in solutions_dict.items():
         # Verify main solution
         if isinstance(solutions, str):
-            verify_path(os.path.join(problem_folder, 'src', solutions))
-            verify_file(os.path.join(problem_folder, 'src', solutions))
-            verify_supported_languages(solutions)
-            continue
+            solutions = [solutions]
+
         # Verify others solutions
         for file in solutions:
+            if file in problem_names:
+                error_log(f'Solution {file} has the same name of another solution without the type.')
+            problem_names.add(file)
             verify_path(os.path.join(problem_folder, 'src', file))
             verify_file(os.path.join(problem_folder, 'src', file))
             verify_supported_languages(file)
