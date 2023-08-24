@@ -97,9 +97,10 @@ def verify_solutions(solutions_dict: dict) -> None:
 
         # Verify others solutions
         for file in solutions:
-            if file in problem_names:
-                error_log(f'Solution {file} has the same name of another solution without the type.')
-            problem_names.add(file)
+            file_name = file.split('.')[0]
+            if file_name in problem_names:
+                error_log(f'Solution {file_name} has the same name of another solution without the type.')
+            problem_names.add(file_name)
             verify_path(os.path.join(problem_folder, 'src', file))
             verify_file(os.path.join(problem_folder, 'src', file))
             verify_supported_languages(file)
