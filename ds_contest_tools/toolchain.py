@@ -116,8 +116,6 @@ def build_executables() -> None:
    
     info_log("Compiling executables")
     command = ['make', '-j']
-    if grader_problem:
-        command.append('grader')
     p = subprocess.run(command,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     check_subprocess_output(p, "Makefile failed.")
