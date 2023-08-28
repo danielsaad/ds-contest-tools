@@ -1,9 +1,9 @@
 import io
 import os
 
-from math import inf, floor
+from math import floor
 from .logger import info_log
-from .metadata import Problem, ProblemAnswer, Solution, Status, Test
+from .metadata import Problem, ProblemAnswer, Solution, Status, Test, Paths
 
 REPORT_NAME = "report.html"
 
@@ -19,7 +19,7 @@ def write_head(problem_name: str, f_out: io.TextIOWrapper) -> None:
     """
     head: str = f"""
     <!DOCTYPE html>
-<html lang="pt-br">
+    <html lang="pt-br" style="min-height: 100%;">
 
 <head>
     <meta charset="UTF-8">
@@ -152,8 +152,7 @@ def write_test_cases_tbody(problem_obj: Problem, f_out: io.TextIOWrapper) -> Non
     memory_limit: float = problem_obj.memory_limit
     time_limit: float = problem_obj.time_limit
     test_cases_number: int = problem_obj.get_number_of_tests()
-    href_path: str = os.path.join(os.path.dirname(
-        __file__), 'files', 'assets', 'test-case-info.html')
+    href_paths: str = html_test_case_info_paths(problem_obj)
     memory_usage: float = None
     execution_time: float = None
     solution: Solution
@@ -170,7 +169,7 @@ def write_test_cases_tbody(problem_obj: Problem, f_out: io.TextIOWrapper) -> Non
                 solution.expected_result)
             url_params = f'id={i + 1}&solution={solution.solution_name}&veredict={test_status}&expected-result={expected_result}&time={test_case.exec_time:.2f}&memory={(test_case.memory_usage / 1000):.2f}&checker-output={test_case.checker_output}'
             url_link_params = f'title={problem_obj.problem_name}&input={os.path.join(problem_obj.input_folder, str(i + 1))}&output={os.path.join(solution.output_path, str(i + 1))}&answer={os.path.join(problem_obj.problem_dir, "output", str(i + 1))}&report-link={os.path.join(problem_obj.problem_dir, REPORT_NAME)}'
-            table_data_info = f'\t<td class="{test_color_class}"><a href="{href_path}?{url_params}&{url_link_params}" {tooltip_msg}>{test_status} </a> <br>{execution_time:.2f} s / {(memory_usage):.1f} MB </td>'
+            table_data_info = f'\t<td class="{test_color_class}"><a href="{href_paths[solution.solution_name]}?{url_params}&{url_link_params}" {tooltip_msg}>{test_status} </a> <br>{execution_time:.2f} s / {(memory_usage):.1f} MB </td>'
             f_out.write(table_data_info)
         f_out.write('</tr>')
 
@@ -193,6 +192,16 @@ def write_test_cases_tbody(problem_obj: Problem, f_out: io.TextIOWrapper) -> Non
                     </div>
     """
     f_out.write(tbody)
+
+
+def html_test_case_info_paths(problem_obj: Problem) -> str:
+    html_info_paths: dict[str, str] = {}
+    solution: Solution = None
+    for solution in problem_obj.get_list_solution():
+        html_info_paths[solution.solution_name] = html_tmp_file_path(
+            solution)
+
+    return html_info_paths
 
 
 def set_expected_result(expected_result: str) -> str:
@@ -296,9 +305,9 @@ def write_aux_trow(problem_obj: Problem, f_out: io.TextIOWrapper) -> None:
         f_out.write('<tr class="text-center">')
         row_color, solution_result_symbol = solution_status(
             solution.solution_status)
-        f_out.write(f'\t<td>{solution.solution_name}</td>')
+        f_out.write(f'\t<td class="bg-white">{solution.solution_name}</td>')
         f_out.write(
-            f'\t<td>{set_expected_result(solution.expected_result)}</td>')
+            f'\t<td class="bg-white">{set_expected_result(solution.expected_result)}</td>')
         f_out.write(f'\t<td class="{row_color}">{solution_result_symbol}</td>')
         f_out.write('</tr>')
 
@@ -408,6 +417,53 @@ def write_footer(f_out: io.TextIOWrapper) -> None:
     f_out.write(footer)
 
 
+def create_test_info_file(problem_obj: Problem) -> None:
+    html_tmp_folder: str = os.path.join(Paths().get_tmp_output_dir(), 'html')
+    os.makedirs(html_tmp_folder, exist_ok=True)
+    solution: Solution = None
+    default_html_file: str = os.path.join(
+        os.path.dirname(__file__), 'files', 'assets', 'test-case-info.html')
+
+    script_line: int = find_html_line(
+        default_html_file, '<script id="ds-script-app"')
+    script_file: str = os.path.join(
+        os.path.dirname(__file__), 'files', 'assets', 'scripts', 'app.js')
+    code_line: int = find_html_line(
+        default_html_file, '<code id="ds-src-code">')
+
+    for solution in problem_obj.get_list_solution():
+        html_tmp_file: str = html_tmp_file_path(solution)
+        with open(default_html_file, 'r', encoding='utf-8') as f_in, \
+                open(html_tmp_file, 'w', encoding='utf-8') as f_out:
+            f = f_in.readlines()
+            for i, line in enumerate(f):
+                if i == script_line:
+                    f_out.write(
+                        f'<script id="ds-script-app" src="{script_file}" defer></script>')
+                elif i == code_line:
+                    f_out.write(
+                        f'<code class="language-{solution.get_file_extension()}">\n')
+                    with open(solution.get_source_file_path(problem_obj), 'r', encoding='utf-8') as f_code:
+                        f_out.write(f_code.read())
+                else:
+                    f_out.write(line)
+
+
+def html_tmp_file_path(solution: Solution) -> str:
+    html_tmp_folder: str = os.path.join(Paths().get_tmp_output_dir(), 'html')
+    filename: str = f'test-info-{solution.get_binary_name()}-{solution.get_file_extension()}.html'
+    return os.path.join(html_tmp_folder, filename)
+
+
+def find_html_line(html_file: str, text: str) -> int:
+    with open(html_file, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+        for i, line in enumerate(lines):
+            if text in line:
+                return i
+    return -1
+
+
 def print_to_html(problem_obj: Problem) -> None:
     """
     Create an HTML report for a given problem.
@@ -420,6 +476,7 @@ def print_to_html(problem_obj: Problem) -> None:
     html_filename: str = REPORT_NAME
     html_filepath: str = os.path.join(problem_folder, html_filename)
     info_log(f'Creating {html_filename}')
+    create_test_info_file(problem_obj)
     with open(html_filepath, 'w') as f_out:
         problem_name: str = problem_obj.problem_name
         write_head(problem_name, f_out)
