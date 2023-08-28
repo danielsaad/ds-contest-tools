@@ -183,13 +183,12 @@ class Problem:
         Returns:
             int: The number of tests
         """
-        from .logger import info_log
+        from .logger import error_log
         try:
             solution: Solution = self.get_list_solution()[0]
         except:
-            info_log(
+            error_log(
                 f'The solution list for problem {self.problem_name} is empty.')
-            exit(1)
         return len(solution.tests)
 
 
@@ -479,9 +478,9 @@ class Statistic:
         max_exec_time: The maximum execution time of a solution.
         max_memory_usage: The maximum memory usage of a solution.
     """
-    ac_count: int
-    max_exec_time: float
-    max_memory_usage: float
+    ac_count: int = 0
+    max_exec_time: float = 0.0
+    max_memory_usage: float = 0.0
 
 
 def singleton(cls):
@@ -539,3 +538,7 @@ class Paths:
     def get_tmp_output_dir(self) -> str:
         """Get the temporary output root directory"""
         return self.__tmp_output_dir
+    
+    def set_output_dir(self, output_dir: str) -> None:
+        """Set the output directory"""
+        self.__output_dir = output_dir

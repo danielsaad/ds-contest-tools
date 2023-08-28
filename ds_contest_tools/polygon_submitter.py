@@ -1,12 +1,11 @@
 import os
-import sys
 from typing import Dict, List, Tuple, Union
 
 from .fileutils import get_statement_files
 from .jsonutils import parse_json
-from .logger import error_log, info_log
+from .logger import error_log, warning_log
 from .metadata import Paths
-from .polygon_connection import check_polygon_id, submit_requests_list
+from .polygon_connection import check_polygon_id, submit_requests_list, submit_concurrent_testcases
 from .toolchain import generate_inputs
 from .utils import check_problem_metadata, verify_path
 
@@ -32,11 +31,9 @@ def update_info(problem_metadata: dict) -> tuple:
 
     if not 250 <= time_limit <= 15000:
         error_log("Time limit is only between 0.25s and 15s.")
-        sys.exit(0)
 
     if not 4 <= memory_limit <= 1024:
         error_log("Memory limit is only between 4MB and 1024MB.")
-        sys.exit(0)
 
     params: dict = {
         'inputFile': problem_metadata['input_file'],
@@ -59,7 +56,7 @@ def save_statement(name: str, interactive: bool) -> tuple:
         A tuple containing the method and the parameters for the request.
     """
     if interactive:
-        info_log("Polygon API does not receive interaction statement. "
+        warning_log("Polygon API does not receive interaction statement. "
                  "Manual insertion will be needed.")
 
     statement_dir: str = os.path.join(
@@ -117,7 +114,7 @@ def save_statement_resources() -> List[Tuple[str, dict]]:
 
 
 def save_testcases(tests_in_statement: int, interactive: bool, tmp_folder: str) -> List[Tuple[str, dict]]:
-    """Get list of requests of the manual and script testcases.
+    """Get list of requests to save the script and the statement testcases of the problem.
 
     Args:
         tests_in_statement: Number of tests to be used as example in the statement.
@@ -129,7 +126,7 @@ def save_testcases(tests_in_statement: int, interactive: bool, tmp_folder: str) 
     """
     script_requests: tuple = save_script(tmp_folder)
 
-    statement_tests = define_statement_tests(tests_in_statement, interactive)
+    statement_tests: list = define_statement_tests(tests_in_statement, interactive)
 
     requests_for_polygon: list = []
     requests_for_polygon += script_requests
@@ -220,12 +217,13 @@ def set_interactor(name: str) -> Tuple[str, dict]:
     return ('problem.setInteractor', params)
 
 
-def save_file(file_path: str, file_type: str) -> tuple:
+def save_file(file_path: str, file_type: str, grader: bool = False) -> tuple:
     """Get parameters of the files used to compile the problem.
 
     Args:
         file_path: Path to the file to be saved.
         file_type: Type of the file, e.g., 'source', 'resource', 'aux'.
+        grader: A boolean indicating whether the problem has a grader.
 
     Returns:
         A tuple containing the method and the parameters for the request.
@@ -238,6 +236,13 @@ def save_file(file_path: str, file_type: str) -> tuple:
         'file': file_content,
         'type': file_type
     }
+
+    if grader:
+        params['forTypes'] = "cpp.*" if file_path.endswith(('.cpp', '.h')) else "python.*"
+        params['main'] = "false"
+        params['stages'] = "COMPILE"
+        params['assets'] = "SOLUTION"
+
     return ('problem.saveFile', params)
 
 
@@ -276,11 +281,13 @@ def save_solution(file_path: str, tag: str) -> Tuple[str, dict]:
     return ('problem.saveSolution', params)
 
 
-def save_files(solutions: dict, interactive: bool) -> List[Dict[str, dict]]:
+def save_files(solutions: dict, interactive: bool, grader: bool) -> List[Dict[str, dict]]:
     """Save auxiliary, source and solution files of a problem.
 
     Args:
         solutions: Dictionary containing the solutions of the problem.
+        interactive: A boolean indicating whether the problem is interactive.
+        grader: A boolean indicating whether the problem has a grader.
 
     Returns:
         A list of tuples, where each tuple contains the method and the 
@@ -291,7 +298,7 @@ def save_files(solutions: dict, interactive: bool) -> List[Dict[str, dict]]:
     
     # Save solutions parameters
     solutions_saved = set()
-    parameters_list: list = []
+    solutions_parameters: list = []
     for key, solution_list in solutions.items():
         if key == 'main-ac':
             solution_list = [solution_list]
@@ -302,37 +309,42 @@ def save_files(solutions: dict, interactive: bool) -> List[Dict[str, dict]]:
                 continue
             solution_path: str = os.path.join(source_dir, solution)
             verify_path(solution_path)
-            parameters_list.append(save_solution(solution_path, key))
+            solutions_parameters.append(save_solution(solution_path, key))
             solutions_saved.add(solution)
 
     # Save source, resource and auxiliary files
     ignored_files: set = {'testlib.h', 'script.sh'}
+    grader_files: set = {'grader.cpp', 'main.py'}
+    files_parameters: list = []
     for file in os.listdir(source_dir):
-        if file in solutions_saved or file in ignored_files:
+        if file in solutions_saved or file in ignored_files or not os.path.isfile(os.path.join(source_dir, file)):
             continue
 
         file_path: str = os.path.join(source_dir, file)
         verify_path(file_path)
 
-        if file.endswith('.h'):
+        if grader and file in grader_files:
+            # Save grader files
+            files_parameters.append(save_file(file_path, 'resource', grader))
+        elif file.endswith('.h'):
             # Save resource files
-            parameters_list.append(save_file(file_path, 'resource'))
+            files_parameters = [save_file(file_path, 'resource', grader)] + files_parameters
         elif file.endswith(('.aux', '.sh')):
             # Save auxiliary files
-            parameters_list.append(save_file(file_path, 'aux'))
+            files_parameters.append(save_file(file_path, 'aux'))
         elif file == 'interactor.cpp' and not interactive:
             continue
         else:
             # Save source files
-            parameters_list.append(save_file(file_path, 'source'))
+            files_parameters.append(save_file(file_path, 'source'))
             if file == 'checker.cpp':
-                parameters_list.append(set_checker(file))
+                files_parameters.append(set_checker(file))
             elif file == 'validator.cpp':
-                parameters_list.append(set_validator(file))
+                files_parameters.append(set_validator(file))
             elif file == 'interactor.cpp':
-                parameters_list.append(set_interactor(file))
+                files_parameters.append(set_interactor(file))
 
-    return parameters_list
+    return files_parameters + solutions_parameters
 
 
 def save_tags(tag_list: List[str]) -> Tuple[str, dict]:
@@ -397,8 +409,45 @@ def define_statement_tests(tests_in_statement: int, interactive: bool) -> List[T
     return parameters_list
 
 
-def get_requests_list() -> List[Tuple[str, dict]]:
+def save_manual_testcases(problem_id: str, io_samples: int) -> None:
+    """Send testcases manually to Polygon.
+
+    Args:
+        problem_id: ID of the Polygon problem.
+        io_samples: Number of examples testcases.
+    """
+    problem_folder: str = Paths().get_problem_dir()
+    input_folder: str = os.path.join(problem_folder, 'input')
+    output_folder: str = os.path.join(problem_folder, 'output')
+    verify_path(input_folder)
+    verify_path(output_folder)
+
+    parameters: list = []
+    testcases: int = len([f for f in os.listdir(input_folder) if not f.endswith('.interactive')])
+    for input_file in range(testcases):
+        input_file = str(input_file + 1)
+        test_description: str = f'Manual test {input_file} from DS contest tools.'
+        input_path = os.path.join(input_folder, input_file)
+        with open(input_path, 'r') as f:
+            test_input = f.read()
+        params: dict = {
+            'testset': TESTSET,
+            'testIndex': input_file.zfill(len(str(testcases))),
+            'testInput': test_input,
+            'checkExisting': 'false',
+            'testDescription': test_description,
+            'testUseInStatements': 'false' if int(input_file) > io_samples else 'true'
+        }
+        parameters.append(params)
+    parameters = sorted(parameters, key=lambda x: x['testIndex'])
+    submit_concurrent_testcases(problem_id, parameters)
+
+
+def get_requests_list(problem_id: str, manual_testcases: bool) -> List[Tuple[str, dict]]:
     """Get each request needed to convert the problem to Polygon.
+
+    Args:
+        manual_testcases: A boolean indicating whether to send testcases manually to Polygon.
 
     Returns:
         A list of tuples, where each tuple contains the method and the 
@@ -429,22 +478,26 @@ def get_requests_list() -> List[Tuple[str, dict]]:
     requests_list += save_statement_resources()
 
     # Get source and solution files of the problem
-    requests_list += save_files(problem_metadata['solutions'], interactive)
+    grader = problem_metadata['problem']['grader']
+    requests_list += save_files(problem_metadata['solutions'], interactive, grader)
 
     # Get test parameters of the problem
-    requests_list += save_testcases(
-        problem_metadata['io_samples'], interactive, tmp_folder)
+    if manual_testcases:
+        save_manual_testcases(problem_id, problem_metadata['io_samples'])
+    else:
+        requests_list += save_testcases(
+            problem_metadata['io_samples'], interactive, tmp_folder)
 
     return requests_list
 
 
-def send_to_polygon(problem_id: Union[str, None]) -> None:
+def send_to_polygon(problem_id: Union[str, None], manual_testcases: bool = False) -> None:
     """Send problem to Polygon.
 
     Args:
-        problem_folder: Path to the problem folder.
         problem_id: ID of the Polygon problem.
+        manual_testcases: A boolean indicating whether to send testcases manually to Polygon.
     """
-    problem_id = check_polygon_id(problem_id)
-    requests_list: List[Tuple[str, dict]] = get_requests_list()
+    problem_id: str = check_polygon_id(problem_id)
+    requests_list: List[Tuple[str, dict]] = get_requests_list(problem_id, manual_testcases)
     submit_requests_list(requests_list, problem_id)

@@ -1,4 +1,3 @@
-import sys
 from getpass import getpass
 
 from ..jsonutils import write_to_json
@@ -9,12 +8,10 @@ def process_set_keys() -> None:
     """Prompts the user to enter their Polygon API keys and saves them to a local file."""
     api_key = getpass("API key: ")
     if not api_key:
-        error_log("API key cannot be empty.")
-        sys.exit(1)
+        error_log("API key can't be empty.")
     secret = getpass("API secret: ")
     if not secret:
-        error_log("API secret cannot be empty.")
-        sys.exit(1)
+        error_log("API secret can't be empty.")
     keys = {
         'apikey': api_key,
         'secret': secret

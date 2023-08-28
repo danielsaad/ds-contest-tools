@@ -6,6 +6,13 @@ import sys
 from .metadata import Paths
 
 
+class tcolors:
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+
+
 def setup_logger(name: str, log_file: str, level=logging.DEBUG) -> logging.Logger:
     """Setup a logger with the specified name, log file, and logging level.
 
@@ -80,7 +87,20 @@ def info_log(text: str) -> None:
     info = convert_to_string(text)
     if len(info) > 0:
         tool.info(info)
-        print(text)
+        print(f"{tcolors.OKGREEN}{text}{tcolors.ENDC}")
+
+
+def warning_log(text: str) -> None:
+    """Logs warnings about the tool.
+
+    Args:
+        text: The warning information to be logged.
+    """
+    tool = logging.getLogger('tool')
+    info = convert_to_string(text)
+    if len(info) > 0:
+        tool.warning(info)
+        print(f"{tcolors.WARNING}{text}{tcolors.ENDC}")
 
 
 def debug_log(text: str) -> None:
@@ -105,4 +125,5 @@ def error_log(text: str) -> None:
     info = convert_to_string(text)
     if len(info) > 0:
         tool.error(info)
-        print(text)
+        print(f"{tcolors.FAIL}{text} Exiting...{tcolors.ENDC}")
+        sys.exit(0)
