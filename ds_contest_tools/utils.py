@@ -1,5 +1,5 @@
 import os
-import sys
+import shutil
 from datetime import datetime
 from operator import mod
 from subprocess import CompletedProcess
@@ -10,14 +10,13 @@ from .metadata import Paths
 
 
 def convert_idx_to_string(idx: int) -> str:
-    """
-    Convert an integer to a string from alphabet [A-Z] using radix 26.
+    """Convert an integer to a string from alphabet [A-Z] using radix 26.
 
     Args:
         idx (int): The integer to be converted.
 
     Returns:
-        str: The string representing the integer in base 26.
+        The string representing the integer in base 26.
     """
     ans: str = ''
     while True:
@@ -30,14 +29,13 @@ def convert_idx_to_string(idx: int) -> str:
 
 
 def convert_to_bytes(x) -> bytes:
-    """
-    Convert a string to bytes.
+    """Convert a string to bytes.
 
     Args:
         x: The string to be converted.
 
     Returns:
-        bytes: The bytes representation of the string.
+        The bytes representation of the string.
     """
     if isinstance(x, bytes):
         return x
@@ -45,32 +43,29 @@ def convert_to_bytes(x) -> bytes:
 
 
 def check_subprocess_output(p: CompletedProcess, message: str) -> None:
-    """
-    Check if the output of the function 'subprocess.run' is ok.
+    """Check if the output of the function 'subprocess.run' is ok.
 
     Args:
-        p (CompletedProcess): The completed process returned by the 'subprocess.run' function.
-        message (str): The message to be printed in case of an error.
+        p: The completed process returned by the 'subprocess.run' function.
+        message: The message to be printed in case of an error.
     """
     stdout = convert_to_string(p.stdout)
     stderr = convert_to_string(p.stderr)
     if len(stdout) > 0:
-        debug_log(p.stdout)
+        debug_log(stdout)
     if len(stderr) > 0:
-        debug_log(p.stderr)
+        debug_log(stderr)
 
     if p.returncode:
-        error_log(f"{message} (return code: {p.returncode})")
-        sys.exit(1)
+        error_log(f"{message} (return code: {p.returncode}).")
 
 
 def instance_paths(problem_dir: Union[str, list], output_dir: Optional[str] = '') -> None:
-    """
-    Initialize metadata dictionary and logs.
+    """Initialize metadata dictionary and logs.
 
     Args:
-        problem_dir (Union[str, list]): The path(s) to the problem directory(ies).
-        output_dir (Optional[str]): The path to the output directory.
+        problem_dir: The path(s) to the problem directory(ies).
+        output_dir: The path to the output directory.
     """
     if isinstance(problem_dir, list):
         problem_dir = [os.path.abspath(s) for s in problem_dir]
@@ -85,25 +80,27 @@ def instance_paths(problem_dir: Union[str, list], output_dir: Optional[str] = ''
 
 
 def verify_solutions(solutions_dict: dict) -> None:
-    """
-    Verify if solutions exists in the src folder.
+    """Verify if solutions exists in the src folder.
 
     Args:
-        solutions_dict (dict): Dictionary containing the solutions of the problem.
+        solutions_dict: Dictionary containing the solutions of the problem.
     """
     problem_folder: Union[list, str] = Paths().get_problem_dir()
+    problem_names: set = {}
     # Ignore verification due to creation of contest
     if isinstance(problem_folder, list):
         return
     for _, solutions in solutions_dict.items():
         # Verify main solution
         if isinstance(solutions, str):
-            verify_path(os.path.join(problem_folder, 'src', solutions))
-            verify_file(os.path.join(problem_folder, 'src', solutions))
-            verify_supported_languages(solutions)
-            continue
+            solutions = [solutions]
+
         # Verify others solutions
         for file in solutions:
+            file_name = file.split('.')[0]
+            if file_name in problem_names:
+                error_log(f'Solution {file_name} has the same name of another solution without the type.')
+            problem_names.add(file_name)
             verify_path(os.path.join(problem_folder, 'src', file))
             verify_file(os.path.join(problem_folder, 'src', file))
             verify_supported_languages(file)
@@ -111,8 +108,7 @@ def verify_solutions(solutions_dict: dict) -> None:
 
 def verify_file(filepath: str) -> None:
     if not os.path.isfile(filepath):
-        error_log(f'Solutions paths cannot be empty.')
-        sys.exit(1)
+        error_log(f'Solution in problem.json cannot be empty.')
 
 
 def verify_supported_languages(solution_file: str):
@@ -126,57 +122,52 @@ def verify_supported_languages(solution_file: str):
     if not suported_languages.get(ext, False):
         error_log(
             f'Programming language for solution {solution_file} is not supported or has an invalid extension')
-        sys.exit(1)
 
 
 def check_problem_metadata(problem_metadata: dict) -> None:
-    """
-    Check variables inside problem.json for type errors.
+    """Check variables inside problem.json for type errors.
 
     Args:
-        problem_metadata (dict): The problem.json file as a dictionary.
+        problem_metadata: The problem.json file as a dictionary.
     """
     verify_solutions(problem_metadata['solutions'])
 
     expected_types = {
-        'problem': {'time_limit': int, 'memory_limit_mb': int, 'interactive': bool},
+        'problem': {'time_limit': int, 'memory_limit_mb': int, 'interactive': bool, 'grader': bool},
         'io_samples': int
     }
     for key in expected_types:
         if key not in problem_metadata:
             error_log(f"Variable {key} is not defined in problem.json.")
-            sys.exit(1)
 
         if key == 'io_samples':
             if not isinstance(problem_metadata[key], expected_types[key]):
                 error_log(
                     f"Variable '{key}' is not a(n) {expected_types[key].__name__}.")
-                sys.exit(1)
             continue
 
         for subkey, expected_type in expected_types[key].items():
             value = problem_metadata[key].get(subkey)
+            if subkey not in problem_metadata[key]:
+                error_log(
+                    f"Variable '{subkey}' is not defined in '{key}' in problem.json.")
             if not isinstance(value, expected_type):
                 error_log(
-                    f"Variable '{subkey}' in '{key}' is not a(n) {expected_type.__name__}.")
-                sys.exit(1)
+                    f"Variable '{subkey}' in '{key}' is not a(n) {expected_type.__name__} in problem.json.")
 
 
 def verify_path(path: str) -> None:
-    """
-    Verify if path exists in folder.
+    """Verify if path exists in folder.
 
     Args:
-        path (str): Path to the file.
+        path: Path to the file.
     """
     if not os.path.exists(path):
         error_log(f'{os.path.relpath(path)} does not exist.')
-        sys.exit(1)
 
 
 def generate_timestamp() -> str:
-    """
-    Generate a timestamp in the format (Day-Month-Year-Hour:Minute:Seconds)
+    """Generate a timestamp in the format (Day-Month-Year-Hour:Minute:Seconds)
 
     Returns:
         The string representing the timestamp.
@@ -184,3 +175,8 @@ def generate_timestamp() -> str:
     current_time: datetime = datetime.fromtimestamp(datetime.now().timestamp())
     timestamp: str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
     return timestamp
+
+def copy_files(src_dir: str, dest_dir: str, files: list):
+    os.makedirs(dest_dir, exist_ok=True)
+    for file in files:
+        shutil.copy2(os.path.join(src_dir, file), os.path.join(dest_dir, file))

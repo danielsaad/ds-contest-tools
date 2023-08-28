@@ -1,9 +1,6 @@
-#!/usr/bin/python3
-
 import os
 import queue
 import subprocess
-import sys
 import time
 from multiprocessing import Event, Manager, Pipe, Process, Queue
 from multiprocessing.connection import Connection
@@ -12,8 +9,9 @@ from signal import SIGKILL
 
 import psutil
 
-from .logger import debug_log, error_log, info_log
-from .metadata import Paths, Problem, ProblemAnswer, Solution, Status, Test, Statistic
+from .logger import debug_log, error_log, info_log, warning_log
+from .metadata import (Paths, Problem, ProblemAnswer, Solution, Statistic,
+                       Status, Test)
 
 """ Java definitions """
 JAVA_INTERPRETER = 'java'
@@ -135,20 +133,19 @@ def identify_language(problem_obj: Problem, solution: Solution) -> str:
     binary_file: str = solution.get_binary_name()
     ext: str = solution.get_file_extension()
     problem_folder = problem_obj.problem_dir
+    bin_folder = os.path.join(problem_folder, 'bin')
     exec_args: str
 
     if (ext == 'cpp' or ext == 'c'):
-        exec_args = os.path.join(problem_folder, 'bin', binary_file)
+        exec_args = os.path.join(bin_folder, binary_file)
     elif (ext == 'java'):
-        problem_id = os.path.join(problem_folder, 'bin')
-        exec_args = f'{JAVA_INTERPRETER} {JAVA_FLAG} {problem_id} {solution.get_binary_name()}'
+        exec_args = f'{JAVA_INTERPRETER} {JAVA_FLAG} {bin_folder} {solution.get_binary_name()}'
     elif (ext == 'py'):
         submission_file = os.path.join(
             problem_folder, 'src', solution.solution_name)
         exec_args = f'{PYTHON3_INTERPRETER} {submission_file}'
     else:
-        error_log(f'{solution.solution_name} has an invalid extension')
-        sys.exit(1)
+        error_log(f'{solution.solution_name} has an invalid extension.')
 
     return exec_args
 
@@ -171,11 +168,9 @@ def run_checker(ans: str, inf: str, ouf: str) -> tuple:
     checker_file: str = os.path.join(
         Paths().get_problem_dir(), 'bin/checker')
     if (not os.path.isfile(inf)):
-        error_log('Input ' + fname + ' not available')
-        sys.exit(1)
+        error_log('Input ' + fname + ' not available.')
     if (not os.path.isfile(ans)):
-        error_log('Answer ' + fname + ' not available')
-        sys.exit(1)
+        error_log('Answer ' + fname + ' not available.')
     command = [checker_file, inf, ouf, ans]
     p = subprocess.run(command, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE)
@@ -185,7 +180,7 @@ def run_checker(ans: str, inf: str, ouf: str) -> tuple:
     elif (checker_output.startswith('wrong answer')):
         status = Status.WA
     elif (checker_output.startswith('FAIL')):
-        error_log('Input ' + fname +
+        warning_log('Input ' + fname +
                   ': FAIL: maybe the jury solution or the checker are not correct')
         status = Status.FAIL
     else:

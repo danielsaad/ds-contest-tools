@@ -1,7 +1,7 @@
 import io
 import os
+from math import floor, inf
 
-from math import floor
 from .logger import info_log
 from .metadata import Problem, ProblemAnswer, Solution, Status, Test, Paths
 

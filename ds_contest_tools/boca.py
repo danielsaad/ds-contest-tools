@@ -17,7 +17,11 @@ class default_boca_limits:
 
 
 def boca_zip(boca_folder: str) -> None:
-    """ Zip a problem of BOCA format."""
+    """ Zip a problem of BOCA format.
+    
+    Args:
+        boca_folder: Path to the BOCA folder.
+    """
     info_log("Zipping BOCA package")
     old_cwd = os.getcwd()
     os.chdir(boca_folder)
@@ -30,7 +34,12 @@ def boca_zip(boca_folder: str) -> None:
 
 
 def boca_pack(problem_folder: str, output_folder: str) -> None:
-    """Convert a DS problem to a BOCA problem."""
+    """Convert a DS problem to a BOCA problem.
+    
+    Args:
+        problem_folder: Path to the problem folder.
+        output_folder: Path to the output folder.
+    """
     # Verify if it is a conversion from a contest
     info_log(f"Starting BOCA conversion for problem {os.path.basename(problem_folder)}.")
     os.makedirs(output_folder, exist_ok=True)
@@ -55,7 +64,6 @@ def boca_pack(problem_folder: str, output_folder: str) -> None:
     pdf_file = filename+'.pdf'
     if not os.path.exists(pdf_file):
         error_log("Problem PDF doesn't exist.")
-        sys.exit(1)
     shutil.copy2(pdf_file, boca_description_folder)
 
     # Compare

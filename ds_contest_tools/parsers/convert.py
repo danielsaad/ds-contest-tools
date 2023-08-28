@@ -1,7 +1,7 @@
-import sys
 from typing import Union
 
 from ..boca import boca_pack
+from ..jsonutils import parse_json
 from ..metadata import Paths
 from ..polygon_converter import get_polygon_problem
 from ..polygon_submitter import send_to_polygon
@@ -20,10 +20,29 @@ def verify_polygon_keys() -> None:
 
     if not os.path.exists(secrets_path):
         error_log("Keys are not defined. Use 'set_keys' to define it.")
-        sys.exit(1)
 
 
-def process_convert_to(problem_format: str, problem_dir: str, output_dir: Union[str, None]) -> None:
+def verify_problem_type(problem_format: str) -> None:
+    """Check if the problem format is valid to convert.
+
+    Args:
+        problem_format: Format to convert the problem.
+    """
+    problem_json = os.path.join(Paths().get_problem_dir(), 'problem.json')
+    problem_json = parse_json(problem_json)
+    
+    interactive = problem_json['problem']['interactive']
+    no_interactive_formats = ['boca', 'sqtpm']
+    if problem_format in no_interactive_formats and interactive:
+        error_log(f'Interactive problems are not supported by {problem_format.upper()}.')
+    
+    grader = problem_json['problem']['grader']
+    no_grader_formats = ['boca', 'sqtpm']
+    if problem_format in no_grader_formats and grader:
+        error_log(f'Grader problems are not supported by {problem_format.upper()}.')
+
+
+def process_convert_to(problem_format: str, problem_dir: str, output_dir: Union[str, None], manual_testcases: bool) -> None:
     """Convert problem from DS to Polygon, SQTPM or BOCA.
 
     Args:
@@ -34,21 +53,22 @@ def process_convert_to(problem_format: str, problem_dir: str, output_dir: Union[
     """
     if problem_format == 'polygon':
         setup_and_validate_paths(problem_dir)
+        verify_problem_type(problem_format)
         verify_polygon_keys()
-        send_to_polygon(output_dir)
+        send_to_polygon(output_dir, manual_testcases)
     elif problem_format == 'boca':
         if not output_dir:
             output_dir = problem_dir
         setup_and_validate_paths(problem_dir, output_dir)
+        verify_problem_type(problem_format)
         boca_pack(Paths().get_problem_dir(), Paths().get_output_dir())
     elif problem_format == 'sqtpm':
         if not output_dir:
             output_dir = os.path.join(problem_dir, 'sqtpm')
         setup_and_validate_paths(problem_dir, output_dir)
+        verify_problem_type(problem_format)
         convert_to_sqtpm()
-    else:
-        error_log('Not implemented yet.')
-        sys.exit(1)
+
     info_log('Problem converted successfully.')
 
 
@@ -63,7 +83,7 @@ def process_convert_from(problem_format: str, problem_dir: str, package_dir: str
     """
     if problem_format == 'polygon':
         if local:
-            setup_and_validate_paths(problem_dir, package_dir)
+            setup_and_validate_paths(problem_dir, package_dir, verify_path=False)
         else:
             setup_and_validate_paths(problem_dir, os.path.join(
                 problem_dir, 'temp_polygon_package'), verify_path=False)
@@ -71,7 +91,6 @@ def process_convert_from(problem_format: str, problem_dir: str, package_dir: str
         get_polygon_problem(package_dir, local)
     else:
         error_log('Not implemented yet.')
-        sys.exit(1)
     info_log('Problem converted successfully.')
 
 
@@ -91,11 +110,13 @@ def add_parser(subparsers) -> None:
         'problem_dir', help='path to the problem directory')
     to_parser.add_argument('-o', '--output_dir',
                            help='destination path to save the converted problem or '
-                           'the id of the polygon problem if it has not yet been defined.'
-                           'by default, the output directory is the same as the problem directory, '
+                           'the id of the polygon problem if it has not yet been defined. '
+                           'By default, the output directory is the same as the problem directory, '
                            'except for polygon problems, which are saved online')
+    to_parser.add_argument('-m', '--manual_tests', action='store_true',
+                           help='send testcases without the script')
     to_parser.set_defaults(function=lambda options: process_convert_to(
-        options.format, options.problem_dir, options.output_dir))
+        options.format, options.problem_dir, options.output_dir, options.manual_tests))
 
     from_parser = subparsers.add_parser(
         'convert_from', help='convert problem to ds format')

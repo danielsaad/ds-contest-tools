@@ -4,12 +4,14 @@ import shutil
 import xml.etree.ElementTree as ET
 from typing import Optional
 
-from .fileutils import get_statement_files
+from .config import IGNORED_DIRS
+from .fileutils import get_statement_files, unzip_package
 from .jsonutils import parse_json, write_to_json
-from .logger import error_log, info_log
+from .logger import info_log, warning_log
 from .metadata import Paths
 from .polygon_connection import download_package_polygon, make_api_request
 from .utils import verify_path
+from .toolchain import init_problem
 
 DEFAULT_LANGUAGE = 'english'
 
@@ -139,7 +141,7 @@ def copy_generator(script: str) -> None:
         f.write(script)
 
     if script == '':
-        info_log("No script found.")
+        warning_log("No generator script found.")
         return
 
     script_lines = script.split('\n')
@@ -151,8 +153,7 @@ def copy_generator(script: str) -> None:
         file += '.cpp'
         generator = os.path.join(*[package_folder, 'files', file])
         if not os.path.exists(generator):
-            error_log(f"Generator {os.path.relpath(generator)} not found.")
-            continue
+            warning_log(f"Generator {os.path.relpath(generator)} not found.")
         destination = os.path.join(problem_folder, 'src', file)
         shutil.copy(generator, destination)
 
@@ -163,16 +164,17 @@ def copy_source_files(polygon_name: str, file_name: str) -> None:
     problem_folder = Paths().get_problem_dir()
     file = os.path.join(package_folder, 'files', polygon_name)
     destination = os.path.join(problem_folder, 'src', file_name)
-    
+
     # If problem has standard checker, verify new checker or skip it
     if not os.path.exists(file) and file_name == 'checker.cpp':
         file_dir = os.path.dirname(file)
         checker = [f for f in os.listdir(file_dir) if f.startswith('check')]
         if not checker:
-            info_log(f"Checker {os.path.basename(polygon_name)} not found. Skipping.")
+            warning_log(
+                f"Checker {os.path.basename(polygon_name)} not found. Skipping.")
             return
         file = os.path.join(file_dir, checker[0])
-    
+
     verify_path(file)
     shutil.copy2(file, destination)
 
@@ -184,12 +186,30 @@ def copy_source_folder() -> None:
     problem_folder = Paths().get_problem_dir()
     source_folder = os.path.join(package_folder, 'files')
 
-    # Only copy cpp files
+    # Copy files from source folder
     source_files = [os.path.join(source_folder, x) for x in os.listdir(
-        source_folder) if x.endswith('.cpp')]
+        source_folder) if x.endswith(('.cpp', '.py', '.java'))]
     destination = os.path.join(problem_folder, 'src')
     for f in source_files:
         shutil.copy2(f, destination)
+
+
+def copy_grader_files(data: list) -> None:
+    """Copy grader files from package to problem folder.
+
+    Args:
+        data: List of tuples containing name of file and if it is used for grader.
+    """
+    for resource, for_grader in data:
+        if not for_grader:
+            continue
+        resource = os.path.basename(resource)
+        if resource.endswith('.cpp'):
+            resource = 'grader.cpp'
+        elif resource.endswith('.py'):
+            resource = 'main.py'
+        shutil.copy(os.path.join(Paths().get_output_dir(), 'files', resource), 
+                    os.path.join(Paths().get_problem_dir(), 'src', resource))
 
 
 def copy_solutions() -> None:
@@ -250,33 +270,34 @@ def get_remote_interactive(problem_id: str) -> bool:
     return content['result']['interactive']
 
 
-def init_problem(interactive: bool) -> None:
+def start_problem(interactive: bool, grader: bool) -> None:
     """Initialize problem folder before the conversion.
 
     Args:
         interactive: Whether the problem is interactive.
     """
     info_log("Initializing problem folder.")
-    tool_path = os.path.dirname(os.path.abspath(__file__))
-    source_folder = os.path.join(tool_path, 'files')
-    problem_folder = Paths().get_problem_dir()
+    init_problem(interactive, grader, verify_folder=False, ignore_patterns=IGNORED_DIRS + ['src'])
 
     # Create necessary directories
+    problem_folder = Paths().get_problem_dir()
     os.makedirs(os.path.join(problem_folder, 'src'), exist_ok=True)
     os.makedirs(os.path.join(problem_folder, 'input'), exist_ok=True)
     os.makedirs(os.path.join(problem_folder, 'output'), exist_ok=True)
 
-    # Copy problem template files to problem folder
-    shutil.copytree(source_folder, problem_folder,
-                    ignore=shutil.ignore_patterns('boca', 'src'),
-                    dirs_exist_ok=True)
-    shutil.copy(os.path.join(source_folder, 'src', 'testlib.h'),
+    # Copy testlib
+    tool_path = os.path.dirname(os.path.abspath(__file__))
+    testlib = os.path.join(tool_path, 'files', 'src')
+    shutil.copy2(os.path.join(testlib, 'testlib.h'),
                 os.path.join(problem_folder, 'src', 'testlib.h'))
 
-    os.remove(os.path.join(problem_folder, 'problem-interactive.json'))
-    os.remove(os.path.join(problem_folder, 'sqtpm.sh'))
-    if not interactive:
-        os.remove(os.path.join(problem_folder, 'statement', 'interactor.tex'))
+    # Remove unused grader files
+    if grader:
+        grader_files = ['grader.cpp', 'grader.h']
+        for f in grader_files:
+            file_path = os.path.join(problem_folder, 'src', f)
+            if os.path.exists(file_path):
+                os.remove(file_path)
 
 
 def copy_statement_files(package_data: dict, interactive: bool, language=DEFAULT_LANGUAGE) -> None:
@@ -299,7 +320,7 @@ def copy_statement_files(package_data: dict, interactive: bool, language=DEFAULT
     if interactive:
         with open(statement_files[5], 'w') as f:
             f.writelines(package_data['interaction'])
-    
+
     package_folder = os.path.join(
         Paths().get_output_dir(), 'statement-sections', language)
     ignored_extensions = {'.tex', '.log'}
@@ -388,6 +409,24 @@ def get_solutions_xml(root: ET.Element) -> dict:
     return solutions
 
 
+def get_resources_xml(root: ET.Element) -> list:
+    """Parse resource files from problem XML.
+
+    Args:
+        root: The root Element object of the XML tree.
+
+    Returns:
+        A list of tuples containing the resource file names and if they are used for grader.
+    """
+    resources: list = []
+    for data in root.findall('./files/resources/'):
+        name = data.get('path')
+        for_type = data.get('for-types')
+        if name:
+            resources.append((name, True if for_type else False))
+    return resources
+
+
 def get_data_xml() -> dict:
     """Parses the problem.xml file in the package folder to retrieve
     generator scripts and solutions for the problem.
@@ -406,7 +445,8 @@ def get_data_xml() -> dict:
 
     xml_data: dict = {
         'script': get_scripts_xml(root),
-        'solutions': get_solutions_xml(root)
+        'solutions': get_solutions_xml(root),
+        'resources': get_resources_xml(root)
     }
     return xml_data
 
@@ -420,14 +460,15 @@ def get_tags() -> dict:
     package_folder: str = Paths().get_output_dir()
     tags: dict = {'en_us': list()}
     tags_paths = os.path.join(package_folder, 'tags')
-    verify_path(tags_paths)
+    if not os.path.exists(tags_paths):
+        return tags
     with open(tags_paths, 'r') as f:
         for line in f.readlines():
             tags['en_us'].append(line.rstrip())
     return tags
 
 
-def update_problem_metadata(title: str, solutions: dict, interactive: bool, problem_id: str) -> None:
+def update_problem_metadata(title: str, solutions: dict, interactive: bool, problem_id: str, local: bool, grader: bool) -> None:
     """Update problem information in problem.json file.
 
     Args:
@@ -435,6 +476,7 @@ def update_problem_metadata(title: str, solutions: dict, interactive: bool, prob
         solutions: Dictionary containing the solutions.
         interactive: Whether the problem is interactive.
         problem_id: Problem ID.
+        local: Whether the conversion is being done locally or remotely.
     """
     info_log("Updating problem metadata.")
     package_folder = Paths().get_output_dir()
@@ -451,8 +493,10 @@ def update_problem_metadata(title: str, solutions: dict, interactive: bool, prob
     package_json = parse_json(package_json_path)
 
     # Update problem metadata
+    problem_metadata['author']['name'] = package_json['authorName']
     problem_metadata['problem']['subject'] = tags
     problem_metadata['problem']['interactive'] = interactive
+    problem_metadata['problem']['grader'] = grader
     problem_metadata['io_samples'] = len(package_json['sampleTests'])
     problem_metadata['problem']['title'] = title.rstrip()
     problem_metadata['problem']['input_file'] = package_json['inputFile']
@@ -461,7 +505,8 @@ def update_problem_metadata(title: str, solutions: dict, interactive: bool, prob
         package_json['timeLimit'] / 1000)
     problem_metadata['problem']['memory_limit_mb'] = int(
         (package_json['memoryLimit'] / 1024) / 1024)
-    problem_metadata['polygon_config']['id'] = problem_id
+    if not local:
+        problem_metadata['polygon_config']['id'] = problem_id
     for key in solutions:
         problem_metadata['solutions'][key] = solutions[key]
 
@@ -479,23 +524,20 @@ def convert_problem(local: bool, problem_id: Optional[str] = '') -> None:
     xml_data = get_data_xml()
     # Polygon packages do not contain the interactive parameter
     interactive = get_local_interactive() if local else get_remote_interactive(problem_id)
+    grader = any(value for _, value in xml_data['resources'])
     package_data = get_package_data(interactive)
 
     # Copy data from package to problem folder
-    init_problem(interactive)
+    start_problem(interactive, grader)
     copy_input_files()
     copy_output_files()
     copy_solutions()
 
-    # In local problems, there is not a way to know the
+    # In local problems, there is no way to know the
     # source files names, so the user has to change it
     # manually.
     if local:
         copy_source_folder()
-        info_log("Change the names of the source files to DS standard:")
-        info_log("checker: checker.cpp")
-        info_log("validator: validator.cpp")
-        info_log("interactor: interactor.cpp")
     else:
         copy_checker(problem_id)
         copy_validator(problem_id)
@@ -503,13 +545,22 @@ def convert_problem(local: bool, problem_id: Optional[str] = '') -> None:
             copy_interactor(problem_id)
             copy_interactive_files()
 
+    # Copy resources files from grader
+    if grader:
+        copy_grader_files(xml_data['resources'])
+
     copy_generator(xml_data['script'])
     copy_statement_files(package_data, interactive)
     update_problem_metadata(''.join(package_data['title']),
-                            xml_data['solutions'], interactive, problem_id)
+                            xml_data['solutions'], interactive, problem_id, local, grader)
     # Clean up temporary package folder
     if not local:
         shutil.rmtree(Paths().get_output_dir())
+    else:
+        warning_log("Change the names of the source files to DS standard:")
+        warning_log("checker: checker.cpp")
+        warning_log("validator: validator.cpp")
+        warning_log("interactor: interactor.cpp")
 
 
 def get_polygon_problem(problem_id: str, local: Optional[bool] = False):
@@ -519,6 +570,12 @@ def get_polygon_problem(problem_id: str, local: Optional[bool] = False):
         local: A boolean indicating if the package is local (default False).
         problem_id: The ID of the problem to download (default None).
     """
+    package_folder = Paths().get_output_dir()
     if not local:
         download_package_polygon(problem_id)
+    # Verificar se o caminho é uma pasta zippada
+    elif not os.path.isdir(package_folder):
+        unzip_package(package_folder)
+        Paths().set_output_dir(package_folder[:-4])
+
     convert_problem(local, problem_id)

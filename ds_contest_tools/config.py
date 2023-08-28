@@ -4,6 +4,10 @@ DEFAULT_PDF_OPTIONS = {
     'event': False
 }
 
+IGNORED_DIRS = [
+    'boca', 'assets'
+]
+
 
 def custom_key(str: str) -> tuple:
     """Sorts a string by its length and lexicographical order.

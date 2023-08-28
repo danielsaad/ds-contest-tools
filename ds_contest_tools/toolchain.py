@@ -2,38 +2,50 @@ import hashlib
 import os
 import shutil
 import subprocess
-import sys
 from typing import Dict
 
-from .checker import run_solutions
-from .config import custom_key
+from .checker import identify_language, run_solutions
+from .config import IGNORED_DIRS, custom_key
 from .htmlutils import print_to_html
-from .jsonutils import parse_json
-from .logger import debug_log, error_log, info_log
+from .jsonutils import parse_json, write_to_json
+from .logger import debug_log, error_log, info_log, warning_log
 from .metadata import Paths, Problem, Solution
-from .utils import check_problem_metadata, check_subprocess_output, verify_path
+from .utils import check_problem_metadata, check_subprocess_output, verify_path, copy_files
 
 
-def init_problem(interactive=False) -> None:
-    """Initialize a competitive problem."""
+def init_problem(interactive: bool, grader: bool, verify_folder: bool = True, ignore_patterns: list = IGNORED_DIRS) -> None:
+    """Initialize a problem.
+
+    Args:
+        interactive: Boolean indicating whether the problem is interactive.
+        grader: Boolean indicating whether the problem is a grader.
+    """
     problem_folder = Paths().get_problem_dir()
-    if os.path.exists(os.path.join(problem_folder, 'src')):
+    src_folder = os.path.join(problem_folder, 'src')
+    json_path = os.path.join(problem_folder, 'problem.json')
+    if verify_folder and os.path.exists(src_folder):
         error_log("Problem ID already exists in the directory")
-        sys.exit(1)
 
-    folder = os.path.join(os.path.dirname(
+    # Copy standard files to problem folder
+    tool_folder = os.path.join(os.path.dirname(
         os.path.abspath(__file__)), 'files')
-    shutil.copytree(folder, problem_folder,
-                    ignore=shutil.ignore_patterns('boca'), dirs_exist_ok=True)
-    # Rename files and folders if the problem is interactive
-    interactor = os.path.join(*[problem_folder, 'src', 'interactor.cpp'])
-    interactive_json = os.path.join(problem_folder, 'problem-interactive.json')
-    interactor_tex = os.path.join(
-        *[problem_folder, 'statement', 'interactor.tex'])
-    os.remove(os.path.join(problem_folder, 'sqtpm.sh'))
-    if (interactive):
-        shutil.move(interactive_json, os.path.join(
-            problem_folder, 'problem.json'))
+    shutil.copytree(tool_folder, problem_folder,
+                    ignore=shutil.ignore_patterns(*ignore_patterns), dirs_exist_ok=True)
+    remove_src_files = ['sqtpm.sh']
+    for file in remove_src_files:
+        os.remove(os.path.join(problem_folder, file))
+
+    # Verify grader problem
+    problem_json = parse_json(json_path)
+    if grader:
+        problem_json['problem']['grader'] = True
+        write_to_json(json_path, problem_json)
+    else:
+        os.remove(os.path.join(src_folder, 'grader.cpp'))
+        os.remove(os.path.join(src_folder, 'grader.h'))
+
+    # Verify interactive problem
+    if interactive:
         # Create .interactive files for statement
         os.makedirs(os.path.join(problem_folder, 'input'))
         os.makedirs(os.path.join(problem_folder, 'output'))
@@ -41,35 +53,93 @@ def init_problem(interactive=False) -> None:
             *[problem_folder, 'input', '1.interactive']), 'w').close()
         open(os.path.join(
             *[problem_folder, 'output', '1.interactive']), 'w').close()
-    else:
+        # Update problem.json to indicate that the problem is interactive
+        problem_json['problem']['interactive'] = True
+        write_to_json(json_path, problem_json)
+    elif verify_folder:
+        interactor = os.path.join(src_folder, 'interactor.cpp')
+        interactor_tex = os.path.join(problem_folder, 'statement', 'interactor.tex')
         os.remove(interactor_tex)
-        os.remove(interactive_json)
         os.remove(interactor)
 
 
-def build_executables() -> None:
+def prepare_grader_problem(grader_folder: str, handler_folder: str, problem_json: dict) -> None:
+    """Create temporary folders to compile grader problem.
+
+    Args:
+        grader_folder: Path to the grader folder.
+        handler_folder: Path to the handler folder.
+        problem_json: Dictionary containing the values of problem.json.
+    """
+    src_dir = 'src'
+    grader_files = set()
+    grader_files.add('grader.cpp')
+
+    # Copy grader libs to grader folder
+    all_files = set([f for f in os.listdir(src_dir) if not os.path.isdir(os.path.join(src_dir, f))])
+    grader_libs = [f for f in all_files if f.endswith('.h') and f != 'testlib.h']
+    copy_files(src_dir, grader_folder, grader_libs)
+    grader_files.update(grader_libs)
+
+    # Copy solutions to grader folder
+    for solution in problem_json['solutions'].values():
+        if isinstance(solution, str):
+            solution = [solution]
+        solution = [f for f in solution if f.endswith('.cpp')]
+        copy_files(src_dir, grader_folder, solution)
+        grader_files.update(solution)
+
+    # Copy other files to handler folder
+    other_files = all_files - grader_files
+    copy_files(src_dir, handler_folder, other_files)
+    
+
+def build_executables(no_checker: bool = False) -> None:
     """Run Makefile to create release and debug executables."""
     old_cwd = os.getcwd()
     os.chdir(Paths().get_problem_dir())
 
     # Verify necessary files
+    verify_path('Makefile')
+    verify_path('problem.json')
     verify_path(os.path.join('src', 'testlib.h'))
-    verify_path(os.path.join('src', 'checker.cpp'))
+    if not no_checker:
+        verify_path(os.path.join('src', 'checker.cpp'))
 
+    # Verify grader problem
+    problem_json = parse_json('problem.json')
+    check_problem_metadata(problem_json)
+    grader_problem = problem_json['problem']['grader']
+    grader_folder = os.path.join('src', 'grader')
+    handler_folder = os.path.join('src', 'handler')
+    if grader_problem:
+        prepare_grader_problem(grader_folder, handler_folder, problem_json)
+   
     info_log("Compiling executables")
-    p = subprocess.run(['make', '-j'],
+    command = ['make', '-j']
+    p = subprocess.run(command,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     check_subprocess_output(p, "Makefile failed.")
+    
+    if grader_problem:
+        shutil.rmtree(grader_folder)
+        shutil.rmtree(handler_folder)
+    
     os.chdir(old_cwd)
 
 
-def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_number: int = 1) -> None:
+def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_number: int = 1, no_validator: bool = False, no_generator: bool = False, no_checker: bool = False, no_output: bool = False) -> None:
     """
     Run the executables to create the problem.
 
     Args:
         all_solutions: Boolean indicating whether to run all solution files.
         specific_solution: String containing name of the solution to run.
+        cpu_number: Number of CPUs to use.
+        no_validator: Boolean indicating whether to run the validator or not.
+        no_generator: Boolean indicating whether to run the generator or not.
+        no_checker: Boolean indicating whether to run the checker or not.
+        no_output: Boolean indicating whether to generate output files or not.
     """
     problem_folder = Paths().get_problem_dir()
     input_folder = os.path.join(problem_folder, 'input')
@@ -80,16 +150,22 @@ def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_n
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
     check_problem_metadata(problem_metadata)
     problem_obj = Problem(problem_metadata["problem"]["title"],
-                          problem_folder, input_folder, problem_metadata["problem"]["time_limit"], problem_metadata["problem"]["memory_limit_mb"])
+                          problem_folder, input_folder, 
+                          problem_metadata["problem"]["time_limit"], 
+                          problem_metadata["problem"]["memory_limit_mb"])
     parse_solutions(
         problem_obj, problem_metadata['solutions'], all_solutions, specific_solution)
-    generate_inputs()
-    validate_inputs()
-    produce_outputs(problem_metadata)
-
-    info_log("Running solutions")
-    run_solutions(problem_obj, cpu_number)
-    print_to_html(problem_obj)
+    
+    if not no_generator:
+        generate_inputs()
+    if not no_validator:
+        validate_inputs()
+    if not no_output:
+        produce_outputs(problem_obj, problem_metadata)
+    if not no_checker:
+        info_log("Running solutions")
+        run_solutions(problem_obj, cpu_number)
+        print_to_html(problem_obj)
 
 
 def get_encoded_tests(folder: str) -> Dict[str, bytes]:
@@ -157,9 +233,8 @@ def validate_inputs() -> None:
             debug_log("Testcases " +
                       ', '.join(encoded_tests[key]) + " are equal.")
     if equal_tests:
-        error_log("All test cases must be different, however there are " +
-                  f"{equal_tests} equal tests.")
-        sys.exit(0)
+        warning_log(
+            f"There are {equal_tests} equal tests. Check debug.log for more information.")
 
 
 def move_inputs(temporary_folder: str) -> None:
@@ -171,18 +246,20 @@ def move_inputs(temporary_folder: str) -> None:
     """
     problem_dir = Paths().get_problem_dir()
     input_folder: str = os.path.join(problem_dir, 'input')
-    
+
     # Reset input folder
-    shutil.rmtree(input_folder)
-    os.makedirs(input_folder)
+    for file in os.listdir(input_folder):
+        if not file.endswith('.interactive'):
+            os.remove(os.path.join(input_folder, file))
 
     # Move tests to problem folder
     for f in os.listdir(temporary_folder):
-        shutil.copy2(os.path.join(temporary_folder, f), os.path.join(input_folder, f.lstrip('0')))
+        shutil.copy2(os.path.join(temporary_folder, f),
+                     os.path.join(input_folder, f.lstrip('0')))
 
 
 def generate_inputs(move: bool = True, output_folder: str = '') -> None:
-    """Generate input tests for the problem.
+    """Generate input tests of the problem in a temporary folder.
 
     Args:
         move: Whether to move the input tests to the problem folder.
@@ -251,7 +328,7 @@ def generate_inputs(move: bool = True, output_folder: str = '') -> None:
     os.rmdir(temporary_folder)
 
     if new_script != scripts:
-        info_log("Updating script.sh to avoid repeating multigenerators.")
+        info_log("Rearraging generators order in script.sh")
         with open(script_path, 'w') as f:
             f.writelines(new_script)
 
@@ -263,12 +340,12 @@ def generate_inputs(move: bool = True, output_folder: str = '') -> None:
     move_inputs(output_folder) if move else None
 
 
-def produce_outputs(problem_metadata: dict) -> None:
+def produce_outputs(problem_obj: Problem, problem_metadata: dict) -> None:
     """
     Run main solution on inputs to produce the outputs.
 
     Args:
-        problem_metadata (dict): Dictionary containing the values of problem.json.
+        problem_metadata: Dictionary containing the values of problem.json.
     """
     info_log("Producing outputs")
     problem_dir = Paths().get_problem_dir()
@@ -276,35 +353,39 @@ def produce_outputs(problem_metadata: dict) -> None:
     output_folder = os.path.join(problem_dir, 'output')
     input_files: list = [f for f in os.listdir(input_folder)
                          if not f.endswith('.interactive')]
+    main_solution = Solution(
+        problem_metadata["solutions"]["main-ac"], 'main-ac')
+    command = identify_language(problem_obj, main_solution).split()
+
+    if problem_metadata["problem"]["interactive"]:
+        tmp_fifo = os.path.join(output_folder, 'tmpfifo')
+        if os.path.exists(tmp_fifo):
+            info_log("Removing existing FIFO")
+            subprocess.run(['rm', tmp_fifo])
+        subprocess.run(['mkfifo', tmp_fifo])
+
     for fname in input_files:
         inf_path: str = os.path.join(input_folder, fname)
         ouf_path: str = os.path.join(output_folder, fname)
         with open(inf_path, 'r') as inf, open(ouf_path, 'w') as ouf:
-            ac_solution: str = os.path.join(
-                problem_dir, 'bin', os.path.splitext(problem_metadata["solutions"]["main-ac"])[0])
             if problem_metadata["problem"]["interactive"]:
                 interactor: str = os.path.join(
                     problem_dir, 'bin', 'interactor')
                 verify_path(interactor)
-                tmp_fifo = os.path.join(output_folder, 'tmpfifo')
-                if os.path.exists(tmp_fifo):
-                    info_log("Removing existing FIFO")
-                    subprocess.run(['rm', tmp_fifo])
-                subprocess.run(['mkfifo', tmp_fifo])
-
                 command: list = [interactor, inf_path, ouf_path, '<',
-                                 tmp_fifo, '|', ac_solution, '>', tmp_fifo]
-
-                p: subprocess.CompletedProcess = subprocess.run(
-                    ' '.join(command), stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE, shell=True)
-                subprocess.run(['rm', tmp_fifo])
+                                 tmp_fifo, '|', *command, '>', tmp_fifo]
+                p = subprocess.Popen(
+                    ' '.join(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+                p.wait()
             else:
-                p: subprocess.CompletedProcess = subprocess.run(
-                    [ac_solution], stdin=inf, stdout=ouf, stderr=subprocess.PIPE)
+                p = subprocess.run(command, stdin=inf,
+                                   stdout=ouf, stderr=subprocess.PIPE)
             check_subprocess_output(
                 p, f"Generation of output failed for input {fname}")
-    info_log("Outputs produced successfully.")
+
+    if problem_metadata["problem"]["interactive"]:
+        subprocess.run(['rm', tmp_fifo])
+    info_log("Outputs produced in problem folder.")
 
 
 def clean_files() -> None:
@@ -321,6 +402,14 @@ def clean_files() -> None:
 
 
 def parse_solutions(problem_obj: Problem, solutions: dict, all_solutions, specific_solution: str) -> None:
+    """Parse the solutions from the problem.json file.
+
+    Args:
+        problem_obj: Problem object.
+        solutions: Dictionary containing the solutions from the problem.json file.
+        all_solutions: Boolean indicating whether to run all solution files.
+        specific_solution: String containing name of the solution to run.
+    """
     solution: Solution = None
     if all_solutions:
         for expected_result, files in solutions.items():
@@ -353,7 +442,6 @@ def parse_solutions(problem_obj: Problem, solutions: dict, all_solutions, specif
 
             if problem_obj.is_solution_list_empty():
                 error_log(f'Solution {specific_solution} not found.')
-                sys.exit(0)
         else:
             expected_result = "main-ac"
             submission_file = solutions[expected_result]

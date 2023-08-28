@@ -13,12 +13,15 @@ authors = [
     {name = "Daniel Saad Nogueira Nunes", email = "daniel.nunes@ifb.edu.br"}
 ]
 maintainers = [
-    {name = "Matheus Loiola Pinto Curado Silva", email = "matheus.silva18@estudante.ifb.edu.br"},
+    {name = "Matheus Loiola Pinto Curado Silva", email = "matheusloiolapinto@gmail.com"},
     {name = "Leonam Knupp", email = "leonam.knupp@estudante.ifb.edu.br"}
 ]
 keywords = ["contest", "competitive programming", "tools"]
 classifiers = [
     "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Operating System :: Unix"
 ]
 dependencies = [
@@ -29,6 +32,9 @@ dependencies = [
 [project.scripts]
 ds-contest-tools = "ds_contest_tools:main"
 
-
 [project.urls]
 repository = "https://github.com/danielsaad/ds-contest-tools/"
+documentation = "https://github.com/danielsaad/ds-contest-tools/wiki"
+
+[project.optional-dependencies]
+dev = ["argcomplete"]
