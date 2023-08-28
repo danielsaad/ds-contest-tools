@@ -86,7 +86,7 @@ def verify_solutions(solutions_dict: dict) -> None:
         solutions_dict: Dictionary containing the solutions of the problem.
     """
     problem_folder: Union[list, str] = Paths().get_problem_dir()
-    problem_names: set = {}
+    problem_names: set = set()
     # Ignore verification due to creation of contest
     if isinstance(problem_folder, list):
         return
@@ -99,7 +99,8 @@ def verify_solutions(solutions_dict: dict) -> None:
         for file in solutions:
             file_name = file.split('.')[0]
             if file_name in problem_names:
-                error_log(f'Solution {file_name} has the same name of another solution without the type.')
+                error_log(
+                    f'Solution {file_name} has the same name of another solution without the type.')
             problem_names.add(file_name)
             verify_path(os.path.join(problem_folder, 'src', file))
             verify_file(os.path.join(problem_folder, 'src', file))
@@ -175,6 +176,7 @@ def generate_timestamp() -> str:
     current_time: datetime = datetime.fromtimestamp(datetime.now().timestamp())
     timestamp: str = current_time.strftime('%Y-%m-%d-%H:%M:%S')
     return timestamp
+
 
 def copy_files(src_dir: str, dest_dir: str, files: list):
     os.makedirs(dest_dir, exist_ok=True)
