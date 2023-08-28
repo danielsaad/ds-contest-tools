@@ -40,7 +40,7 @@ def init_problem(interactive: bool, grader: bool, verify_folder: bool = True, ig
     if grader:
         problem_json['problem']['grader'] = True
         write_to_json(json_path, problem_json)
-    else:
+    elif verify_folder:
         os.remove(os.path.join(src_folder, 'grader.cpp'))
         os.remove(os.path.join(src_folder, 'grader.h'))
 
