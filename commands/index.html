@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="pt_BR" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Comandos - DS Contest Tools</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Comandos";
+        var mkdocs_page_input_path = "commands.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> DS Contest Tools
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Buscar documentos" aria-label="Buscar documentos" title="Digite o termo a ser buscado aqui" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Menu de navegação">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Guia de Uso</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../overview/">Visão Geral</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../installation/">Instalação</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Comandos</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#init">init</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#build">build</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#contest">contest</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#convert_to">convert_to</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#convert_from">convert_from</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#set_keys">set_keys</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#clean">clean</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Sobre</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../contributing/">Contribuindo</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../release-notes/">Notas de versão</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../license/">Licença</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../credits/">Créditos</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Desenvolvimento</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../documentation/">Documentação</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Menu de navegação em dispositivo móvel">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">DS Contest Tools</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Documentos"></a> &raquo;</li>
+          <li>Guia de Uso &raquo;</li>
+      <li class="breadcrumb-item active">Comandos</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="comandos">Comandos</h1>
+<p>Bem-vindo à página de comandos da ferramenta! Aqui você encontrará informações detalhadas sobre as funcionalidades e recursos dos comandos disponíveis para criar e converter problemas. </p>
+<h2 id="init">init</h2>
+<p>O comando <code>init</code> é utilizado para inicializar um problema com os arquivos e diretórios necessários para começar a construção do problema.</p>
+<p>Uso: <code>ds-contest-tools init &lt;problem_dir&gt;</code></p>
+<p>Opções de inicialização:</p>
+<ul>
+<li><strong>-i</strong>, <strong>--interactive</strong>: Inicializa um problema interativo. Nesses problemas, os casos de teste utilizados na descrição do problema são definidos por arquivos de entrada/saída com a extensão <code>.interactive</code>, caso sejam necessários.</li>
+<li><strong>-g</strong>, <strong>--grader</strong>: Inicializa um problema com grader.</li>
+</ul>
+<h2 id="build">build</h2>
+<p>O comando <code>build</code> é utilizado para construir os problemas, ou seja, gerar e validar os casos de teste e verificar as soluções com o <em>checker</em>. Por padrão, constrói um problema utilizando apenas a solução principal.</p>
+<p>Uso: <code>ds-contest-tools build &lt;problem_dir&gt;</code></p>
+<p>Opções de construção:</p>
+<ul>
+<li><strong>-a, --all</strong>: Constrói o problema utilizando todas as soluções.</li>
+<li><strong>-s, --specific <code>&lt;solucao&gt;</code></strong>: Constrói o problema utilizando apenas uma solução específica, indicada pelo <em>solucao</em>.</li>
+<li><strong>-p, --pdf</strong>: Gera apenas os PDFs do problema.</li>
+<li><strong>-i, --io</strong>: Gera apenas os arquivos de entrada/saída do problema.</li>
+<li><strong>-nv, --no-validator</strong>: Constrói o problema sem validar os casos de teste.</li>
+<li><strong>-ng, --no-generator</strong>: Ao compilar um problema, os casos de teste são redefinidos no diretório input. Ao usar essa opção, os casos de teste são mantidos, pois o gerador não é chamado. É importante usá-la caso os testes sejam criados manualmente, caso contrário, eles serão apagados.</li>
+<li><strong>-no, --no-output</strong>: Constrói o problema sem gerar as saídas dos casos de teste.</li>
+<li><strong>-nc, --no-checker</strong>: Constrói o problema sem utilizar o checker nas soluções.</li>
+<li><strong>-ngvoc</strong>: Gera apenas os executáveis e os PDFs do problema. É a união entre as opções <em>-ng</em>, <em>-no</em> e <em>-nc</em>.</li>
+<li><strong>-c, --cpu-count <code>&lt;qtde-threads&gt;</code></strong>: Define a quantidade de <em>threads</em> a serem criadas na execução do checker, indicado por <em>qtde-threads</em>.</li>
+</ul>
+<h2 id="contest">contest</h2>
+<p>O comando <code>contest</code> é utilizado para gerar um diretório com <em>n</em> problemas a serem utilizados em uma maratona. </p>
+<p>Uso: <code>ds-contest-tools contest &lt;problem_dir [problem_dir...]&gt; &lt;contest_dir&gt;</code></p>
+<p>Opções:</p>
+<ul>
+<li><strong>-p, --pdf</strong>: Gera apenas os PDFs da maratona.</li>
+<li><strong>-i, --io</strong>: Gera apenas os arquivos de entrada/saída dos problemas da maratona.</li>
+<li><strong>--author</strong>: Adiciona o nome do autor no cabeçalho dos PDFs da maratona.</li>
+</ul>
+<h2 id="convert_to">convert_to</h2>
+<p>Converte o problema para um dos seguintes formatos:</p>
+<ul>
+<li><strong>BOCA</strong>: Converte o problema para o formato BOCA em um arquivo <em>zippado</em>.</li>
+<li><strong>SQTPM</strong>: Converte o problema para o formato SQTPM em um novo diretório.</li>
+<li><strong>Polygon</strong>: Envia o problema para o Polygon. Várias requisições são feitas para converter o problema. Durante a conversão para o Polygon, as seguintes alterações são feitas no problema online:<ul>
+<li>As informações gerais e textos do enunciado são alterados.</li>
+<li>Os arquivos de origem, recursos, auxiliares e solução com o mesmo nome dos arquivos a serem enviados serão sobrescritos.</li>
+<li>Caso haja casos de teste com índices idênticos, esses serão substituídos pelo novo conjunto de casos de teste.</li>
+<li>Se houver uma requisição de <em>script</em> do gerador, o antigo será substituído pelo novo.</li>
+</ul>
+</li>
+</ul>
+<p>Uso: <code>ds-contest-tools convert_to &lt;format&gt; &lt;problem_dir&gt;</code></p>
+<p>Opções:</p>
+<ul>
+<li><strong>-o, --output-dir <code>&lt;diretorio&gt;</code></strong>: Define um diretório de saída para o problema convertido. No caso da conversão para o Polygon, define o ID do problema no arquivo <code>problem.json</code> para uso futuro.</li>
+<li><strong>-m, --manual-tests</strong>: Converte os casos de teste para o Polygon sem utilizar o script gerador.</li>
+</ul>
+<h2 id="convert_from">convert_from</h2>
+<p>Converte para o formato da ferramenta o problema com um dos seguintes formatos:</p>
+<ul>
+<li><strong>Polygon</strong>: Baixa o pacote mais recente e pronto do Linux na pasta do problema e o utiliza para a conversão. Requisições adicionais à API do Polygon são feitas para encontrar o nome dos arquivos fonte e o tipo do problema.</li>
+</ul>
+<p>Uso: <code>ds-contest-tools convert_from &lt;format&gt; &lt;problem_dir&gt; &lt;package_dir&gt;</code></p>
+<p>Opções:</p>
+<ul>
+<li><strong>-l, --local <code>&lt;diretorio&gt;</code></strong>: Converte um pacote local do Polygon para o formato da ferramenta. É possível converter pacotes <em>FULL</em> e <em>STANDARD</em>. Nenhuma requisição é feita, então o usuário precisa especificar se o problema é interativo ou não e alterar o nome dos arquivos de origem para o padrão da ferramenta.</li>
+</ul>
+<h2 id="set_keys">set_keys</h2>
+<p>o comando <code>set_keys</code> é responsável por definir as chaves da API do Polygon que serão utilizadas para a conversão dos problemas. Essas chaves são necessárias para acessar e interagir com o Polygon, e são armazenadas localmente no repositório da ferramenta.</p>
+<p>Uso: <code>ds-contest-tools set_keys</code></p>
+<h2 id="clean">clean</h2>
+<p>Remove executáveis ​​criados após a construção do problema.</p>
+<p>Uso: <code>ds-contest-tools clean &lt;problem_dir&gt;</code></p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Navegação no rodapé">
+        <a href="../installation/" class="btn btn-neutral float-left" title="Instalação"><span class="icon icon-circle-arrow-left"></span> Anterior</a>
+        <a href="../contributing/" class="btn btn-neutral float-right" title="Contribuindo">Seguinte <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Construído com <a href="https://www.mkdocs.org/">MkDocs</a> usando <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provido por <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versões">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../installation/" style="color: #fcfcfc">&laquo; Anterior</a></span>
+    
+    
+      <span><a href="../contributing/" style="color: #fcfcfc">Seguinte &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

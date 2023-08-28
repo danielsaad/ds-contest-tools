@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="pt_BR" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Visão Geral - DS Contest Tools</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Vis\u00e3o Geral";
+        var mkdocs_page_input_path = "overview.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> DS Contest Tools
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Buscar documentos" aria-label="Buscar documentos" title="Digite o termo a ser buscado aqui" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Menu de navegação">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Guia de Uso</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Visão Geral</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#problemas">Problemas</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#problemas-comuns">Problemas Comuns</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#problemas-com-grader">Problemas com Grader</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#problemas-interativos">Problemas Interativos</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#preparacao-dos-problemas">Preparação dos problemas</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#configuracao-do-arquivo-json">Configuração do arquivo JSON</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#elaboracao-do-enunciado">Elaboração do enunciado</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#elaboracao-das-solucoes-esperadas">Elaboração das soluções esperadas</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#elaboracao-dos-casos-de-teste">Elaboração dos casos de teste</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#elaboracao-do-validador-dos-casos-de-teste">Elaboração do validador dos casos de teste</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#elaboracao-do-corretor">Elaboração do corretor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#biblioteca-testlib">Biblioteca Testlib</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../installation/">Instalação</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../commands/">Comandos</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Sobre</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../contributing/">Contribuindo</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../release-notes/">Notas de versão</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../license/">Licença</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../credits/">Créditos</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Desenvolvimento</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../documentation/">Documentação</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Menu de navegação em dispositivo móvel">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">DS Contest Tools</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Documentos"></a> &raquo;</li>
+          <li>Guia de Uso &raquo;</li>
+      <li class="breadcrumb-item active">Visão Geral</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="guia-de-uso">Guia de uso</h1>
+<p>Estas ferramentas para preparação de <em>contests</em> são inspiradas na suíte de ferramentas <code>ejtools</code>, elaborada pelo Prof. Edson Alves (UnB/FGA), mas elas seguem uma abordagem diferente, uma vez que são baseadas na biblioteca <code>testlib</code>, utilizada na preparação de problemas do <code>Codeforces</code> e desenvolvida por Mike Mirzayanov.</p>
+<p>Atualmente, esta coleção de ferramentas suporta a exportação de problemas para os seguintes sistemas:</p>
+<ul>
+<li>BOCA</li>
+<li>Polygon</li>
+<li>SQTPM</li>
+</ul>
+<h2 id="problemas">Problemas</h2>
+<p>A ferramenta oferece suporte para a criação e validação de três categorias distintas de problemas, os quais são problemas comuns, problemas com grader e problemas interativos. Para definir o tipo do problema, basta alterar os campos <code>grader</code> e <code>interactive</code> no <code>problem.json</code>, ou inicializar o problema com o tipo desejado.</p>
+<h3 id="problemas-comuns">Problemas Comuns</h3>
+<p>Esta categoria abrange problemas tradicionais que não exigem interações complexas ou avaliações personalizadas. Os participantes são solicitados a fornecer soluções que resolvam desafios específicos. </p>
+<h3 id="problemas-com-grader">Problemas com Grader</h3>
+<p>Esta categoria engloba problemas que demandam uma avaliação mais personalizada das soluções dos participantes, onde os competidores precisam criar funções específicas ao invés do código completo. Ao criar um problema com grader, a ferramenta gera automaticamente os arquivos <code>grader.cpp</code> e <code>grader.h</code> na pasta <em>src</em> do problema. Para problemas em Python, é necessário criar o arquivo <code>main.py</code>, que deve importar o arquivo <code>solution</code> como módulo, mesmo que as soluções não possuam esse nome.</p>
+<h3 id="problemas-interativos">Problemas Interativos</h3>
+<p>Nesta categoria, os problemas envolvem interações dinâmicas entre os participantes e o sistema. Ao criar problemas interativos, a plataforma gera automaticamente os arquivos <code>interactor.cpp</code> e <code>interactor.tex</code>. Problemas interativos são aqueles em que o sistema e o usuário trocam informações repetidamente, criando um ambiente de desafio mais dinâmico e imersivo.</p>
+<p>Essa abordagem é empregada quando os problemas requerem um nível mais profundo de interação, como simulações, jogos ou situações em que as respostas dos participantes afetam diretamente o desenrolar do problema.</p>
+<h2 id="preparacao-dos-problemas">Preparação dos problemas</h2>
+<p>A preparação de um problema segue cinco etapas, que não precisam ser realizadas necessariamente na ordem descrita. Elas consistem em:</p>
+<ul>
+<li>Configuração do arquivo <code>problem.json</code>.</li>
+<li>Elaboração do enunciado do problema.</li>
+<li>Elaboração da solução esperada para o problema.</li>
+<li>Elaboração dos casos de teste.</li>
+<li>Elaboração do validador dos casos de teste.</li>
+<li>Elaboração do corretor.</li>
+</ul>
+<p>Não é necessário realizar todas as etapas para que o problema seja gerado, como a elaboração do validador ou do corretor. Para isso, utilize as flags necessárias na hora de construir o problema.</p>
+<h3 id="configuracao-do-arquivo-json">Configuração do arquivo JSON</h3>
+<p>O arquivo <code>problem.json</code> criado na inicialização dos problemas contém todos os metadados importantes para a geração do problema e do PDF. Os campos são bem intuitivos e basta preenchê-los manualmente.</p>
+<h3 id="elaboracao-do-enunciado">Elaboração do enunciado</h3>
+<p>A elaboração do enunciado pode ser feita diretamente através dos arquivos LaTex localizados na pasta <em>statement</em> do problema. </p>
+<h3 id="elaboracao-das-solucoes-esperadas">Elaboração das soluções esperadas</h3>
+<p>Todo problema deve possuir uma solução principal, que deve ser codificada e colocada na pasta <em>src</em>, em conjunto com outras possíveis soluções. Após isso, os campos referentes aos tipos de soluções devem ser preenchidos no arquivo <code>problem.json</code>.</p>
+<h3 id="elaboracao-dos-casos-de-teste">Elaboração dos casos de teste</h3>
+<p>Para gerar os casos de teste, é necessário codificar um arquivo gerador e adicionar os argumentos necessários para a geração dos casos de teste no arquivo <code>src/script.sh</code>, como visto a seguir:</p>
+<pre><code class="language-bash">multigenerator
+generator 100 123
+generator 100 987
+</code></pre>
+<p>Nesse exemplo, <code>multigenerator</code> é o nome de um gerador de múltiplos casos de teste e <code>generator</code> é o nome de um gerador único. É possível utilizar quantos comandos <em>generator</em> forem necessários, cada um com seus próprios argumentos Além disso, é possível utilizar a <code>testlib</code> para codificar o gerador.</p>
+<h3 id="elaboracao-do-validador-dos-casos-de-teste">Elaboração do validador dos casos de teste</h3>
+<p>Para termos certeza de que não há nenhuma entrada que exceda os limites do problema ou que violem alguma propriedade do mesmo, é viável codificar o arquivo <code>src/validator.cpp</code>. É possível utilizar a <code>testlib</code> para codificar o validador. Se o problema não possuir um validador, será necessário utilizar a flag <code>-nv</code> na hora de construir o problema.</p>
+<h3 id="elaboracao-do-corretor">Elaboração do corretor</h3>
+<p>Para elaborar o corretor, é necessário codificar o arquivo <code>src/checker.cpp</code>. É possível criar corretores especiais de problemas utilizando a <code>testlib</code>. Se o problema não possuir um corretor, será necessário utilizar a flag <code>-nc</code> na hora de construir o problema.</p>
+<h3 id="biblioteca-testlib">Biblioteca Testlib</h3>
+<p>A <code>testlib</code> facilita o processo de elaboração de corretores especiais e a geração e validação de casos de testes. Sua documentação pode ser facilmente encontrada em seu <a href="https://github.com/MikeMirzayanov/testlib">repositório</a>. </p>
+<p>Além da documentação básica, há uma série de exemplos explicando as facilidades da <code>testlib</code> para geração de casos de teste, validação de problemas e elaboração dos corretores. Para esses arquivos, existem modelos simples que já estão disponíveis no repósitorio.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Navegação no rodapé">
+        <a href=".." class="btn btn-neutral float-left" title="Home"><span class="icon icon-circle-arrow-left"></span> Anterior</a>
+        <a href="../installation/" class="btn btn-neutral float-right" title="Instalação">Seguinte <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Construído com <a href="https://www.mkdocs.org/">MkDocs</a> usando <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provido por <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versões">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Anterior</a></span>
+    
+    
+      <span><a href="../installation/" style="color: #fcfcfc">Seguinte &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

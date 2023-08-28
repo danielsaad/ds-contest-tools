@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="pt_BR" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Documentação - DS Contest Tools</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Documenta\u00e7\u00e3o";
+        var mkdocs_page_input_path = "documentation.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> DS Contest Tools
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Buscar documentos" aria-label="Buscar documentos" title="Digite o termo a ser buscado aqui" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Menu de navegação">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Guia de Uso</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../overview/">Visão Geral</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../installation/">Instalação</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../commands/">Comandos</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Sobre</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../contributing/">Contribuindo</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../release-notes/">Notas de versão</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../license/">Licença</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../credits/">Créditos</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Desenvolvimento</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Documentação</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#estrutura-da-ferramenta">Estrutura da ferramenta</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#estrutura-dos-problemas">Estrutura dos problemas</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#estrutura-dos-modulos">Estrutura dos módulos</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#estrutura-dos-parsers">Estrutura dos parsers</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#modulos-de-processamento">Módulos de processamento</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#bocapy">boca.py</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#checkerpy">checker.py</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#configpy">config.py</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#contestpy">contest.py</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#ds_contest_toolspy">ds_contest_tools.py</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#fileutilspy">fileutils.py</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#htmlutilspy">htmlutils.py</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#jsonutilspy">jsonutils.py</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#latexutilspy">latexutils.py</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#loggerpy">logger.py</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#metadatapy">metadata.py</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pdfutilspy">pdfutils.py</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#polygon_connectionpy">polygon_connection.py</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#polygon_converterpy">polygon_converter.py</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#polygon_submitterpy">polygon_submitter.py</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#sqtpmpy">sqtpm.py</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#toolchainpy">toolchain.py</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#utilspy">utils.py</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Menu de navegação em dispositivo móvel">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">DS Contest Tools</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Documentos"></a> &raquo;</li>
+          <li>Desenvolvimento &raquo;</li>
+      <li class="breadcrumb-item active">Documentação</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="documentacao-da-ferramenta">Documentação da ferramenta</h1>
+<p>Essa documentação tem como objetivo apresentar como a ferramenta foi pensada e estruturada, além de explicar sobre o funcionamento dos módulos, arquivos e comandos da ferramenta.</p>
+<h2 id="estrutura-da-ferramenta">Estrutura da ferramenta</h2>
+<p>A estrutura de arquivos da ferramenta foi escolhida com o objetivo de empacotar a ferramenta e criar uma CLI a partir dela, além de possibilitar a criação de uma página de documentação a partir do <em>Mkdocs</em>. Dessa forma, a organização de pastas se tornou a seguinte:</p>
+<ul>
+<li><code>LICENSE</code>: Arquivo de licença da ferramenta.</li>
+<li><code>README.md</code>: Arquivo de introdução da ferramenta.</li>
+<li><code>pyproject.toml</code>: Arquivo de configuração que define o conteúdo, metadados e dependências do pacote da ferramenta. Optou-se por utilizar o <code>pyproject.toml</code> em vez do <code>setup.py</code>, seguindo os novos padrões definidos na <a href="https://packaging.python.org/en/latest/specifications/declaring-project-metadata/#declaring-project-metadata">PEP 621</a>.</li>
+<li><code>MANIFEST.in</code>: Arquivo de configuração que especifica quais arquivos e diretórios devem ser incluídos durante o empacotamento da ferramenta.</li>
+<li><code>ds_contest_tools/</code>: Diretório que contém o código fonte e os arquivos da ferramenta.</li>
+<li><code>run.py</code>: Arquivo de inicialização da CLI sem a necessidade de instalar o pacote.</li>
+<li><code>legacy_converter.py</code>: Arquivo responsável pela conversão de problemas legados para o novo formato de problemas da ferramenta.</li>
+<li><code>docs/</code>: Diretório contendo os arquivos da documentação da ferramenta.</li>
+<li><code>mkdocs.yml</code>: Arquivo de configuração da página do projeto.</li>
+</ul>
+<h2 id="estrutura-dos-problemas">Estrutura dos problemas</h2>
+<p>A estrutura de arquivos dos problemas foi projetada visando facilitar configuração dos problemas e o uso da ferramenta. Ao inicializar um problema, os seguintes arquivos e pastas são criados:</p>
+<ul>
+<li><code>problem.json</code>: Arquivo que contém informações do problema, como nome, descrição, limites de tempo e memória, entre outros.</li>
+<li><code>src/</code>: Pasta que contém as soluções, geradores, validadores, interatores (se aplicável) e verificadores do problema.</li>
+<li>As soluções devem ser definidas no arquivo <code>problem.json</code> para que a ferramenta possa reconhecê-las. Isso permite dividir as soluções em categorias específicas.</li>
+<li>Os validadores, interatores e checkers devem seguir nomes padrão para que a ferramenta possa identificá-los corretamente, dispensando a necessidade de especificá-los no arquivo <code>problem.json</code>.</li>
+<li>A linha de comando para executar o(s) gerador(es) deve ser incluída no arquivo <code>script.sh</code>, que será executado pela ferramenta. A ferramenta aceita multigeradores e geradores únicos.</li>
+<li><code>statement/</code>: Pasta que deve conter o enunciado do problema. Está dividida em vários arquivos para facilitar a edição do enunciado.</li>
+<li>Arquivos de imagem que forem utilizados no enunciado devem ser colocados na pasta raiz do problema.</li>
+<li><code>Makefile</code>: Arquivo contendo comandos para compilar e executar os binários do problema. Não é necessário rodar o Makefile para utilizar a ferramenta.</li>
+<li><code>maratona.cls</code>: Arquivo que contém a classe LaTeX para gerar o PDF do problema.</li>
+</ul>
+<h2 id="estrutura-dos-modulos">Estrutura dos módulos</h2>
+<p>A estrutura dos módulos foi projetada visando facilitar a criação de novos módulos. Nessa estrutura, os arquivos presentes no diretório da pasta <code>ds_contest_tools</code> são responsáveis pelo processamento dos comandos. Já os arquivos localizados na pasta <code>parsers</code>, submódulo de <code>ds_contest_tools</code>, configuram os comandos da ferramenta.</p>
+<p>Essa organização permite adicionar novos comandos e módulos  na ferramenta sem a necessidade de alterar os arquivos existentes. Caso seja necessário realizar alguma modificação, é possível fazê-lo de forma isolada, sem afetar outros arquivos.</p>
+<p>Além disso, as pastas <code>Maratona</code> e <code>files</code>, dentro de <code>ds_contest_tools</code>, contêm arquivos auxiliares da ferramenta, como a classe LaTeX para a geração do PDF do problema e a estrutura de pastas dos problemas a ser copiada quando um problema é iniciado.</p>
+<h2 id="estrutura-dos-parsers">Estrutura dos parsers</h2>
+<p>Os arquivos de parser são organizados em duas funções principais: <code>add_parser</code> e <code>process_command</code>. A função <code>add_parser</code> define os argumentos a serem utilizados pelo parser para um determinado comando, enquanto a função <code>process_command</code> processa os argumentos e chama as funções correspondentes do módulo <code>ds_contest_tools</code>.</p>
+<p>Além disso, existe um arquivo chamado <code>common.py</code> que contém funções comuns a todos os parsers. Essas funções incluem a função responsável por instanciar os caminhos necessários e a função que verifica se as dependências estão devidamente instaladas.</p>
+<h2 id="modulos-de-processamento">Módulos de processamento</h2>
+<h3 id="bocapy"><code>boca.py</code></h3>
+<p>Este módulo contém as funções responsáveis pela conversão do problema para o formato BOCA, incluindo a criação e compactação do pacote BOCA. É possível modificar o arquivo <code>problem.json</code> para configurar o pacote BOCA.</p>
+<h3 id="checkerpy"><code>checker.py</code></h3>
+<!-- TODO - Adicionar mais informações sobre o checker. -->
+<p>Este módulo é responsável pela execução das soluções e pela verificação das respostas esperadas para as soluções elaboradas.</p>
+<h3 id="configpy"><code>config.py</code></h3>
+<p>Este módulo contém as funções e constantes necessárias para a configuração de certos parâmetros da ferramenta, como a definição das informações gerais do PDF.</p>
+<h3 id="contestpy"><code>contest.py</code></h3>
+<p>Este módulo engloba as funções responsáveis pela geração de maratonas a partir de um conjunto de problemas. Ele permite a criação de PDFs da maratona, pacotes BOCA e arquivos de entrada e saída do conjunto de problemas.</p>
+<h3 id="ds_contest_toolspy"><code>ds_contest_tools.py</code></h3>
+<p>Este módulo reúne os parsers responsáveis pela criação dos comandos da ferramenta e pela execução das funções correspondentes a cada comando, criando a CLI da ferramenta.</p>
+<h3 id="fileutilspy"><code>fileutils.py</code></h3>
+<p>Este módulo contém funções relacionadas à manipulação de arquivos utilizados pela ferramenta, como cópia de diretórios e nomeação de arquivos.</p>
+<h3 id="htmlutilspy"><code>htmlutils.py</code></h3>
+<p>Este módulo é responsável por gerar um relatório visual a partir das informações geradas pelo módulo <em>checker.py</em>. </p>
+<h3 id="jsonutilspy"><code>jsonutils.py</code></h3>
+<p>Este módulo contém funções para a leitura e escrita de arquivos JSON.</p>
+<h3 id="latexutilspy"><code>latexutils.py</code></h3>
+<p>Este módulo engloba funções responsáveis pela criação dos arquivos LaTeX necessários para a geração de PDFs, como arquivos de tutorial e de enunciado.</p>
+<h3 id="loggerpy"><code>logger.py</code></h3>
+<p>Este módulo contém as funções relacionadas ao registro de logs da ferramenta, como a criação dos arquivos e escrita dos logs. </p>
+<h3 id="metadatapy"><code>metadata.py</code></h3>
+<p>Este módulo contém classes que facilitam o uso de metadados da ferramenta, permitindo uma melhor recuperação de informações a serem utilizadas em vários módulos. Essas classes proporcionam uma forma organizada e eficiente de lidar com os metadados, simplificando o acesso e manipulação das informações relevantes em diferentes partes do código.</p>
+<h3 id="pdfutilspy"><code>pdfutils.py</code></h3>
+<p>Este módulo engloba funções relacionadas à manipulação de arquivos PDF a partir dos arquivos LaTeX gerados pelo módulo <code>latexutils.py</code>.</p>
+<h3 id="polygon_connectionpy"><code>polygon_connection.py</code></h3>
+<p>Este módulo é responsável por estabelecer a conexão entre a ferramenta e o Polygon. Contém funções relacionadas à comunicação com o Polygon, incluindo a obtenção de informações necessárias, o download de pacotes e a autenticação dos parâmetros das requisições.</p>
+<h3 id="polygon_converterpy"><code>polygon_converter.py</code></h3>
+<p>Este módulo contém as funções responsáveis por converter um problema do Polygon para o formato da ferramenta. Dessa forma, ele é responsável por buscar os pacotes corretos de um problema e converter os arquivos em um problema da ferramenta.</p>
+<h3 id="polygon_submitterpy"><code>polygon_submitter.py</code></h3>
+<p>Este módulo contém as funções responsáveis por enviar um problema da ferramenta para o Polygon. Dessa forma, ele gera a lista de requisições a serem enviadas para o Polygon e todas as funcionalidades relacionadas a essa envio.</p>
+<h3 id="sqtpmpy"><code>sqtpm.py</code></h3>
+<p>Este módulo contém as funções de conversão de problemas para o formato SQTPM, incluindo a criação do pacote SQTPM.</p>
+<h3 id="toolchainpy"><code>toolchain.py</code></h3>
+<p>Este módulo contém as funções responsáveis por inicializar e construir um problema, incluindo a compilação dos binários e a geração e validação dos arquivos de entrada e saída.</p>
+<h3 id="utilspy"><code>utils.py</code></h3>
+<p>Este módulo contém funções auxiliares para a criação de problemas, como a verificação de arquivos e a conversão de objetos.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Navegação no rodapé">
+        <a href="../credits/" class="btn btn-neutral float-left" title="Créditos"><span class="icon icon-circle-arrow-left"></span> Anterior</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Construído com <a href="https://www.mkdocs.org/">MkDocs</a> usando <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provido por <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versões">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../credits/" style="color: #fcfcfc">&laquo; Anterior</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
