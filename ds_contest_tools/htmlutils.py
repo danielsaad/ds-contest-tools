@@ -19,7 +19,7 @@ def write_head(problem_name: str, f_out: io.TextIOWrapper) -> None:
     """
     head: str = f"""
     <!DOCTYPE html>
-    <html lang="pt-br" style="min-height: 100%;">
+    <html lang="pt-br">
 
 <head>
     <meta charset="UTF-8">
