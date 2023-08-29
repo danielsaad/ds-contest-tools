@@ -8,6 +8,16 @@ Atualmente, esta coleção de ferramentas suporta a exportação de problemas pa
 - Polygon
 - SQTPM
 
+## Pré-requisitos
+
+Para rodar as ferramentas é necessário ter instalado de antemão:
+* `python` >= 3.8: as principais ferramentas estão escritas nesta linguagem;
+* `pdflatex`: para geração de PDFs a partir de arquivos .tex;
+* `pdfjam`: para fazer a união de arquivos PDFs,  geralmente disponível junto com o ambiente LaTeX;
+* `make`, para compilação dos fontes e instalação dos executáveis a partir dos makefiles gerados;
+* `g++` >= 4.8: para compilação dos fontes.
+* `zip`: para empacotamento no formato BOCA.
+
 ## Problemas
 
 A ferramenta oferece suporte para a criação e validação de três categorias distintas de problemas, os quais são problemas comuns, problemas com grader e problemas interativos. Para definir o tipo do problema, basta alterar os campos `grader` e `interactive` no `problem.json`, ou inicializar o problema com o tipo desejado.
@@ -25,6 +35,8 @@ Esta categoria engloba problemas que demandam uma avaliação mais personalizada
 Nesta categoria, os problemas envolvem interações dinâmicas entre os participantes e o sistema. Ao criar problemas interativos, a plataforma gera automaticamente os arquivos `interactor.cpp` e `interactor.tex`. Problemas interativos são aqueles em que o sistema e o usuário trocam informações repetidamente, criando um ambiente de desafio mais dinâmico e imersivo.
 
 Essa abordagem é empregada quando os problemas requerem um nível mais profundo de interação, como simulações, jogos ou situações em que as respostas dos participantes afetam diretamente o desenrolar do problema.
+
+A ferramenta aceita apenas problemas interativos em C++.
 
 ## Preparação dos problemas
 

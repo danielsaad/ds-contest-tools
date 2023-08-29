@@ -2,6 +2,8 @@
 
 Ferramentas para preparação de *contests*, por Daniel Saad.
 
+Para mais informações sobre os comandos ou sobre a ferramenta, leia a documentação no [site do projeto](https://danielsaad.com/ds-contest-tools).
+
 
 ## Introdução
 
@@ -84,5 +86,3 @@ ds-contest-tools build problem_dir
 Onde `problem_dir` é o diretório onde o problema será inicializado e compilado. Use o comando `ds-contest-tools --help` para obter mais informações sobre os comandos disponíveis.
 
 Para o primeiro uso ao converter problemas do Polygon, será necessário definir as chaves da API do Polygon. Tais chaves são armazenadas localmente no diretório raiz da ferramenta em um arquivo JSON.
-
-Para mais informações sobre os comandos ou sobre a ferramenta, leia a documentação na [wiki](https://github.com/danielsaad/ds-contest-tools/wiki).
