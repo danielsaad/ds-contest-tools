@@ -10,8 +10,8 @@ from .jsonutils import parse_json, write_to_json
 from .logger import info_log, warning_log
 from .metadata import Paths
 from .polygon_connection import download_package_polygon, make_api_request
-from .utils import verify_path
 from .toolchain import init_problem
+from .utils import verify_path
 
 DEFAULT_LANGUAGE = 'english'
 

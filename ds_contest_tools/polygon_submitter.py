@@ -5,7 +5,8 @@ from .fileutils import get_statement_files
 from .jsonutils import parse_json
 from .logger import error_log, warning_log
 from .metadata import Paths
-from .polygon_connection import check_polygon_id, submit_requests_list, submit_concurrent_testcases
+from .polygon_connection import (check_polygon_id, submit_concurrent_testcases,
+                                 submit_requests_list)
 from .toolchain import generate_inputs
 from .utils import check_problem_metadata, verify_path
 

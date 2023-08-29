@@ -3,7 +3,7 @@ import os
 from math import floor, inf
 
 from .logger import info_log
-from .metadata import Problem, ProblemAnswer, Solution, Status, Test, Paths
+from .metadata import Paths, Problem, ProblemAnswer, Solution, Status, Test
 
 REPORT_NAME = "report.html"
 

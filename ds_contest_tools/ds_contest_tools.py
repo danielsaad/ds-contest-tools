@@ -17,8 +17,9 @@ def add_argcomplete(parser: argparse.ArgumentParser):
         The parser object.
     """
     try:
-        import argcomplete
         import subprocess
+
+        import argcomplete
         command = ["eval", '"$(register-python-argcomplete)"', __file__]
         subprocess.run(command, shell=True)
         argcomplete.autocomplete(parser)

@@ -10,7 +10,8 @@ from .htmlutils import print_to_html
 from .jsonutils import parse_json, write_to_json
 from .logger import debug_log, error_log, info_log, warning_log
 from .metadata import Paths, Problem, Solution
-from .utils import check_problem_metadata, check_subprocess_output, verify_path, copy_files
+from .utils import (check_problem_metadata, check_subprocess_output,
+                    copy_files, verify_path)
 
 """ Java definitions """
 JAVA_INTERPRETER = 'java'
@@ -355,8 +356,7 @@ def generate_inputs(move: bool = True, output_folder: str = '') -> None:
 
 
 def produce_outputs(problem_obj: Problem, problem_metadata: dict) -> None:
-    """
-    Run main solution on inputs to produce the outputs.
+    """Run main solution on inputs to produce the outputs.
 
     Args:
         problem_metadata: Dictionary containing the values of problem.json.
@@ -370,8 +370,10 @@ def produce_outputs(problem_obj: Problem, problem_metadata: dict) -> None:
     main_solution = Solution(
         problem_metadata["solutions"]["main-ac"], 'main-ac')
     command = identify_language(problem_obj, main_solution).split()
+    interactive = problem_metadata["problem"]["interactive"]
 
-    if problem_metadata["problem"]["interactive"]:
+    # Create FIFO to run the interactive problem
+    if interactive:
         tmp_fifo = os.path.join(output_folder, 'tmpfifo')
         if os.path.exists(tmp_fifo):
             info_log("Removing existing FIFO")
@@ -382,12 +384,12 @@ def produce_outputs(problem_obj: Problem, problem_metadata: dict) -> None:
         inf_path: str = os.path.join(input_folder, fname)
         ouf_path: str = os.path.join(output_folder, fname)
         with open(inf_path, 'r') as inf, open(ouf_path, 'w') as ouf:
-            if problem_metadata["problem"]["interactive"]:
+            if interactive:
                 interactor: str = os.path.join(
                     problem_dir, 'bin', 'interactor')
                 verify_path(interactor)
-                command: list = [interactor, inf_path, ouf_path, '<',
-                                 tmp_fifo, '|', *command, '>', tmp_fifo]
+                command: list = [interactor, inf_path, ouf_path,
+                                 '<', tmp_fifo, '|', *command, '>', tmp_fifo]
                 p = subprocess.Popen(
                     ' '.join(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
                 p.wait()
@@ -397,7 +399,7 @@ def produce_outputs(problem_obj: Problem, problem_metadata: dict) -> None:
             check_subprocess_output(
                 p, f"Generation of output failed for input {fname}")
 
-    if problem_metadata["problem"]["interactive"]:
+    if interactive:
         subprocess.run(['rm', tmp_fifo])
     info_log("Outputs produced in problem folder.")
 
@@ -454,7 +456,7 @@ def identify_language(problem_obj: Problem, solution: Solution, grader: bool = F
         grader: Boolean indicating whether the problem is a grader.
 
     Returns:
-        str: The command-line arguments needed to execute the solution.
+        The command-line arguments needed to execute the solution.
     """
     binary_file: str = solution.get_binary_name()
     ext: str = solution.get_file_extension()
@@ -482,7 +484,13 @@ def identify_language(problem_obj: Problem, solution: Solution, grader: bool = F
     return exec_args
 
 
-def prepare_grader_solution(src_folder: str, solution: Solution) -> str:
+def prepare_grader_solution(src_folder: str, solution: Solution) -> None:
+    """Create folders to store the grader solutions and copy the necessary files.
+
+    Args:
+        src_folder: Folder containing the grader solution in the src directory.
+        solution: Solution object.
+    """
     grader_folder: str = os.path.join(
         src_folder, solution.get_binary_name())
     grader_files: list[str] = ['main.py', solution.solution_name]
@@ -494,6 +502,11 @@ def prepare_grader_solution(src_folder: str, solution: Solution) -> str:
 
 
 def delete_grader_tmp_folder(problem: Problem) -> None:
+    """Delete temporary folders created to compile the grader problem.
+
+    Args:
+        problem (Problem): Problem object.
+    """
     solutions: list[Solution] = problem.get_list_solution()
     for solution in solutions:
         if solution.get_file_extension() == 'py':
