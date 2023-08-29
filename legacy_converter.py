@@ -131,7 +131,10 @@ def convert_problem_json(problem_dir: str) -> None:
             continue
 
         for subkey, subvalue in value.items():
-            new_problem_metadata[key][subkey] = subvalue
+            if subvalue == ['']:
+                new_problem_metadata[key][subkey] = []
+            else:    
+                new_problem_metadata[key][subkey] = subvalue
 
     if 'id' in new_problem_metadata['problem']:
         del new_problem_metadata['problem']['id']
