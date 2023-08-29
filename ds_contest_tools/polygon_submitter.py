@@ -459,8 +459,8 @@ def get_requests_list(problem_id: str, manual_testcases: bool) -> List[Tuple[str
     check_problem_metadata(problem_metadata)
 
     tmp_folder = os.path.join(Paths().get_tmp_output_dir(), 'scripts')
-    generate_inputs(move=False, output_folder=tmp_folder)
-
+    if not manual_testcases:
+        generate_inputs(move=False, output_folder=tmp_folder)
     requests_list = []
 
     # Get general information parameters of the problem
