@@ -53,8 +53,7 @@ debug: $(DBG) $(DBG_C) $(DBG_JAVA) $(GRADER_DBG)
 release: $(BIN) $(BIN_C) $(BIN_JAVA) $(GRADER_BIN) 
 
 ifdef CHECKER
-checker: 
-	$(DBG_DIR)/checker-boca $(BIN_DIR)/checker-boca
+checker: $(DBG_DIR)/checker-boca $(BIN_DIR)/checker-boca
 endif
 
 $(BIN): $(BIN_DIR)/% : $(SRC_DIR)/%.cpp | $(BIN_DIR)
