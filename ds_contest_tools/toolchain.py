@@ -424,55 +424,24 @@ def parse_solutions(problem_obj: Problem, solutions: dict, all_solutions, specif
         all_solutions: Boolean indicating whether to run all solution files.
         specific_solution: String containing name of the solution to run.
     """
-    solution: Solution = None
-    if all_solutions:
-        for expected_result, files in solutions.items():
-            if len(files) == 0:
-                continue
-            if isinstance(files, list):
-                for submission_file in files:
-                    solution = Solution(submission_file, expected_result)
-                    solution.exec_args = identify_language(
-                        problem_obj, solution, grader)
-                    problem_obj.add_solution(solution)
-            else:
-                submission_file = files
-                solution = Solution(submission_file, expected_result)
-                solution.exec_args = identify_language(
-                    problem_obj, solution, grader)
-                problem_obj.add_solution(solution)
-    else:
-        if specific_solution:
-            for expected_result, files in solutions.items():
-                if len(files) == 0:
-                    continue
-                if isinstance(files, list):
-                    for submission_file in files:
-                        if submission_file == specific_solution:
-                            solution = Solution(
-                                submission_file, expected_result)
-                            solution.exec_args = identify_language(
-                                problem_obj, solution, grader)
-                            problem_obj.add_solution(solution)
-                else:
-                    submission_file = files
-                    if submission_file == specific_solution:
-                        solution = Solution(submission_file, expected_result)
-                        solution.exec_args = identify_language(
-                            problem_obj, solution, grader)
-                        problem_obj.add_solution(solution)
+    if not specific_solution and not all_solutions:
+        specific_solution = solutions['main-ac']
 
-            if problem_obj.is_solution_list_empty():
-                error_log(f'Solution {specific_solution} not found.')
-        else:
-            expected_result = "main-ac"
-            submission_file = solutions[expected_result]
+    for expected_result, files in solutions.items():
+        if len(files) == 0:
+            continue
+
+        if isinstance(files, str):
+            files = [files]
+
+        for submission_file in files:
+            if specific_solution and submission_file != specific_solution:
+                continue
+
             solution = Solution(submission_file, expected_result)
             solution.exec_args = identify_language(
                 problem_obj, solution, grader)
             problem_obj.add_solution(solution)
-
-    return
 
 
 def identify_language(problem_obj: Problem, solution: Solution, grader: bool = False) -> str:
