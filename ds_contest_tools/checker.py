@@ -112,42 +112,10 @@ def run(problem_obj: Problem, solution: Solution, cpu_number: int) -> None:
     os.makedirs(output_folder, exist_ok=True)
     debug_log(f'Run solution {solution.solution_name}')
 
-    solution.exec_args = identify_language(problem_obj, solution)
     start_time: float = time.perf_counter()
     create_processes(problem_obj, solution, cpu_number)
     end_time: float = time.perf_counter()
     debug_log(f'Total time elapsed: {end_time - start_time:.2f}\n')
-
-
-def identify_language(problem_obj: Problem, solution: Solution) -> str:
-    """
-    Identifies the programming language of the solution and returns the appropriate command-line arguments.
-
-    Args:
-        problem_obj: The problem being solved.
-        solution: The solution to the problem.
-
-    Returns:
-        str: The command-line arguments needed to execute the solution.
-    """
-    binary_file: str = solution.get_binary_name()
-    ext: str = solution.get_file_extension()
-    problem_folder = problem_obj.problem_dir
-    bin_folder = os.path.join(problem_folder, 'bin')
-    exec_args: str
-
-    if (ext == 'cpp' or ext == 'c'):
-        exec_args = os.path.join(bin_folder, binary_file)
-    elif (ext == 'java'):
-        exec_args = f'{JAVA_INTERPRETER} {JAVA_FLAG} {bin_folder} {solution.get_binary_name()}'
-    elif (ext == 'py'):
-        submission_file = os.path.join(
-            problem_folder, 'src', solution.solution_name)
-        exec_args = f'{PYTHON3_INTERPRETER} {submission_file}'
-    else:
-        error_log(f'{solution.solution_name} has an invalid extension.')
-
-    return exec_args
 
 
 def run_checker(ans: str, inf: str, ouf: str) -> tuple:
@@ -181,7 +149,7 @@ def run_checker(ans: str, inf: str, ouf: str) -> tuple:
         status = Status.WA
     elif (checker_output.startswith('FAIL')):
         warning_log('Input ' + fname +
-                  ': FAIL: maybe the jury solution or the checker are not correct')
+                    ': FAIL: maybe the jury solution or the checker are not correct')
         status = Status.FAIL
     else:
         status = Status.PE
