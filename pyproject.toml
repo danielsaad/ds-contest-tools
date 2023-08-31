@@ -1,40 +1,40 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=68.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ds-contest-tools"
-version = "0.1.0"
+name = "dscontest-package-matheusloiola1"
+version = "1.0.0"
 description = "Tools for contest preparation."
 readme = "README.md"
 requires-python = ">=3.8"
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 authors = [
-    {name = "Daniel Saad Nogueira Nunes", email = "daniel.nunes@ifb.edu.br"}
+    { name = "Daniel Saad Nogueira Nunes", email = "daniel.nunes@ifb.edu.br" },
 ]
 maintainers = [
-    {name = "Matheus Loiola Pinto Curado Silva", email = "matheusloiolapinto@gmail.com"},
-    {name = "Leonam Knupp", email = "leonam.knupp@estudante.ifb.edu.br"}
+    { name = "Matheus Loiola Pinto Curado Silva", email = "matheusloiolapinto@gmail.com" },
+    { name = "Leonam Knupp", email = "leonam.knupp@estudante.ifb.edu.br" },
 ]
 keywords = ["contest", "competitive programming", "tools"]
 classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Operating System :: Unix"
+    "Operating System :: Unix",
 ]
-dependencies = [
-    "requests",
-    "psutil"
-]
+dependencies = ["requests", "psutil"]
+
 
 [project.scripts]
-ds-contest-tools = "ds_contest_tools:main"
+dscontest = "ds_contest_tools:main"
 
 [project.urls]
 repository = "https://github.com/danielsaad/ds-contest-tools/"
-documentation = "https://github.com/danielsaad/ds-contest-tools/wiki"
+documentation = "https://danielsaad.com/ds-contest-tools/"
 
 [project.optional-dependencies]
-dev = ["argcomplete"]
+helper = ["argcomplete"]
