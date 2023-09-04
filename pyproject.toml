@@ -3,9 +3,9 @@ requires = ["setuptools>=68.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "dscontest-package-matheusloiola1"
+name = "ds-contest-tools"
 version = "1.0.0"
-description = "Tools for contest preparation."
+description = "Tools for contest and competitive problems preparation."
 readme = "README.md"
 requires-python = ">=3.8"
 license = { file = "LICENSE" }
@@ -35,6 +35,3 @@ dscontest = "ds_contest_tools:main"
 [project.urls]
 repository = "https://github.com/danielsaad/ds-contest-tools/"
 documentation = "https://danielsaad.com/ds-contest-tools/"
-
-[project.optional-dependencies]
-helper = ["argcomplete"]
