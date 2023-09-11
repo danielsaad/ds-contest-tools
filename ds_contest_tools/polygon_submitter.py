@@ -5,7 +5,8 @@ from .fileutils import get_statement_files
 from .jsonutils import parse_json
 from .logger import error_log, warning_log
 from .metadata import Paths
-from .polygon_connection import check_polygon_id, submit_requests_list, submit_concurrent_testcases
+from .polygon_connection import (check_polygon_id, submit_concurrent_testcases,
+                                 submit_requests_list)
 from .toolchain import generate_inputs
 from .utils import check_problem_metadata, verify_path
 
@@ -458,8 +459,8 @@ def get_requests_list(problem_id: str, manual_testcases: bool) -> List[Tuple[str
     check_problem_metadata(problem_metadata)
 
     tmp_folder = os.path.join(Paths().get_tmp_output_dir(), 'scripts')
-    generate_inputs(move=False, output_folder=tmp_folder)
-
+    if not manual_testcases:
+        generate_inputs(move=False, output_folder=tmp_folder)
     requests_list = []
 
     # Get general information parameters of the problem

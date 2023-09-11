@@ -2,6 +2,7 @@
 
 Ferramentas para preparação de *contests*, por Daniel Saad.
 
+Para mais informações sobre os comandos ou sobre a ferramenta, leia a [documentação](https://danielsaad.com/ds-contest-tools).
 
 ## Introdução
 
@@ -34,41 +35,13 @@ Para rodar as ferramentas é necessário ter instalado de antemão:
 
 ## Instalação
 
-### Utilizando o `pip`
-
 Para instalar a ferramenta, basta executar o comando abaixo:
 
 ```bash
 pip install ds-contest-tools
 ```
 
-### Utilizando o código-fonte
-
-Para instalar a ferramenta a partir do código-fonte, siga os passos abaixo:
-
-1. Instale os pré-requisitos da ferramenta e rode o comando abaixo para instalar os módulos necessários:
-
-```bash
-pip install setuptools wheel
-```
-
-2. Clone o repositório:
-
-```bash
-git clone https://github.com/danielsaad/ds-contest-tools.git
-```
-
-3. Na pasta raiz do repositório, execute o comando abaixo para criar o pacote da ferramenta:
-
-```bash
-python -m build
-```
-
-4. Instale o pacote gerado:
-
-```bash
-pip install dist/<nome_do_pacote>.whl
-```
+Para outros modos de instalação, consulte a [documentação](https://danielsaad.com/ds-contest-tools).
 
 ## Utilização
 
@@ -84,5 +57,3 @@ ds-contest-tools build problem_dir
 Onde `problem_dir` é o diretório onde o problema será inicializado e compilado. Use o comando `ds-contest-tools --help` para obter mais informações sobre os comandos disponíveis.
 
 Para o primeiro uso ao converter problemas do Polygon, será necessário definir as chaves da API do Polygon. Tais chaves são armazenadas localmente no diretório raiz da ferramenta em um arquivo JSON.
-
-Para mais informações sobre os comandos ou sobre a ferramenta, leia a documentação na [wiki](https://github.com/danielsaad/ds-contest-tools/wiki).
