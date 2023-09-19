@@ -31,8 +31,8 @@ def init_problem(interactive: bool, grader: bool, verify_folder: bool = True, ig
     problem_folder = Paths().get_problem_dir()
     src_folder = os.path.join(problem_folder, 'src')
     json_path = os.path.join(problem_folder, 'problem.json')
-    if verify_folder and os.path.exists(problem_folder):
-        error_log("Problem ID already exists in the directory")
+    if verify_folder and os.path.exists(json_path):
+        error_log("Problem already exists in the directory.")
 
     # Copy standard files to problem folder
     tool_folder = os.path.join(os.path.dirname(
