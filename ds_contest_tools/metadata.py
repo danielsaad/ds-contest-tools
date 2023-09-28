@@ -81,7 +81,7 @@ class Problem:
         self.__problem_dir = problem_dir
         self.__input_folder = input_folder
         self.__time_limit = time_limit
-        self.__memory_limit = memory_limit * 2 ** 20
+        self.__memory_limit = memory_limit * 1000000
         self.__solutions: list[Solution] = []
 
     @property
@@ -207,7 +207,7 @@ class Solution:
 
     """
 
-    def __init__(self, solution_name: str, expected_result: str) -> None:
+    def __init__(self, solution_name: str, expected_result: str, problem_folder: str) -> None:
         """
         Initializes a new instance of the Solution class.
 
@@ -218,6 +218,9 @@ class Solution:
         """
         self.__solution_name: str = solution_name
         self.__expected_result: str = expected_result
+        self.__solution_exec_file_path: str = self.set_solution_file_path(
+            problem_folder)
+        self.__vm_memory_usage: float = self.__measure_vm_usage()
         self.__output_path: str = self.__generate_output_folder()
         self.__solution_status: ProblemAnswer = None
         self.__statistics: Statistic = None
@@ -245,6 +248,26 @@ class Solution:
 
         """
         return self.__expected_result
+
+    @property
+    def solution_exec_file_path(self) -> str:
+        """
+        Gets the path to the solution executable file.
+
+        Returns:
+            str: The path to the solution executable file.
+        """
+        return self.__solution_exec_file_path
+
+    @property
+    def vm_memory_usage(self) -> float:
+        """
+        Gets the memory usage of the solution in bytes.
+
+        Returns:
+            float: The memory usage of the solution in bytes.
+        """
+        return self.__vm_memory_usage
 
     @property
     def output_path(self) -> str:
@@ -330,6 +353,22 @@ class Solution:
         """
         return self.__tests
 
+    def set_solution_file_path(self, problem_folder: str) -> str:
+        ext: str = self.get_file_extension()
+        binary_file: str = self.get_binary_name()
+        file_path: str = ''
+
+        if ext == 'py':
+            src_folder: str = os.path.join(problem_folder, 'src')
+            file_path = os.path.join(
+                src_folder, binary_file)
+        else:
+            bin_folder: str = os.path.join(problem_folder, 'bin')
+            file_path = os.path.join(
+                bin_folder, binary_file)
+
+        return file_path
+
     def add_tests(self, tests: dict) -> None:
         """
         Adds a dictionary of tests to the dictionary of tests that were run 
@@ -395,6 +434,82 @@ class Solution:
         output_folder: str = os.path.join(
             root_tmp_path, self.get_file_extension(), self.get_binary_name())
         return output_folder
+
+    def __execute_command(self, pid, memory_used, exec_args: list[str]) -> str:
+        """
+        Executes a command on the terminal and returns the output.
+
+        Args:
+            pid (Queue): The process id of the executed command.
+            memory_used (Value): The memory used by the executed command.
+            exec_args (list[str]): The command to execute.
+
+
+        Returns:
+            str: The output of the command.
+        """
+        from multiprocessing import Pipe
+        import subprocess
+
+        conn_sender, conn_recv = Pipe()
+        memory_info: tuple = (0, 0)
+        p: subprocess.Popen = subprocess.Popen(exec_args)
+        pid.put([p.pid, conn_sender])
+        try:
+            p.communicate(timeout=0.2)
+        except subprocess.TimeoutExpired:
+            p.kill()
+            p.communicate()
+        finally:
+            memory_info = conn_recv.recv()
+        conn_sender.close()
+        conn_recv.close()
+
+        memory_used.value = memory_info[0]
+        print(memory_used.value / 1000000)
+        return
+
+    def __measure_vm_usage(self) -> int:
+        """
+        Returns the memory usage of the solution in Megabytes.
+
+        Returns:
+            int: The memory usage of the solution in Megabytes.
+        """
+        from math import inf
+        from .checker import memory_monitor
+        from multiprocessing import Process, Event, Manager, Queue, Value
+
+        ext: str = self.get_file_extension()
+        exec_args: list[str] = list()
+        memory_used: Value = Value('i', 0)
+        if ext == 'c' or ext == 'cpp':
+            return memory_used.value
+
+        elif ext == 'py':
+            from .config import PYTHON3_INTERPRETER, PYTHON_VM_MEMORY_TEST_FILE_PATH
+            exec_args = [PYTHON3_INTERPRETER,
+                         PYTHON_VM_MEMORY_TEST_FILE_PATH]
+
+        elif ext == 'java':
+            from .config import JAVA_INTERPRETER, JAVA_FLAG, JAVA_VM_MEMORY_TEST_FOLDER, JAVA_VM_TEST_FILE
+            exec_args = [JAVA_INTERPRETER, JAVA_FLAG,
+                         JAVA_VM_MEMORY_TEST_FOLDER, JAVA_VM_TEST_FILE]
+
+        with Manager() as manager:
+            pid: Queue = manager.Queue(maxsize=1)
+            stop_monitor: Event = manager.Event()
+            monitor_process = Process(target=memory_monitor, args=(
+                pid, inf, stop_monitor))
+            monitor_process.start()
+            process: Process = Process(target=self.__execute_command, args=(
+                pid, memory_used, exec_args))
+            process.start()
+            process.join()
+            stop_monitor.set()
+            monitor_process.join()
+
+        return memory_used.value
 
 
 class Test:
@@ -547,7 +662,7 @@ class Paths:
     def get_tmp_output_dir(self) -> str:
         """Get the temporary output root directory"""
         return self.__tmp_output_dir
-    
+
     def set_output_dir(self, output_dir: str) -> None:
         """Set the output directory"""
         self.__output_dir = output_dir

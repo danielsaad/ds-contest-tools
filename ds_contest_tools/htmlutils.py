@@ -149,21 +149,22 @@ def write_test_cases_tbody(problem_obj: Problem, f_out: io.TextIOWrapper) -> Non
         <tbody class="table-group-divider">
     """
     f_out.write(tbody)
-    memory_limit: float = problem_obj.memory_limit
     time_limit: float = problem_obj.time_limit
     test_cases_number: int = problem_obj.get_number_of_tests()
     href_paths: str = html_test_case_info_paths(problem_obj)
-    memory_usage: float = None
     execution_time: float = None
     solution: Solution
     for i in range(test_cases_number):
         f_out.write('<tr class="text-center">')
         f_out.write(f'\t<td class="fw-bolder">{i + 1}</td>')
         for solution in problem_obj.get_list_solution():
+            memory_usage = problem_obj.memory_limit
             test_case: Test = solution.tests[i]
             test_color_class, test_status, tooltip_msg = test_case_status(
                 test_case)
-            memory_usage = min(test_case.memory_usage, memory_limit) / 1000000
+            mem: int = max(test_case.memory_usage -
+                           solution.vm_memory_usage, 0)
+            memory_usage: int = min(mem, memory_usage) / 1000000
             execution_time = min(test_case.exec_time, time_limit)
             expected_result: str = set_expected_result(
                 solution.expected_result)
@@ -178,8 +179,7 @@ def write_test_cases_tbody(problem_obj: Problem, f_out: io.TextIOWrapper) -> Non
     for solution in problem_obj.get_list_solution():
         ac_count: int = solution.statistics.ac_count
         ac_percentage: int = ac_count / test_cases_number * 100
-        memory_usage = min(
-            solution.statistics.max_memory_usage, memory_limit) / 1000000
+        memory_usage = solution.statistics.max_memory_usage / 1000000
         execution_time = min(
             solution.statistics.max_exec_time, time_limit)
         table_data_info = f'\t<td> {floor(ac_percentage)} %<br>{execution_time:.2f} s / {(memory_usage):.1f} MB </td>'

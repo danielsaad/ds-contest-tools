@@ -5,20 +5,16 @@ import subprocess
 from typing import Dict
 
 from .checker import run_solutions
-from .config import IGNORED_DIRS, custom_key
+from .config import (IGNORED_DIRS, JAVA_INTERPRETER,
+                     JAVA_FLAG, PYTHON3_INTERPRETER,
+                     custom_key)
 from .htmlutils import print_to_html
 from .jsonutils import parse_json, write_to_json
 from .logger import debug_log, error_log, info_log, warning_log
 from .metadata import Paths, Problem, Solution
 from .utils import (check_problem_metadata, check_subprocess_output,
                     copy_files, verify_path)
-
-""" Java definitions """
-JAVA_INTERPRETER = 'java'
-JAVA_FLAG = '-classpath'
-
-""" Python3 definitions """
-PYTHON3_INTERPRETER = 'python3'
+from .checker import memory_monitor
 
 
 def init_problem(interactive: bool, grader: bool, verify_folder: bool = True, ignore_patterns: list = IGNORED_DIRS) -> None:
@@ -168,7 +164,6 @@ def run_programs(all_solutions: bool = False, specific_solution: str = '', cpu_n
     grader: bool = problem_metadata['problem']['grader']
     parse_solutions(
         problem_obj, problem_metadata['solutions'], all_solutions, specific_solution, grader)
-
     if not no_generator:
         generate_inputs()
     if not no_validator:
@@ -368,8 +363,8 @@ def produce_outputs(problem_obj: Problem, problem_metadata: dict) -> None:
     input_files: list = [f for f in os.listdir(input_folder)
                          if not f.endswith('.interactive')]
     main_solution = Solution(
-        problem_metadata["solutions"]["main-ac"], 'main-ac')
-    command = identify_language(problem_obj, main_solution).split()
+        problem_metadata["solutions"]["main-ac"], 'main-ac', problem_obj.problem_dir)
+    command = identify_language(main_solution).split()
     interactive = problem_metadata["problem"]["interactive"]
 
     # Create FIFO to run the interactive problem
@@ -439,14 +434,13 @@ def parse_solutions(problem_obj: Problem, solutions: dict, all_solutions, specif
         for submission_file in files:
             if specific_solution and submission_file != specific_solution:
                 continue
-
-            solution = Solution(submission_file, expected_result)
-            solution.exec_args = identify_language(
-                problem_obj, solution, grader)
+            solution = Solution(
+                submission_file, expected_result, problem_obj.problem_dir)
+            solution.exec_args = identify_language(solution, grader)
             problem_obj.add_solution(solution)
 
 
-def identify_language(problem_obj: Problem, solution: Solution, grader: bool = False) -> str:
+def identify_language(solution: Solution, grader: bool = False) -> str:
     """
     Identifies the programming language of the solution and returns the appropriate command-line arguments.
 
@@ -460,16 +454,16 @@ def identify_language(problem_obj: Problem, solution: Solution, grader: bool = F
     """
     binary_file: str = solution.get_binary_name()
     ext: str = solution.get_file_extension()
-    problem_folder = problem_obj.problem_dir
-    bin_folder = os.path.join(problem_folder, 'bin')
-    src_folder = os.path.join(problem_folder, 'src')
     exec_args: str = None
 
     if (ext == 'cpp' or ext == 'c'):
-        exec_args = os.path.join(bin_folder, binary_file)
+        exec_args = solution.solution_exec_file_path
     elif (ext == 'java'):
-        exec_args = f'{JAVA_INTERPRETER} {JAVA_FLAG} {bin_folder} {solution.get_binary_name()}'
+        bin_folder: str = os.path.dirname(solution.solution_exec_file_path)
+        exec_args = f'{JAVA_INTERPRETER} {JAVA_FLAG} {bin_folder} {binary_file}'
+
     elif (ext == 'py'):
+        src_folder: str = os.path.dirname(solution.solution_exec_file_path)
         if grader:
             prepare_grader_solution(src_folder, solution)
             submission_file = os.path.join(
