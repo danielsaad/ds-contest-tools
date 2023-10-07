@@ -98,11 +98,15 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
             print("\\begin{ProblemaAutor}{" + options['problem_label']
                   + "}{" + problem_metadata["problem"]["title"] + "}{" +
                   str(problem_metadata["problem"]["time_limit"]) +
+                  "}{" +
+                  str(problem_metadata["problem"]["memory_limit_mb"]) +
                   "}{" + problem_metadata["author"]["name"] + "}\n", file=f_out)
         else:
             print("\\begin{Problema}{" + options['problem_label']
                   + "}{" + problem_metadata["problem"]["title"] + "}{" +
                   str(problem_metadata["problem"]["time_limit"]) +
+                  "}{" +
+                  str(problem_metadata["problem"]["memory_limit_mb"]) +
                   "}\n", file=f_out)
 
         # Get statement information

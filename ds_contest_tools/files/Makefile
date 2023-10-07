@@ -74,11 +74,11 @@ $(BIN_JAVA): $(BIN_DIR)/%.class : $(SRC_DIR)/%.java | $(BIN_DIR)
 $(DBG_JAVA): $(DBG_DIR)/%.class : $(SRC_DIR)/%.java | $(DBG_DIR)
 	$(JV) $(JV_DEBUG) $(JV_DBG_DIR) $^ 
 
-$(GRADER_BIN): $(BIN_DIR)/% : $(GRADER_DIR)/%.cpp
-	$(CPP) $(CXX_FLAGS) $(GRADER) $^ -o $@
+$(GRADER_BIN): $(BIN_DIR)/% : $(GRADER_DIR)/%.cpp $(GRADER) $(GRADER_DIR)/*.h
+	$(CPP) $(CXX_FLAGS)  $^ -o $@
 
-$(GRADER_DBG): $(DBG_DIR)/% : $(GRADER_DIR)/%.cpp 
-	$(CPP) $(DEBUG_FLAGS) $(GRADER) $^ -o $@
+$(GRADER_DBG): $(DBG_DIR)/% : $(GRADER_DIR)/%.cpp $(GRADER) $(GRADER_DIR)/*.h
+	$(CPP) $(DEBUG_FLAGS) $^ -o $@
 
 $(BIN_DIR):
 	mkdir -p $@

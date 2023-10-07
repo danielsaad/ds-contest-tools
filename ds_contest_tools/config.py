@@ -1,3 +1,5 @@
+import os
+
 DEFAULT_PDF_OPTIONS = {
     'display_author': True,
     'problem_label': '',
@@ -7,6 +9,18 @@ DEFAULT_PDF_OPTIONS = {
 IGNORED_DIRS = [
     'boca', 'assets'
 ]
+
+""" Java definitions """
+JAVA_INTERPRETER = 'java'
+JAVA_FLAG = '-classpath'
+JAVA_VM_TEST_FILE = 'VmMemoryTest'
+JAVA_VM_MEMORY_TEST_FOLDER = os.path.join(
+    os.path.dirname(__file__), 'files/assets')
+
+""" Python3 definitions """
+PYTHON3_INTERPRETER = 'python3'
+PYTHON_VM_MEMORY_TEST_FILE_PATH = os.path.join(
+    os.path.dirname(__file__), 'files/assets/vm_memory_test.py')
 
 
 def custom_key(str: str) -> tuple:
