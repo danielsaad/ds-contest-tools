@@ -268,22 +268,24 @@ def write_auxiliary_table(problem_obj: Problem, f_out: io.TextIOWrapper) -> None
 
     """
     table_init = """
-    <div class="col-md-2 col-lg-2 col-xl-2 position-fixed end-0">
-        <table class="table table-hover table-bordered">
-            <thead class="table-dark">
-                <tr class="text-center">
-                    <th>Solutions</th>
-                    <th>Expected Result</th>
-                    <th>Result</th>
-                </tr>
-            </thead>
-             <tbody>\
+    <div class="col-md-2 col-lg-2 col-xl-2">
+        <div id="auxiliary-table" class="sticky-top">
+            <table class="table table-hover table-bordered">
+                <thead class="table-dark">
+                    <tr class="text-center">
+                        <th>Solutions</th>
+                        <th>Expected Result</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody>\
     """
     f_out.write(table_init)
     write_aux_trow(problem_obj, f_out)
     table_end = """
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>\
     """
     f_out.write(table_end)

@@ -466,7 +466,6 @@ class Solution:
         conn_recv.close()
 
         memory_used.value = memory_info[0]
-        print(memory_used.value / 1000000)
         return
 
     def __measure_vm_usage(self) -> int:
