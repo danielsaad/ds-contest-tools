@@ -41,6 +41,8 @@ def init_problem(interactive: bool, grader: bool, polygon: bool = False, verify_
     remove_src_files = ['sqtpm.sh']
     for file in remove_src_files:
         os.remove(os.path.join(problem_folder, file))
+        
+    problem_json = parse_json(json_path)
 
     if polygon:
         res = make_api_request('problem.create', {'name': os.path.basename(Paths().get_problem_dir())}, -1)
@@ -48,7 +50,6 @@ def init_problem(interactive: bool, grader: bool, polygon: bool = False, verify_
         write_to_json(json_path, problem_json)
 
     # Verify grader problem
-    problem_json = parse_json(json_path)
     if grader:
         problem_json['problem']['grader'] = True
         write_to_json(json_path, problem_json)
