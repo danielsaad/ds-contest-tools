@@ -14,15 +14,18 @@ from .logger import debug_log, error_log, info_log, warning_log
 from .metadata import Paths, Problem, Solution
 from .utils import (check_problem_metadata, check_subprocess_output,
                     copy_files, verify_path)
-from .checker import memory_monitor
+from .polygon_connection import make_api_request
 
 
-def init_problem(interactive: bool, grader: bool, verify_folder: bool = True, ignore_patterns: list = IGNORED_DIRS) -> None:
+def init_problem(interactive: bool, grader: bool, polygon: bool = False, verify_folder: bool = True, ignore_patterns: list = IGNORED_DIRS) -> None:
     """Initialize a problem.
 
     Args:
         interactive: Boolean indicating whether the problem is interactive.
         grader: Boolean indicating whether the problem is a grader.
+        polygon: Boolean indicating whether to initialize the problem in Polygon.
+        verify_folder: Boolean indicating whether to verify if the problem folder is empty.
+        ignore_patterns: List of files to ignore when copying files to the problem folder.
     """
     problem_folder = Paths().get_problem_dir()
     src_folder = os.path.join(problem_folder, 'src')
@@ -38,6 +41,11 @@ def init_problem(interactive: bool, grader: bool, verify_folder: bool = True, ig
     remove_src_files = ['sqtpm.sh']
     for file in remove_src_files:
         os.remove(os.path.join(problem_folder, file))
+
+    if polygon:
+        res = make_api_request('problem.create', {'name': os.path.basename(Paths().get_problem_dir())}, -1)
+        problem_json['polygon_config']['id'] = str(res)
+        write_to_json(json_path, problem_json)
 
     # Verify grader problem
     problem_json = parse_json(json_path)
