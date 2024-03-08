@@ -1,27 +1,12 @@
-# Normal directories
+# Standard directories
 SRC_DIR := src
 BIN_DIR := bin
 DBG_DIR := bin/debug
 
-# Grader directories
-GRADER := $(wildcard $(SRC_DIR)/grader.cpp)
-GRADER_DIR := $(SRC_DIR)/grader
-HANDLER_DIR := $(SRC_DIR)/handler
-
-GRADER_SRC := $(wildcard $(GRADER_DIR)/*.cpp)
-GRADER_BIN := $(patsubst $(GRADER_DIR)/%.cpp, $(BIN_DIR)/%, $(GRADER_SRC))
-GRADER_DBG := $(patsubst $(GRADER_DIR)/%.cpp, $(DBG_DIR)/%, $(GRADER_SRC))
-
-# Change CPP source directories if grader is defined
-ifdef GRADER
-	SRC := $(wildcard $(HANDLER_DIR)/*.cpp)
-	BIN := $(patsubst $(HANDLER_DIR)/%.cpp, $(BIN_DIR)/%, $(SRC))
-	DBG := $(patsubst $(HANDLER_DIR)/%.cpp, $(DBG_DIR)/%, $(SRC))
-else
-	SRC := $(wildcard $(SRC_DIR)/*.cpp)
-	BIN := $(patsubst $(SRC_DIR)/%.cpp, $(BIN_DIR)/%, $(SRC))
-	DBG := $(patsubst $(SRC_DIR)/%.cpp, $(DBG_DIR)/%, $(SRC))
-endif
+# Get files
+SRC := $(wildcard $(SRC_DIR)/*.cpp)
+BIN := $(patsubst $(SRC_DIR)/%.cpp, $(BIN_DIR)/%, $(SRC))
+DBG := $(patsubst $(SRC_DIR)/%.cpp, $(DBG_DIR)/%, $(SRC))
 
 SRC_C := $(wildcard $(SRC_DIR)/*.c)
 BIN_C := $(patsubst $(SRC_DIR)/%.c, $(BIN_DIR)/%, $(SRC_C))
@@ -48,9 +33,9 @@ JV_DBG_DIR = -d bin/debug
 
 all: debug release checker
 
-debug: $(DBG) $(DBG_C) $(DBG_JAVA) $(GRADER_DBG) 
+debug: $(DBG) $(DBG_C) $(DBG_JAVA)
 
-release: $(BIN) $(BIN_C) $(BIN_JAVA) $(GRADER_BIN) 
+release: $(BIN) $(BIN_C) $(BIN_JAVA)
 
 ifdef CHECKER
 checker: $(DBG_DIR)/checker-boca $(BIN_DIR)/checker-boca
@@ -73,12 +58,6 @@ $(BIN_JAVA): $(BIN_DIR)/%.class : $(SRC_DIR)/%.java | $(BIN_DIR)
 
 $(DBG_JAVA): $(DBG_DIR)/%.class : $(SRC_DIR)/%.java | $(DBG_DIR)
 	$(JV) $(JV_DEBUG) $(JV_DBG_DIR) $^ 
-
-$(GRADER_BIN): $(BIN_DIR)/% : $(GRADER_DIR)/%.cpp $(GRADER) $(GRADER_DIR)/*.h
-	$(CPP) $(CXX_FLAGS)  $^ -o $@
-
-$(GRADER_DBG): $(DBG_DIR)/% : $(GRADER_DIR)/%.cpp $(GRADER) $(GRADER_DIR)/*.h
-	$(CPP) $(DEBUG_FLAGS) $^ -o $@
 
 $(BIN_DIR):
 	mkdir -p $@

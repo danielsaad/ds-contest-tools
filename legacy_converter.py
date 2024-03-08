@@ -85,7 +85,7 @@ def convert_statement(problem_dir: str) -> None:
                                         'interactor.tex'), statement)
 
 
-def move_makefile(problem_dir : str) -> None:
+def move_makefile(problem_dir: str, grader: bool) -> None:
     """Change CMake to Makefile and move files"""
     tool_folder = os.path.dirname(os.path.abspath(__file__))
 
@@ -93,11 +93,19 @@ def move_makefile(problem_dir : str) -> None:
     cmake_path = os.path.join(problem_dir, 'CMakeLists.txt')
     if os.path.exists(cmake_path):
         os.remove(cmake_path)
-    
+
     files_path = os.path.join(tool_folder, 'ds_contest_tools', 'files')
-    move_files = ['Makefile', 'maratona.cls']
+
+    move_files = ['maratona.cls']
     for file in move_files:
         shutil.copy2(os.path.join(files_path, file), problem_dir)
+
+    # Move Makefile
+    if grader:
+        shutil.copy2(os.path.join(files_path, 'GraderMakefile'),
+                     os.path.join(problem_dir, 'Makefile'))
+    else:
+        shutil.copy2(os.path.join(files_path, 'Makefile'), problem_dir)
 
 
 def update_testlib(problem_dir: str) -> None:
@@ -113,7 +121,7 @@ def update_testlib(problem_dir: str) -> None:
                  os.path.join(problem_dir, 'src', 'testlib.h'))
 
 
-def convert_problem_json(problem_dir: str) -> None:
+def convert_problem_json(problem_dir: str) -> bool:
     """Convert problem.json to new version."""
     tool_folder = os.path.dirname(os.path.abspath(__file__))
 
@@ -135,7 +143,7 @@ def convert_problem_json(problem_dir: str) -> None:
         for subkey, subvalue in value.items():
             if subvalue == ['']:
                 new_problem_metadata[key][subkey] = []
-            else:    
+            else:
                 new_problem_metadata[key][subkey] = subvalue
 
     if 'id' in new_problem_metadata['problem']:
@@ -146,13 +154,15 @@ def convert_problem_json(problem_dir: str) -> None:
     with open(metadata_path, 'w') as f:
         f.write(json.dumps(new_problem_metadata, ensure_ascii=False))
 
+    return new_problem_metadata['problem']['grader']
+
 
 def convert_problem(problem_dir: str) -> None:
     """Convert legacy problem to newer version."""
-    move_makefile(problem_dir)
     update_testlib(problem_dir)
     convert_statement(problem_dir)
-    convert_problem_json(problem_dir)
+    grader = convert_problem_json(problem_dir)
+    move_makefile(problem_dir, grader)
 
 
 if __name__ == '__main__':

@@ -13,7 +13,7 @@ from .jsonutils import parse_json, write_to_json
 from .logger import debug_log, error_log, info_log, warning_log
 from .metadata import Paths, Problem, Solution
 from .utils import (check_problem_metadata, check_subprocess_output,
-                    copy_files, verify_path)
+                    copy_files, verify_path, IMAGE_EXTENSIONS)
 from .polygon_connection import make_api_request
 
 
@@ -37,25 +37,33 @@ def init_problem(interactive: bool, grader: bool, polygon: bool = False, verify_
     tool_folder = os.path.join(os.path.dirname(
         os.path.abspath(__file__)), 'files')
     shutil.copytree(tool_folder, problem_folder,
-                    ignore=shutil.ignore_patterns(*ignore_patterns), dirs_exist_ok=True)
+                    ignore=shutil.ignore_patterns(*ignore_patterns),
+                    dirs_exist_ok=True)
+
+    # Remove unnecessary files
     remove_src_files = ['sqtpm.sh']
     for file in remove_src_files:
         os.remove(os.path.join(problem_folder, file))
-        
+
     problem_json = parse_json(json_path)
 
+    # Create problem in Polygon
     if polygon:
-        res = make_api_request('problem.create', {'name': os.path.basename(Paths().get_problem_dir())}, -1)
+        res = make_api_request(
+            'problem.create', {'name': os.path.basename(Paths().get_problem_dir())}, -1)
         problem_json['polygon_config']['id'] = str(res)
         write_to_json(json_path, problem_json)
 
     # Verify grader problem
     if grader:
         problem_json['problem']['grader'] = True
+        shutil.move(os.path.join(problem_folder, 'GraderMakefile'),
+                    os.path.join(problem_folder, 'Makefile'))
         write_to_json(json_path, problem_json)
     elif verify_folder:
         os.remove(os.path.join(src_folder, 'grader.cpp'))
         os.remove(os.path.join(src_folder, 'grader.h'))
+        os.remove(os.path.join(problem_folder, 'GraderMakefile'))
 
     # Verify interactive problem
     if interactive:
@@ -425,13 +433,12 @@ def clean_files(reset: bool = False) -> None:
         command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     check_subprocess_output(p, "Error cleaning executables.")
 
+    files_to_save = ['maratona.cls', 'problem.json', 'Makefile'] 
     if reset:
         for file in os.listdir('.'):
             if os.path.isdir(file) and file not in ['src', 'statement']:
                 shutil.rmtree(file)
-            elif os.path.isdir(file):
-                continue
-            elif file not in ['maratona.cls', 'problem.json', 'Makefile']:
+            elif os.path.isfile(file) and file not in files_to_save and not file.endswith(tuple(IMAGE_EXTENSIONS)):
                 os.remove(file)
 
     os.chdir(old_cwd)

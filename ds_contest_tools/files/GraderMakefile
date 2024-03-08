@@ -1,0 +1,60 @@
+# Standard directories
+SRC_DIR := src
+BIN_DIR := bin
+DBG_DIR := bin/debug
+
+# Grader directories
+GRADER := $(wildcard $(SRC_DIR)/grader.cpp)
+GRADER_DIR := $(SRC_DIR)/grader
+HANDLER_DIR := $(SRC_DIR)/handler
+
+# Get files
+SRC := $(wildcard $(HANDLER_DIR)/*.cpp)
+BIN := $(patsubst $(HANDLER_DIR)/%.cpp, $(BIN_DIR)/%, $(SRC))
+DBG := $(patsubst $(HANDLER_DIR)/%.cpp, $(DBG_DIR)/%, $(SRC))
+
+SRC_C := $(wildcard $(SRC_DIR)/*.c)
+BIN_C := $(patsubst $(SRC_DIR)/%.c, $(BIN_DIR)/%, $(SRC_C))
+DBG_C := $(patsubst $(SRC_DIR)/%.c, $(DBG_DIR)/%, $(SRC_C))
+
+CHECKER := $(wildcard $(SRC_DIR)/checker.cpp)
+
+C := gcc
+CPP := g++
+CXX_FLAGS := -Wall -O2
+DEBUG_FLAGS := -Wall -g
+BOCA_FLAGS := -static -DBOCA_SUPPORT
+
+.PHONY: all debug release checker clean
+
+all: debug release checker
+
+debug: $(DBG) $(GRADER_DBG) 
+
+release: $(BIN) $(GRADER_BIN) 
+
+ifdef CHECKER
+checker: $(DBG_DIR)/checker-boca $(BIN_DIR)/checker-boca
+endif
+
+$(GRADER_BIN): $(BIN_DIR)/% : $(GRADER_DIR)/%.cpp $(GRADER) $(GRADER_DIR)/*.h
+	$(CPP) $(CXX_FLAGS)  $^ -o $@
+
+$(GRADER_DBG): $(DBG_DIR)/% : $(GRADER_DIR)/%.cpp $(GRADER) $(GRADER_DIR)/*.h
+	$(CPP) $(DEBUG_FLAGS) $^ -o $@
+
+$(BIN_DIR):
+	mkdir -p $@
+
+$(DBG_DIR):
+	mkdir -p $@
+
+$(BIN_DIR)/checker-boca: $(SRC_DIR)/checker.cpp
+	$(CPP) $(CXX_FLAGS) $(BOCA_FLAGS) $^ -o $@ 
+
+$(DBG_DIR)/checker-boca: $(SRC_DIR)/checker.cpp
+	$(CPP) $(DEBUG_FLAGS) $(BOCA_FLAGS) $^ -o $@ 
+
+clean:
+	@echo Cleaning problem files
+	rm -rf bin

@@ -9,6 +9,9 @@ from .logger import convert_to_string, debug_log, error_log, setup_logger
 from .metadata import Paths
 
 
+IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'svg', 'bmp', 'ico'}
+
+
 def convert_idx_to_string(idx: int) -> str:
     """Convert an integer to a string from alphabet [A-Z] using radix 26.
 

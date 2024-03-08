@@ -8,13 +8,12 @@ from .metadata import Paths
 from .polygon_connection import (check_polygon_id, submit_concurrent_testcases,
                                  submit_requests_list)
 from .toolchain import generate_inputs
-from .utils import check_problem_metadata, verify_path
+from .utils import check_problem_metadata, verify_path, IMAGE_EXTENSIONS
 
 LANGUAGE = 'english'
 ENCODING = 'utf-8'
 TESTSET = 'tests'
 VERIFY_IO_STATEMENT = True
-IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'svg', 'bmp', 'ico'}
 
 
 def update_info(problem_metadata: dict) -> tuple:
