@@ -11,7 +11,7 @@ from .logger import info_log, warning_log
 from .metadata import Paths
 from .polygon_connection import download_package_polygon, make_api_request
 from .toolchain import init_problem
-from .utils import verify_path
+from .utils import verify_path,verify_file
 
 DEFAULT_LANGUAGE = 'english'
 
@@ -154,8 +154,9 @@ def copy_generator(script: str) -> None:
         generator = os.path.join(*[package_folder, 'files', file])
         if not os.path.exists(generator):
             warning_log(f"Generator {os.path.relpath(generator)} not found.")
-        destination = os.path.join(problem_folder, 'src', file)
-        shutil.copy(generator, destination)
+        else:
+            destination = os.path.join(problem_folder, 'src', file)
+            shutil.copy(generator, destination)
 
 
 def copy_source_files(polygon_name: str, file_name: str) -> None:
@@ -175,9 +176,10 @@ def copy_source_files(polygon_name: str, file_name: str) -> None:
             return
         file = os.path.join(file_dir, checker[0])
 
-    verify_path(file)
-    shutil.copy2(file, destination)
-
+    if verify_file(file):
+        shutil.copy2(file, destination)
+    else:
+        warning_log(f"{file} could not be copied to {destination}")
 
 def copy_source_folder() -> None:
     """Copy source files from local package to problem folder."""
