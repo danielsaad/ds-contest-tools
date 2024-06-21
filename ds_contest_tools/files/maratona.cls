@@ -15,7 +15,7 @@
 \RequirePackage[portuguese]{babel}
 \RequirePackage{graphics}
 \RequirePackage{graphicx}
-\RequirePackage{amssymb, wrapfig}
+\RequirePackage{amssymb,amsmath,wrapfig}
 \RequirePackage{xcolor,colortbl}
 \RequirePackage{xcolor}
 \RequirePackage{ifthen}
@@ -105,21 +105,21 @@
 
 % Problema
 \newcounter{problem}
-\newenvironment{Problema}[3]{
+\newenvironment{Problema}[4]{
 	\stepcounter{problem}
 	\newpage
 	\begin{center}
-		\Large{\ifthenelse{\equal{#1}{}}{\textbf{{#2}}}{\textbf{Problema {#1} \\ {#2} }}}{\\[.2cm]\footnotesize \textbf{Limite de tempo: {#3}s\\}}
+		\Large{\ifthenelse{\equal{#1}{}}{\textbf{{#2}}}{\textbf{Problema {#1} \\ {#2} }}}{\\\footnotesize \textbf{Limite de tempo: {#3}s}}{\\\footnotesize \textbf{Limite de memória: {#4}MB}}
 	\end{center}
 }
 
 \newcounter{problemAutor}
-\newenvironment{ProblemaAutor}[4]{
+\newenvironment{ProblemaAutor}[5]{
 	\stepcounter{problemAutor}
 	\newpage
 	\begin{center}
-		\Large{\ifthenelse{\equal{#1}{}}{\textbf{{#2}}}{\textbf{Problema {#1} \\ {#2} }}}{\\[.2cm]\footnotesize \textbf{Limite de tempo: {#3}s\\}}{
-			\footnotesize Autor: {#4}
+		\Large{\ifthenelse{\equal{#1}{}}{\textbf{{#2}}}{\textbf{Problema {#1} \\ {#2} }}}{\\\footnotesize \textbf{Limite de tempo: {#3}s}}{\\\footnotesize \textbf{Limite de memória: {#4}MB\\}}{
+			\footnotesize Autor: {#5}
 		}
 	\end{center}
 }

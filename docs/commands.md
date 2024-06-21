@@ -73,7 +73,7 @@ Uso: `ds-contest-tools convert_from <format> <problem_dir> <package_dir>`
 
 Opções:
 
-- **-l, --local `<diretorio>`**: Converte um pacote local do Polygon para o formato da ferramenta. É possível converter pacotes *FULL* e *STANDARD*. Nenhuma requisição é feita, então o usuário precisa especificar se o problema é interativo ou não e alterar o nome dos arquivos de origem para o padrão da ferramenta.
+- **-l, --local `<diretorio>`**: Converte um pacote local do Polygon para o formato da ferramenta. É possível converter pacotes *FULL* e *STANDARD*. Nenhuma requisição é feita para a API do Polygon, dessa forma, é necessário identificar o tipo do problema e alterar o nome dos arquivos de origem para o padrão da ferramenta, ou seja, o validador deve ser renomeado para `validator.cpp`, o verificador deve ser renomeado para `checker.cpp` e o interador deve ser renomeado para `interactor.cpp`.
 
 ## set_keys
 

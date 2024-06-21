@@ -9,30 +9,10 @@ from signal import SIGKILL
 
 import psutil
 
+from .config import custom_key
 from .logger import debug_log, error_log, info_log, warning_log
 from .metadata import (Paths, Problem, ProblemAnswer, Solution, Statistic,
                        Status, Test)
-
-""" Java definitions """
-JAVA_INTERPRETER = 'java'
-JAVA_FLAG = '-classpath'
-
-""" Python3 definitions """
-PYTHON3_INTERPRETER = 'python3'
-
-
-def custom_key(string_to_sort: str) -> tuple:
-    """
-    Custom key to sort strings based on length and lowercase alphabetical order.
-
-    Args:
-        string_to_sort: The string to sort.
-
-    Returns:
-        tuple: A tuple containing the length of the string and its lowercase version.
-
-    """
-    return +len(string_to_sort), string_to_sort.lower()
 
 
 def run_binary(problem_obj: Problem, solution: Solution, input_files: list, output_dict, pids: Queue,
@@ -171,7 +151,7 @@ def run_solutions(problem_obj: Problem, cpu_number: int) -> None:
         running: str = f'Running {solution.solution_name}'
         info_log(running)
         run(problem_obj, solution, cpu_number)
-        solution_status(solution)
+        solution_status(problem_obj, solution)
 
 
 def create_processes(problem_obj: Problem, solution: Solution, cpu_number: int) -> None:
@@ -192,8 +172,9 @@ def create_processes(problem_obj: Problem, solution: Solution, cpu_number: int) 
         pids: Queue = Queue(maxsize=100)
         stop_monitor: Event = manager.Event()
         output_dict: DictProxy = manager.dict()
+        memory_limit: int = problem_obj.memory_limit + solution.vm_memory_usage
         monitor_process = Process(target=memory_monitor, args=(
-            pids, problem_obj.memory_limit, stop_monitor))
+            pids, memory_limit, stop_monitor))
         monitor_process.start()
 
         processes = [Process(target=run_binary, args=(problem_obj, solution, input_files,
@@ -236,32 +217,32 @@ def write_to_log(output_dict: DictProxy) -> None:
         debug_log(f'Memory: {output_dict[i].memory_usage // 1000} KB')
 
 
-def solution_status(solution: Solution) -> None:
+def solution_status(problem: Problem, solution: Solution) -> None:
     """
     Sets the solution status based on the status of its tests and 
     set solution statistics.
 
     Args:
+        problem: The problem object.
         solution: The solution object to be evaluated.
 
     """
     test_cases_status: dict = dict()
     solution_result: ProblemAnswer = ProblemAnswer.WRONG
     max_runtime: float = 0
-    max_memory_usage: float = 0
+    max_memory_usage: float = problem.memory_limit
     ac_count: int = None
     test: Test
     for _, test in solution.tests.items():
         test_cases_status[test.status] = test_cases_status.get(
             test.status, 0) + 1
         max_runtime = max(max_runtime, test.exec_time)
-        max_memory_usage = max(max_memory_usage, test.memory_usage)
-
+        max_memory_usage = min(max_memory_usage, test.memory_usage)
+        max_memory_usage = max(0, max_memory_usage)
         try:
             ac_count = test_cases_status[Status.AC]
         except KeyError:
             ac_count = 0
-
     statistics: Statistic = Statistic(
         ac_count, max_runtime, max_memory_usage)
     expected_status = {
@@ -307,6 +288,7 @@ def memory_monitor(pids: Queue, memory_limit: int, stop_monitor: Event) -> None:
             process_info = psutil.Process(process_pid)
             mem_usage[process_pid] = (
                 max(process_info.memory_info().rss, mem_usage[process_pid]))
+
             if (mem_usage[process_pid] > memory_limit):
                 status[process_pid] = status.get(process_pid, Status.MLE)
                 try:

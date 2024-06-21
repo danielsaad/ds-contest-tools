@@ -86,16 +86,18 @@ def convert_statement(problem_dir: str) -> None:
 
 
 def move_makefile(problem_dir : str) -> None:
-    """Change CMake to Makefile"""
-
+    """Change CMake to Makefile and move files"""
     tool_folder = os.path.dirname(os.path.abspath(__file__))
 
     print('Creating Makefile')
     cmake_path = os.path.join(problem_dir, 'CMakeLists.txt')
     if os.path.exists(cmake_path):
         os.remove(cmake_path)
-    makefile_path = os.path.join(tool_folder, 'ds_contest_tools', 'files', 'Makefile')
-    shutil.copy2(makefile_path, problem_dir)
+    
+    files_path = os.path.join(tool_folder, 'ds_contest_tools', 'files')
+    move_files = ['Makefile', 'maratona.cls']
+    for file in move_files:
+        shutil.copy2(os.path.join(files_path, file), problem_dir)
 
 
 def update_testlib(problem_dir: str) -> None:
@@ -163,4 +165,4 @@ if __name__ == '__main__':
 
     convert_problem(problem_dir=args.problem_dir)
 
-    print('Problem converted successfully. Update the solutions in problem.json file.')
+    print('Problem converted successfully. Update the solutions in problem.json file and rebuild the problem.')
