@@ -15,7 +15,7 @@
 \RequirePackage[portuguese]{babel}
 \RequirePackage{graphics}
 \RequirePackage{graphicx}
-\RequirePackage{amssymb, wrapfig}
+\RequirePackage{amssymb,amsmath,wrapfig}
 \RequirePackage{xcolor,colortbl}
 \RequirePackage{xcolor}
 \RequirePackage{ifthen}
