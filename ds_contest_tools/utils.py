@@ -157,14 +157,38 @@ def check_problem_metadata(problem_metadata: dict) -> None:
                     f"Variable '{subkey}' in '{key}' is not a(n) {expected_type.__name__} in problem.json.")
 
 
-def verify_path(path: str) -> None:
-    """Verify if path exists in folder.
+def verify_path(path: str) -> bool:
+    """Verify if path exists.
 
     Args:
         path: Path to the file.
     """
     if not os.path.exists(path):
         error_log(f'{os.path.relpath(path)} does not exist.')
+        return False
+    return True
+
+def verify_file(path: str) -> bool:
+    """Verify if path corresponds to a file
+    Args:
+        path: Path to the file.
+    """
+    if not os.path.isfile(path):
+        error_log(f'{os.path.relpath(path)} file does not exist.')
+        return False
+    return True
+
+
+def veify_folder(path: str) -> bool:
+    """Verify if path corresponds to a folder
+
+    Args:
+        path: Path to the folderf.
+    """
+    if not os.path.isdir(path):
+        error_log(f'{os.path.relpath(path)} folder does not exist.')
+        return False
+    return True
 
 
 def generate_timestamp() -> str:
