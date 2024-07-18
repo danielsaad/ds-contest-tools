@@ -154,8 +154,9 @@ def copy_generator(script: str) -> None:
         generator = os.path.join(*[package_folder, 'files', file])
         if not os.path.exists(generator):
             warning_log(f"Generator {os.path.relpath(generator)} not found.")
-        destination = os.path.join(problem_folder, 'src', file)
-        shutil.copy(generator, destination)
+        else:
+            destination = os.path.join(problem_folder, 'src', file)
+            shutil.copy(generator, destination)
 
 
 def copy_source_files(polygon_name: str, file_name: str) -> None:
