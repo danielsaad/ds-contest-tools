@@ -1,36 +1,83 @@
-#!/bin/bash
-# ////////////////////////////////////////////////////////////////////////////////
-# //BOCA Online Contest Administrator
-# //    Copyright (C) 2003-2012 by BOCA Development Team (bocasystem@gmail.com)
-# //
-# //    This program is free software: you can redistribute it and/or modify
-# //    it under the terms of the GNU General Public License as published by
-# //    the Free Software Foundation, either version 3 of the License, or
-# //    (at your option) any later version.
-# //
-# //    This program is distributed in the hope that it will be useful,
-# //    but WITHOUT ANY WARRANTY; without even the implied warranty of
-# //    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# //    GNU General Public License for more details.
-# //    You should have received a copy of the GNU General Public License
-# //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# ////////////////////////////////////////////////////////////////////////////////
-# // Last modified 21/jul/2012 by cassio@ime.usp.br
-#
-# This script receives:
-# $1 team_output
-# $2 sol_output
-# $3 problem_input (might be used by some specific checkers, here it is not)
-# 
-# It is modified in order to accept testlib's checkers.
-# BOCA reads the last line of the standard output
-# and pass it to judges
-#
-if [ ! -r "$1" -o ! -r "$2" ]; then
-  echo "Parameter problem"
-  exit 43
-fi
+#!/usr/bin/env python3
+# encoding: utf-8
+import sys
+from decimal import *
 
-ls A
-chmod +x compare/checker
-./compare/checker "$3" "$1" "$2"
+EPS = 1e-9
+
+def AC(msg):
+  print(f'YES! {msg}')
+  sys.exit(4)
+
+
+def WA(msg):
+  print(f'NO :/ {msg}')
+  sys.exit(6)
+
+
+def BAD_JUDGE(msg):
+  print(f'unexpected judge behaviour, {msg}')
+  sys.exit(43)
+
+
+def clean_content(file):
+  return list(filter(None, map(str.strip, file.readlines())))
+
+
+def read_solution(filename):
+  with open(filename, 'r') as output_file:
+    solution = clean_content(output_file)
+  return solution
+
+
+def acceptable_error(x, y, epsilon):
+  # Check absolute precision.
+  if -epsilon <= x - y <= epsilon:
+    return True
+
+  # Is x or y too close to zero?
+  if -epsilon <= x <= epsilon or -epsilon <= y <= epsilon:
+    return False
+
+  # Check relative precision.
+  return (-epsilon <= (x - y) / x <= epsilon or -epsilon <= (x - y) / y <= epsilon)
+
+
+def parse_output(output, on_error=WA):
+  if len(output) != 1:
+    on_error(f'{len(output)} output lines, expected one')
+  try:
+    ans = Decimal(output[0])
+    if not ans.is_finite():
+      on_error(f'{ans} is not finite')
+    return ans
+  except Exception as e:
+    on_error(f'cannot parse {output[0]}, {e=}')
+
+
+try:
+  team_output_fn = sys.argv[1]
+  sol_output_fn = sys.argv[2]
+  problem_input_fn = sys.argv[3]
+
+  team_output = read_solution(team_output_fn)
+  reference_output = read_solution(sol_output_fn)
+  is_same_output = team_output == reference_output
+
+  team_solution = parse_output(team_output)
+  reference_solution = parse_output(reference_output, on_error=BAD_JUDGE)
+
+  if acceptable_error(team_solution, reference_solution, EPS):
+    if is_same_output:
+      AC('files match exactly')
+    else:
+      AC(f'values are approximately equal (team={team_solution}, reference={reference_solution})')
+  elif is_same_output:
+    BAD_JUDGE('same outputs not flagged as approximately equal')
+  else:
+    WA(f'team response ({team_solution}) too far from reference ({reference_solution}) [eps={EPS}]')
+
+except Exception as e:
+  BAD_JUDGE(f'something bad happened: {e}')
+
+BAD_JUDGE('no veredict found')

@@ -65,11 +65,11 @@ id -u bocajail >/dev/null 2>/dev/null
 if [ $? == 0 ]; then
 	bocau=`id -u bocajail`
 	bocag=`id -g bocajail`
-	chown bocajail.nogroup .
+	chown -R bocajail.nogroup .
 else
 	bocau=`id -u nobody`
 	bocag=`id -g nobody`
-	chown nobody.nogroup .
+	chown -R nobody.nogroup .
 fi
 if [ "$bocau" == "" -o "$bocag" == "" ]; then
 	echo "error finding user to run script"
@@ -115,6 +115,13 @@ if [ ! -x "\$cc" ]; then
     exit 47
 fi
 cd src
+"\$cc" -m py_compile "$name"
+pyc_ret=\$?
+if [ "\$pyc_ret" != "0" ]; then
+    echo "python syntax check failed: \$pyc_ret"
+    echo \$pyc_ret > ../compileit.retcode
+    exit 0
+fi
 echo "#!/usr/bin/python3" | cat - "$name" > "../$exe"
 chmod 755 "../$exe"
 echo \$? > ../compileit.retcode
