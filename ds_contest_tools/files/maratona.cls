@@ -1,5 +1,5 @@
 \ProvidesPackage{maratona}
-\LoadClass[12pt]{article}
+\LoadClass[11pt]{article}
 
 % remove page numbers
 \pagenumbering{gobble}
@@ -15,7 +15,7 @@
 \RequirePackage[portuguese]{babel}
 \RequirePackage{graphics}
 \RequirePackage{graphicx}
-\RequirePackage{amssymb, wrapfig}
+\RequirePackage{amssymb,amsmath,wrapfig}
 \RequirePackage{xcolor,colortbl}
 \RequirePackage{xcolor}
 \RequirePackage{ifthen}
@@ -109,7 +109,7 @@
 	\stepcounter{problem}
 	\newpage
 	\begin{center}
-		\Large{\ifthenelse{\equal{#1}{}}{\textbf{{#2}}}{\textbf{Problema {#1} \\ {#2} }}}{\\\footnotesize \textbf{Limite de tempo: {#3}s}}{\\\footnotesize \textbf{Limite de memória: {#4}MB}}
+		\Large{\ifthenelse{\equal{#1}{}}{\textbf{{#2}}}{\textbf{Problema {#1} -- {#2} }}}{\\\footnotesize \textbf{Limite de tempo: {#3}s}}{\\[-0.1cm]\footnotesize \textbf{Limite de memória: {#4}MB}}
 	\end{center}
 }
 
@@ -118,7 +118,7 @@
 	\stepcounter{problemAutor}
 	\newpage
 	\begin{center}
-		\Large{\ifthenelse{\equal{#1}{}}{\textbf{{#2}}}{\textbf{Problema {#1} \\ {#2} }}}{\\\footnotesize \textbf{Limite de tempo: {#3}s}}{\\\footnotesize \textbf{Limite de memória: {#4}MB\\}}{
+		\Large{\ifthenelse{\equal{#1}{}}{\textbf{{#2}}}{\textbf{Problema {#1} -- {#2} }}}{\\\footnotesize \textbf{Limite de tempo: {#3}s}}{\\[-0.1cm]\footnotesize \textbf{Limite de memória: {#4}MB\\}}{
 			\footnotesize Autor: {#5}
 		}
 	\end{center}
