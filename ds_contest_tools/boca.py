@@ -73,8 +73,8 @@ def boca_pack(problem_folder: str, output_folder: str) -> None:
     shutil.copy2(checker_compare, os.path.join(compare_folder, 'c'))
     shutil.copy2(checker_compare, os.path.join(compare_folder, 'cpp'))
     shutil.copy2(checker_compare, os.path.join(compare_folder, 'java'))
-    shutil.copy2(checker_compare, os.path.join(compare_folder, 'py2'))
     shutil.copy2(checker_compare, os.path.join(compare_folder, 'py3'))
+    shutil.copy2(checker_compare, os.path.join(compare_folder, 'kt'))
 
     # Limits
     java_python_time_factor = 3
