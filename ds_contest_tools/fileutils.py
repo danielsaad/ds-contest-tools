@@ -103,7 +103,20 @@ def get_statement_files(statement_folder: str, interactive: Optional[bool] = Fal
     [verify_path(file) for file in statement_files]
     return statement_files
 
+def unserialize_file(file_path:str)->str:
+    """ Returns the content from a plain text file 
 
+    Args:
+        file_path: path to the file to be read
+
+    Returns: 
+        A string containing the file's content
+    """
+    content = ''
+    with open(file_path,'r') as fp:
+       content = fp.read()
+    return content
+ 
 def check_interactive_problem(problem_dir: str) -> bool:
     """Checks whether the problem is interactive based on the metadata.
 

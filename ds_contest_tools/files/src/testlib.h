@@ -253,7 +253,7 @@ const char *latestFeatures[] = {
 #   elif defined(CONTESTER)
 #       define PE_EXIT_CODE 0xAA
 #   elif defined BOCA_SUPPORT
-#       define PE_EXIT_CODE 5
+#       define PE_EXIT_CODE 6
 #   else
 #       define PE_EXIT_CODE 2
 #   endif
