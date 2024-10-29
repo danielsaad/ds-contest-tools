@@ -2,6 +2,7 @@ import os.path
 import sys
 from shutil import which
 from typing import Union
+import traceback
 
 from .. import logger, utils
 
@@ -51,9 +52,12 @@ def setup_and_validate_paths(problem_dir: Union[str, list], output_dir: str = ''
             for path in problem_dir:
                 if not os.path.exists(path):
                     print(f'Problem {path} does not exist')
+                    print(traceback.format_exc())
                     sys.exit(1)
         elif not os.path.exists(problem_dir):
             print(f'Problem {problem_dir} does not exist.')
+            print(traceback.format_exc())
+
             sys.exit(1)
 
     utils.instance_paths(problem_dir, output_dir)

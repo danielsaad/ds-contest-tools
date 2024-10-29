@@ -1,3 +1,4 @@
+import argparse
 import os
 import shutil
 import subprocess
@@ -50,6 +51,8 @@ class moj_converter:
         tag_file = os.path.join(self.output_folder, 'tags')
         with open(tag_file, 'w') as ouf:
             tags = self.problem_metadata['problem']['subject']['en_us']
+            if 'pt_br' in self.problem_metadata['problem']['subject'].keys():
+                tags += self.problem_metadata['problem']['subject'].keys()
             for t in tags:
                 print(f'#{t}', file=ouf)
 
@@ -136,7 +139,7 @@ class moj_converter:
                 self.output_folder, 'sols', 'slow',os.path.basename(tle)))
 
         for wa in wa_files:
-            shutil.copyfile(tle, os.path.join(
+            shutil.copyfile(wa, os.path.join(
                 self.output_folder, 'sols', 'wrong',os.path.basename(wa)))
 
     def setup_moj_dirs(self) -> None:
@@ -165,8 +168,12 @@ def convert_to_moj(problem_folder, output_folder):
 
 
 def main():
-    problem_folder = sys.argv[1]
-    output_folder = sys.argv[2]
+    parser = argparse.ArgumentParser()
+    parser.add_argument('problem_folder',help='Contest UNIX ID')
+    parser.add_argument('output_folder',help='Contest Name')
+    args = parser.parse_args()
+    problem_folder = args.problem_folder
+    output_folder = args.output_folder
     problem_metadata = parse_json(os.path.join(problem_folder, 'problem.json'))
     check_problem_metadata(problem_metadata)
     mc = moj_converter(problem_folder, output_folder, problem_metadata)

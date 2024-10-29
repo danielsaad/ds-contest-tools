@@ -168,6 +168,7 @@ def verify_path(path: str) -> bool:
         return False
     return True
 
+
 def verify_file(path: str) -> bool:
     """Verify if path corresponds to a file
     Args:

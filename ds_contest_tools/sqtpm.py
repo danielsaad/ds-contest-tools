@@ -3,7 +3,7 @@ import shutil
 
 from .jsonutils import parse_json
 from .logger import error_log, info_log
-from .metadata import Paths
+from .metadata import paths
 from .utils import check_problem_metadata, verify_path
 
 
