@@ -52,7 +52,7 @@ class moj_converter:
         with open(tag_file, 'w') as ouf:
             tags = self.problem_metadata['problem']['subject']['en_us']
             if 'pt_br' in self.problem_metadata['problem']['subject'].keys():
-                tags += self.problem_metadata['problem']['subject'].keys()
+                tags += self.problem_metadata['problem']['subject']['pt_br']
             for t in tags:
                 print(f'#{t}', file=ouf)
 

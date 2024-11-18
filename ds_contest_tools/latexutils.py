@@ -159,6 +159,7 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
                     ">": "\\textgreater{}",
                     "<": "\\textless{}",
                     "^": "\\textasciicircum{}",
+                    "~": "\\textasciitilde{}",
                     "\\": "\\textbackslash{}",
                     " ": "~"}
         print("\n\n\\ExemploEntrada", file=f_out)
@@ -215,6 +216,7 @@ def print_tutorial_to_latex(problem_folder: str, problem_metadata: dict,
         print("\\usepackage{fullpage}", file=f_out)
         print("\\usepackage{url}", file=f_out)
         print("\\pagenumbering{gobble}", file=f_out)
+        print("\\usepackage{hyperref}",file=f_out)
         print("\\title{ Tutorial: " +
               problem_metadata["problem"]["title"]+"}", file=f_out)
         print("\\author{"+problem_metadata["author"]["name"]+"}", file=f_out)
