@@ -85,12 +85,20 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
     statement_folder = os.path.join(problem_folder, 'statement')
     verify_path(statement_folder)
 
+    preamble_file = os.path.join(problem_folder,'statement','preamble.tex')
+    preamble_info = None
+    if(verify_path(preamble_file)):
+        with open(preamble_file) as fp:
+            preamble_info = fp.read()
+
     interactive = problem_metadata['problem']['interactive']
     tex_filename = os.path.basename(os.path.abspath(problem_folder))+'.tex'
     tex_filepath = os.path.join(problem_folder, tex_filename)
     info_log(f"Creating {os.path.basename(tex_filepath)}")
     with open(tex_filepath, 'w') as f_out:
         print("\\documentclass{maratona}", file=f_out)
+        if preamble_info != None:
+            print(preamble_info,file=f_out)
         print("\\begin{document}", file=f_out)
         if options['event']:
             print("\\lhead{" + problem_metadata['problem']['event'] + "}\n", file=f_out)
