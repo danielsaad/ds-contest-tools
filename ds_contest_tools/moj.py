@@ -1,5 +1,6 @@
 import argparse
 import os
+import pathlib
 import shutil
 import subprocess
 import sys
@@ -27,12 +28,28 @@ class moj_converter:
         self.copy_tests()
         self.copy_checker()
         self.copy_solutions()
+        self.copy_originals()
+
+    def copy_originals(self):
+        src_path = pathlib.Path(self.problem_folder, 'src')
+        dst_path = pathlib.Path(self.output_folder, 'original')
+        info_log('Copying src files')
+        shutil.copytree(src_path,dst_path,dirs_exist_ok=True)
+        statement_pdf = pathlib.Path(
+            self.problem_folder, os.path.basename(self.problem_folder+'.pdf'))
+        statement_tutorial = pathlib.Path(
+            self.problem_folder,os.path.basename(self.problem_folder)+'-tutorial.pdf')
+        info_log('Copying statement and tutorial PDFs')
+        if os.path.isfile(statement_pdf):
+            shutil.copy(statement_pdf,dst_path.as_posix())
+        if os.path.isfile(statement_tutorial):
+            shutil.copy(statement_tutorial,dst_path.as_posix())
 
     def fill_conf(self):
         info_log('Creating conf file')
-        conf_file = os.path.join(self.output_folder,'conf')
-        with open(conf_file,'w') as ouf:
-            print('PUBLIC=no',file=ouf)
+        conf_file = os.path.join(self.output_folder, 'conf')
+        with open(conf_file, 'w') as ouf:
+            print('PUBLIC=no', file=ouf)
 
     def fill_author(self):
         info_log('Creating author file')
@@ -59,10 +76,10 @@ class moj_converter:
     def create_markdown(self):
         ''' Creates the markdown file from the problem metadata and tex files'''
         image_files = [os.path.join(self.problem_folder, x) for x in os.listdir(
-            self.problem_folder) if os.path.splitext(x)[1] in ['.png', '.jpeg', '.pdf', '.jpg'] and  os.path.splitext(x)[0] not in [f'{os.path.basename(self.problem_folder)}', f'{os.path.basename(self.problem_folder)}-tutorial']]
+            self.problem_folder) if os.path.splitext(x)[1] in ['.png', '.jpeg', '.pdf', '.jpg'] and os.path.splitext(x)[0] not in [f'{os.path.basename(self.problem_folder)}', f'{os.path.basename(self.problem_folder)}-tutorial']]
         for img in image_files:
-            shutil.copy(img,self.output_folder)
-            
+            shutil.copy(img, self.output_folder)
+
         markdown_file = os.path.join(
             self.output_folder, 'docs', 'enunciado.md')
         title_str = self.problem_metadata['problem']['title']
@@ -129,25 +146,26 @@ class moj_converter:
         wa_files = [os.path.join(self.problem_folder, 'src', x)
                     for x in self.problem_metadata['solutions']['wrong-answer']]
         shutil.copyfile(main_ac_file, os.path.join(
-            self.output_folder, 'sols', 'good',os.path.basename(main_ac_file)))
+            self.output_folder, 'sols', 'good', os.path.basename(main_ac_file)))
         for aac in alternative_ac_files:
             shutil.copyfile(aac, os.path.join(
-                self.output_folder, 'sols', 'good',os.path.basename(aac)))
+                self.output_folder, 'sols', 'good', os.path.basename(aac)))
 
         for tle in tle_files:
             shutil.copyfile(tle, os.path.join(
-                self.output_folder, 'sols', 'slow',os.path.basename(tle)))
+                self.output_folder, 'sols', 'slow', os.path.basename(tle)))
 
         for wa in wa_files:
             shutil.copyfile(wa, os.path.join(
-                self.output_folder, 'sols', 'wrong',os.path.basename(wa)))
+                self.output_folder, 'sols', 'wrong', os.path.basename(wa)))
 
     def setup_moj_dirs(self) -> None:
         '''
         Creates MOJ problem directory structure
         '''
         info_log('Setting up directories')
-        dirs = ['docs', 'sols', 'tests', 'generator', 'scripts', 'sols']
+        dirs = ['docs', 'sols', 'tests', 'generator',
+                'scripts', 'sols', 'original']
         for d in dirs:
             os.makedirs(os.path.join(self.output_folder, d), exist_ok=True)
         os.makedirs(os.path.join(self.output_folder,
@@ -169,8 +187,8 @@ def convert_to_moj(problem_folder, output_folder):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('problem_folder',help='Contest UNIX ID')
-    parser.add_argument('output_folder',help='Contest Name')
+    parser.add_argument('problem_folder', help='Contest UNIX ID')
+    parser.add_argument('output_folder', help='Contest Name')
     args = parser.parse_args()
     problem_folder = args.problem_folder
     output_folder = args.output_folder

@@ -85,7 +85,7 @@ def generate_pdf(problem_folder: str, output_folder: str, tex_path: str) -> None
         tex_path: The path to the tex file.
     """
     old_cwd = os.getcwd()
-    command = ["pdflatex", '--output-directory','--shell-escape',
+    command = ["pdflatex", '--shell-escape', '--output-directory',
                output_folder, '-interaction=nonstopmode', tex_path]
 
     os.chdir(problem_folder)

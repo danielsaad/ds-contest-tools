@@ -134,17 +134,20 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
             with open(statement_files[5], 'r') as f:
                 interactor_lines = f.readlines()
 
+
+
+        io_samples = problem_metadata['io_samples']
         # Print statement information
         if (statement_lines):
             statement_lines[-1] = statement_lines[-1].rstrip()
             for line in statement_lines:
                 print_line(line, f_out)
-        if (input_lines):
+        if (input_lines and io_samples>0):
             print("\n\n\\Entrada\n", file=f_out)
             input_lines[-1] = input_lines[-1].rstrip()
             for line in input_lines:
                 print_line(line, f_out)
-        if (output_lines):
+        if (output_lines and io_samples>0):
             print("\n\n\\Saida\n", file=f_out)
             output_lines[-1] = output_lines[-1].rstrip()
             for line in output_lines:
@@ -170,25 +173,27 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
                     "~": "\\textasciitilde{}",
                     "\\": "\\textbackslash{}",
                     " ": "~"}
-        print("\n\n\\ExemploEntrada", file=f_out)
-        print("\\begin{Exemplo}", file=f_out)
-        for tc in range(0, len(in_list)):
-            tc_input = in_list[tc]
-            tc_output = out_list[tc]
-            max_lines = max(len(tc_input), len(tc_output))
-            for i in range(0, max_lines):
-                if (tc % 2):
-                    print('\\rowcolor{gray!20}', end='', file=f_out)
-                if (i < len(tc_input)):
-                    print('\\texttt{'+multiple_replace(patterns, tc_input[i])+'}',
-                          end='', file=f_out)
-                print(' & ', end='', file=f_out)
-                if (i < len(tc_output)):
-                    print('\\texttt{'+multiple_replace(patterns, tc_output[i])+'}',
-                          end='', file=f_out)
-                print('\\\\', file=f_out)
-        print("\\end{Exemplo}\n", file=f_out)
+        if io_samples>0:
+            print("\n\n\\ExemploEntrada", file=f_out)
+            print("\\begin{Exemplo}", file=f_out)
+            for tc in range(0, len(in_list)):
+                tc_input = in_list[tc]
+                tc_output = out_list[tc]
+                max_lines = max(len(tc_input), len(tc_output))
+                for i in range(0, max_lines):
+                    if (tc % 2):
+                        print('\\rowcolor{gray!20}', end='', file=f_out)
+                    if (i < len(tc_input)):
+                        print('\\texttt{'+multiple_replace(patterns, tc_input[i])+'}',
+                            end='', file=f_out)
+                    print(' & ', end='', file=f_out)
+                    if (i < len(tc_output)):
+                        print('\\texttt{'+multiple_replace(patterns, tc_output[i])+'}',
+                            end='', file=f_out)
+                    print('\\\\', file=f_out)
+            print("\\end{Exemplo}\n", file=f_out)
 
+        print('\n',file=f_out)
         if (note_lines):
             print("\\Notas\n", file=f_out)
             for line in note_lines:
