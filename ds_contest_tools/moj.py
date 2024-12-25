@@ -34,22 +34,26 @@ class moj_converter:
         src_path = pathlib.Path(self.problem_folder, 'src')
         dst_path = pathlib.Path(self.output_folder, 'original')
         info_log('Copying src files')
-        shutil.copytree(src_path,dst_path,dirs_exist_ok=True)
+        shutil.copytree(src_path, dst_path, dirs_exist_ok=True)
         statement_pdf = pathlib.Path(
             self.problem_folder, os.path.basename(self.problem_folder+'.pdf'))
         statement_tutorial = pathlib.Path(
-            self.problem_folder,os.path.basename(self.problem_folder)+'-tutorial.pdf')
+            self.problem_folder, os.path.basename(self.problem_folder)+'-tutorial.pdf')
         info_log('Copying statement and tutorial PDFs')
         if os.path.isfile(statement_pdf):
-            shutil.copy(statement_pdf,dst_path.as_posix())
+            shutil.copy(statement_pdf, dst_path.as_posix())
         if os.path.isfile(statement_tutorial):
-            shutil.copy(statement_tutorial,dst_path.as_posix())
+            shutil.copy(statement_tutorial, dst_path.as_posix())
 
     def fill_conf(self):
         info_log('Creating conf file')
         conf_file = os.path.join(self.output_folder, 'conf')
         with open(conf_file, 'w') as ouf:
             print('PUBLIC=no', file=ouf)
+            # print(f'ULIMITS[-s]={self.problem_metadata['problem']
+                  # ['memory_limit_mb']*1000}', file=ouf)
+            # print(f'ULIMITS[-v]={self.problem_metadata['problem']
+                  # ['memory_limit_mb']*1000}', file=ouf)
 
     def fill_author(self):
         info_log('Creating author file')

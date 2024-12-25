@@ -87,7 +87,7 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
 
     preamble_file = os.path.join(problem_folder,'statement','preamble.tex')
     preamble_info = None
-    if(verify_path(preamble_file)):
+    if(os.path.isfile(preamble_file)):
         with open(preamble_file) as fp:
             preamble_info = fp.read()
 

@@ -21,10 +21,12 @@
         "email" : ""
     },
     "io_samples" : 3,
-    "boca_config" : {
-        "number_of_repetitions" :  1,
-        "maximum_memory_mb" : 512,
-        "maximum_output_size_kb" : 4096
+    "build": {
+    	"run_generator" : true,
+    	"run_validator" : true,
+    	"run_checker" : true,
+    	"produce_outputs": true,
+    	"pdf_format": "ds",
     },
     "solutions" : {
         "main-ac" : "",
@@ -39,5 +41,11 @@
     },
     "polygon_config" : {
         "id" : ""
+    },
+    "boca_config" : {
+        "number_of_repetitions" :  1,
+        "maximum_memory_mb" : 512,
+        "maximum_output_size_kb" : 4096
     }
+
 }
