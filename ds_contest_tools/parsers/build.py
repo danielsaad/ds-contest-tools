@@ -1,9 +1,11 @@
 import os
 from math import floor
+from collections import namedtuple
 
 from ..pdfutils import build_pdf
 from ..toolchain import build_executables, run_programs
 from .common import *
+
 
 
 def process_build(problem_dir: str, all_solutions: bool, specific_solution: str, cpu_count: int, io: bool, pdf: bool, no_validator: bool, no_generator: bool, no_checker: bool, no_output: bool, ngvoc: bool) -> None:
@@ -34,14 +36,14 @@ def process_build(problem_dir: str, all_solutions: bool, specific_solution: str,
         build_executables(no_checker)
         if not ngvoc:
             run_programs(all_solutions=all_solutions, specific_solution=specific_solution,
-                     cpu_number=cpu_count, no_validator=no_validator, no_generator=no_generator, no_output=no_output)
+                         cpu_number=cpu_count, no_validator=no_validator, no_generator=no_generator, no_output=no_output)
         info_log("Input/output generated successfully")
     else:
         info_log(f'Building problem {problem_name}')
         build_executables(no_checker)
         if not ngvoc:
             run_programs(all_solutions=all_solutions, specific_solution=specific_solution,
-                        cpu_number=cpu_count, no_validator=no_validator, no_generator=no_generator, no_checker=no_checker, no_output=no_output)
+                         cpu_number=cpu_count, no_validator=no_validator, no_generator=no_generator, no_checker=no_checker, no_output=no_output)
         build_pdf()
         info_log(f'Problem {problem_name} built successfully')
 
@@ -59,7 +61,7 @@ def add_parser(subparsers) -> None:
     # Avoid the use of wrong combinations of arguments
     mut_ex_group = parser_build.add_mutually_exclusive_group()
     mut_ex_group.add_argument('-a', '--all', action='store_true',
-                              default=False, help='build problem with all solutions')
+                              default=True, help='build problem with all solutions')
     mut_ex_group.add_argument(
         '-s', '--specific', type=str, default='', help='build problem with specific solution')
     mut_ex_group.add_argument(
@@ -69,7 +71,8 @@ def add_parser(subparsers) -> None:
 
     default_threads = max(floor(os.cpu_count() * 0.7), 1)
     parser_build.add_argument('-c', '--cpu-count', help="number of threads to be used "
-                              f"when checking solutions. Default is {default_threads} threads.",
+                              f"when checking solutions. Default is {
+                                  default_threads} threads.",
                               type=int, default=default_threads)
     parser_build.add_argument(
         '-nv', '--no-validator', help='build problem without the validator', action='store_true')
@@ -81,6 +84,7 @@ def add_parser(subparsers) -> None:
         '-nc', '--no-checker', help='build problem without running the checker', action='store_true')
     parser_build.add_argument(
         '-ngvoc', help='build only problem executables and PDFs', action='store_true')
-    parser_build.add_argument('problem_dir', help='path to the problem directory')
+    parser_build.add_argument(
+        'problem_dir', help='path to the problem directory')
     parser_build.set_defaults(function=lambda options: process_build(
         options.problem_dir, options.all, options.specific, options.cpu_count, options.io, options.pdf, options.no_validator, options.no_generator, options.no_checker, options.no_output, options.ngvoc))

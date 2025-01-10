@@ -1,4 +1,5 @@
 {
+    "version" : "1.0",
     "problem" : {
         "title" : "",
         "event" : "",
@@ -20,13 +21,18 @@
         "country" : "",
         "email" : ""
     },
-    "io_samples" : 3,
     "build": {
     	"run_generator" : true,
     	"run_validator" : true,
-    	"run_checker" : true,
     	"produce_outputs": true,
+    	"run_checker" : true,
+        "run_all_solutions" : true,
+        "run_specific_solution" : "",
+        "generate_io_only" : false,
+        "generate_pdf_only" : false, 
+        "cpu_count": "automatic",
     	"pdf_format": "ds",
+        "io_samples_path": ["input/1","input/2","input/3"]
     },
     "solutions" : {
         "main-ac" : "",

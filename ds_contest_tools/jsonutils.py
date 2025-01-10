@@ -35,3 +35,4 @@ def write_to_json(path: str, content: dict) -> None:
     """
     with open(path, 'w') as f:
         f.write(json.dumps(content, ensure_ascii=False))
+

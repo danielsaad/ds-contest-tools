@@ -8,6 +8,16 @@ from typing import Optional, Union
 from .logger import convert_to_string, debug_log, error_log, setup_logger
 from .metadata import Paths
 
+def deep_merge_dicts(a: dict, b: dict, path=[]):
+    for key in b:
+        if key in a:
+            if isinstance(a[key], dict) and isinstance(b[key], dict):
+                deep_merge_dicts(a[key], b[key], path + [str(key)])
+            elif a[key] != b[key]:
+                raise Exception('Conflict at ' + '.'.join(path + [str(key)]))
+        else:
+            a[key] = b[key]
+    return a
 
 def convert_idx_to_string(idx: int) -> str:
     """Convert an integer to a string from alphabet [A-Z] using radix 26.
