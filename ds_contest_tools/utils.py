@@ -8,16 +8,18 @@ from typing import Optional, Union
 from .logger import convert_to_string, debug_log, error_log, setup_logger
 from .metadata import Paths
 
+
 def deep_merge_dicts(a: dict, b: dict, path=[]):
     for key in b:
         if key in a:
             if isinstance(a[key], dict) and isinstance(b[key], dict):
                 deep_merge_dicts(a[key], b[key], path + [str(key)])
             elif a[key] != b[key]:
-                raise Exception('Conflict at ' + '.'.join(path + [str(key)]))
+                a[key] = b[key]
         else:
             a[key] = b[key]
     return a
+
 
 def convert_idx_to_string(idx: int) -> str:
     """Convert an integer to a string from alphabet [A-Z] using radix 26.
@@ -144,18 +146,12 @@ def check_problem_metadata(problem_metadata: dict) -> None:
     verify_solutions(problem_metadata['solutions'])
 
     expected_types = {
-        'problem': {'time_limit': int, 'memory_limit_mb': int, 'interactive': bool, 'grader': bool},
-        'io_samples': int
+        'problem': {'time_limit': (int, float), 'memory_limit_mb': int, 'interactive': bool, 'grader': bool},
+        'build': {'io_samples': int}
     }
     for key in expected_types:
         if key not in problem_metadata:
             error_log(f"Variable {key} is not defined in problem.json.")
-
-        if key == 'io_samples':
-            if not isinstance(problem_metadata[key], expected_types[key]):
-                error_log(
-                    f"Variable '{key}' is not a(n) {expected_types[key].__name__}.")
-            continue
 
         for subkey, expected_type in expected_types[key].items():
             value = problem_metadata[key].get(subkey)

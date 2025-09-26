@@ -383,8 +383,10 @@ def produce_outputs(problem_obj: Problem, problem_metadata: dict) -> None:
                 interactor: str = os.path.join(
                     problem_dir, 'bin', 'interactor')
                 verify_path(interactor)
+                print(f'command 1 = {command}')
                 command: list = [interactor, inf_path, ouf_path,
                                  '<', tmp_fifo, '|', *command, '>', tmp_fifo]
+                print(f'command 2 = {command}')
                 p = subprocess.Popen(
                     ' '.join(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
                 p.wait()

@@ -21,7 +21,7 @@ def build_contest_pdf(author: bool = False) -> None:
 
     cls_file = os.path.join(os.path.join(os.path.dirname(
         os.path.abspath(__file__)), 'files'), 'maratona.cls')
-    shutil.copy(cls_file, output_folder)
+    # shutil.copy(cls_file, output_folder)
     # Generate problems PDFs
     for i, folder in enumerate(problem_folder_l):
         label = convert_idx_to_string(i)
@@ -51,8 +51,8 @@ def build_contest_pdf(author: bool = False) -> None:
         folder_name = os.path.basename(output_folder) + '-tutorial.pdf'
         if folder_name != os.path.basename(f):
             os.remove(f)
-    if output_folder not in problem_folder_l:
-        os.remove(os.path.join(output_folder, 'maratona.cls'))
+    # if output_folder not in problem_folder_l:
+        # os.remove(os.path.join(output_folder, 'maratona.cls'))
 
 
 def build_boca_packages(author: bool = False) -> None:

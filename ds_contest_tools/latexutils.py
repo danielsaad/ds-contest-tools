@@ -47,7 +47,7 @@ def get_io(io_folder: str, problem_metadata: dict) -> list:
         A list of input/output examples to be used in the PDF.
     """
     l = []
-    io_samples = problem_metadata["io_samples"]
+    io_samples = problem_metadata['build']["io_samples"]
     interactive = problem_metadata['problem']['interactive']
 
     if interactive:
@@ -56,7 +56,7 @@ def get_io(io_folder: str, problem_metadata: dict) -> list:
     else:
         io_files = [os.path.join(io_folder, str(f))
                     for f in range(1, io_samples+1)]
-        
+
     for f in io_files:
         verify_path(f)
         tc_io = []
@@ -69,7 +69,7 @@ def get_io(io_folder: str, problem_metadata: dict) -> list:
 
 def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
     """Generates a '.tex' file of a problem from the given problem folder path.
-    
+
     Args:
         problem_folder: The path of the problem folder.
         options: The dictionary with optional configuration for PDF file generation.
@@ -85,9 +85,9 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
     statement_folder = os.path.join(problem_folder, 'statement')
     verify_path(statement_folder)
 
-    preamble_file = os.path.join(problem_folder,'statement','preamble.tex')
+    preamble_file = os.path.join(problem_folder, 'statement', 'preamble.tex')
     preamble_info = None
-    if(os.path.isfile(preamble_file)):
+    if (os.path.isfile(preamble_file)):
         with open(preamble_file) as fp:
             preamble_info = fp.read()
 
@@ -98,22 +98,23 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
     with open(tex_filepath, 'w') as f_out:
         print("\\documentclass{maratona}", file=f_out)
         if preamble_info != None:
-            print(preamble_info,file=f_out)
+            print(preamble_info, file=f_out)
         print("\\begin{document}", file=f_out)
         if options['event']:
-            print("\\lhead{" + problem_metadata['problem']['event'] + "}\n", file=f_out)
+            print(
+                "\\lhead{" + problem_metadata['problem']['event'] + "}\n", file=f_out)
+        tl = f'{problem_metadata["problem"]["time_limit"]:.3g}'
         if (options['display_author']):
             print("\\begin{ProblemaAutor}{" + options['problem_label']
                   + "}{" + problem_metadata["problem"]["title"] + "}{" +
-                  str(problem_metadata["problem"]["time_limit"]) +
+                  tl +
                   "}{" +
                   str(problem_metadata["problem"]["memory_limit_mb"]) +
                   "}{" + problem_metadata["author"]["name"] + "}\n", file=f_out)
         else:
             print("\\begin{Problema}{" + options['problem_label']
                   + "}{" + problem_metadata["problem"]["title"] + "}{" +
-                  str(problem_metadata["problem"]["time_limit"]) +
-                  "}{" +
+                  tl + "}{" +
                   str(problem_metadata["problem"]["memory_limit_mb"]) +
                   "}\n", file=f_out)
 
@@ -134,20 +135,18 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
             with open(statement_files[5], 'r') as f:
                 interactor_lines = f.readlines()
 
-
-
-        io_samples = problem_metadata['io_samples']
+        io_samples = problem_metadata['build']['io_samples']
         # Print statement information
         if (statement_lines):
             statement_lines[-1] = statement_lines[-1].rstrip()
             for line in statement_lines:
                 print_line(line, f_out)
-        if (input_lines and io_samples>0):
+        if (input_lines and io_samples > 0):
             print("\n\n\\Entrada\n", file=f_out)
             input_lines[-1] = input_lines[-1].rstrip()
             for line in input_lines:
                 print_line(line, f_out)
-        if (output_lines and io_samples>0):
+        if (output_lines and io_samples > 0):
             print("\n\n\\Saida\n", file=f_out)
             output_lines[-1] = output_lines[-1].rstrip()
             for line in output_lines:
@@ -173,7 +172,7 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
                     "~": "\\textasciitilde{}",
                     "\\": "\\textbackslash{}",
                     " ": "~"}
-        if io_samples>0:
+        if io_samples > 0:
             print("\n\n\\ExemploEntrada", file=f_out)
             print("\\begin{Exemplo}", file=f_out)
             for tc in range(0, len(in_list)):
@@ -185,15 +184,15 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
                         print('\\rowcolor{gray!20}', end='', file=f_out)
                     if (i < len(tc_input)):
                         print('\\texttt{'+multiple_replace(patterns, tc_input[i])+'}',
-                            end='', file=f_out)
+                              end='', file=f_out)
                     print(' & ', end='', file=f_out)
                     if (i < len(tc_output)):
                         print('\\texttt{'+multiple_replace(patterns, tc_output[i])+'}',
-                            end='', file=f_out)
+                              end='', file=f_out)
                     print('\\\\', file=f_out)
             print("\\end{Exemplo}\n", file=f_out)
 
-        print('\n',file=f_out)
+        print('\n', file=f_out)
         if (note_lines):
             print("\\Notas\n", file=f_out)
             for line in note_lines:
@@ -219,6 +218,11 @@ def print_tutorial_to_latex(problem_folder: str, problem_metadata: dict,
         problem_metadata: The dictionary containing the problem metadata.
         tutorial_lines: A list of strings containing the tutorial lines.
     """
+    preamble_file = os.path.join(problem_folder, 'statement', 'preamble.tex')
+    preamble_info = None
+    if (os.path.isfile(preamble_file)):
+        with open(preamble_file) as fp:
+            preamble_info = fp.read()
     tex_filepath = os.path.join(problem_folder, os.path.basename(
         os.path.abspath(problem_folder)) + '-tutorial.tex')
     info_log(f"Creating {os.path.basename(tex_filepath)}")
@@ -229,7 +233,9 @@ def print_tutorial_to_latex(problem_folder: str, problem_metadata: dict,
         print("\\usepackage{fullpage}", file=f_out)
         print("\\usepackage{url}", file=f_out)
         print("\\pagenumbering{gobble}", file=f_out)
-        print("\\usepackage{hyperref}",file=f_out)
+        print("\\usepackage{hyperref}", file=f_out)
+        if preamble_info != None:
+            print(preamble_info, file=f_out)
         print("\\title{ Tutorial: " +
               problem_metadata["problem"]["title"]+"}", file=f_out)
         print("\\author{"+problem_metadata["author"]["name"]+"}", file=f_out)
@@ -250,7 +256,7 @@ def clean_auxiliary_files(folder: str, extensions: list = None) -> None:
     """
     if extensions is None:
         extensions = ['.aux', '.log', '.out']
-    
+
     for root, _, files in os.walk(folder):
         for f in files:
             ext = os.path.splitext(f)[1]

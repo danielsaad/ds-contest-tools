@@ -1,57 +1,64 @@
 {
-    "version" : "1.0",
-    "problem" : {
-        "title" : "",
-        "event" : "",
-        "time_limit" : 1,
+    "version": "1.0",
+    "problem": {
+        "title": "",
+        "event": "",
+        "time_limit": 1.0,
         "memory_limit_mb": 256,
         "input_file": "stdin",
         "output_file": "stdout",
-        "interactive" : false,
+        "interactive": false,
         "grader": false,
-        "subject" : {
-            "en_us" : [""],
-            "pt_br" : [""],
-            "es" : [""]
+        "subject": {
+            "en_us": [
+                ""
+            ],
+            "pt_br": [
+                ""
+            ],
+            "es": [
+                ""
+            ]
         }
     },
-    "author" : {
-        "name" : "",
-        "affiliation" : "",
-        "country" : "",
-        "email" : ""
+    "author": {
+        "name": "",
+        "affiliation": "",
+        "country": "",
+        "email": ""
     },
     "build": {
-    	"run_generator" : true,
-    	"run_validator" : true,
-    	"produce_outputs": true,
-    	"run_checker" : true,
-        "run_all_solutions" : true,
-        "run_specific_solution" : "",
-        "generate_io_only" : false,
-        "generate_pdf_only" : false, 
-        "cpu_count": "automatic",
-    	"pdf_format": "ds",
-        "io_samples_path": ["input/1","input/2","input/3"]
+        "run_generator": true,
+        "run_validator": true,
+        "produce_outputs": true,
+        "run_checker": true,
+        "run_all_solutions": true,
+        "run_specific_solution": "",
+        "generate_io_only": false,
+        "generate_pdf_only": false,
+        "cpu_count": 1,
+        "build_pdf": true,
+        "pdf_format": "ds",
+        "io_samples": 3
     },
-    "solutions" : {
-        "main-ac" : "",
-        "alternative-ac" : [],
-        "wrong-answer" : [],
-        "time-limit" : [],
-        "time-limit-or-ac" : [],
-        "time-limit-or-memory-limit" : [],
-        "memory-limit" : [],
-        "presentation-error" : [],
-        "runtime-error" : []
+    "solutions": {
+        "main-ac": "",
+        "alternative-ac": [],
+        "wrong-answer": [],
+        "time-limit": [],
+        "time-limit-or-ac": [],
+        "time-limit-or-memory-limit": [],
+        "memory-limit": [],
+        "presentation-error": [],
+        "runtime-error": []
     },
-    "polygon_config" : {
-        "id" : ""
+    "polygon_config": {
+        "id": ""
     },
-    "boca_config" : {
-        "number_of_repetitions" :  1,
-        "maximum_memory_mb" : 512,
-        "maximum_output_size_kb" : 4096
+    "boca_config": {
+        "time_limit": 1,
+        "number_of_repetitions": 1,
+        "maximum_memory_mb": 512,
+        "maximum_output_size_kb": 24096
     }
-
 }

@@ -5,7 +5,7 @@ from collections import namedtuple
 from ..pdfutils import build_pdf
 from ..toolchain import build_executables, run_programs
 from .common import *
-
+from ..builder import Builder, Build_params
 
 
 def process_build(problem_dir: str, all_solutions: bool, specific_solution: str, cpu_count: int, io: bool, pdf: bool, no_validator: bool, no_generator: bool, no_checker: bool, no_output: bool, ngvoc: bool) -> None:
@@ -26,26 +26,30 @@ def process_build(problem_dir: str, all_solutions: bool, specific_solution: str,
     """
     setup_and_validate_paths(problem_dir)
     problem_name = get_basename(problem_dir)
+    params = Build_params(problem_dir, all_solutions, specific_solution, cpu_count,
+                          io, pdf, no_validator, no_generator, no_checker, no_output, ngvoc)
+    b: Builder = Builder(params)
+    b.build()
 
-    if pdf:
-        info_log('Generating problem PDF')
-        build_pdf()
-        info_log('Problem PDF generated successfully')
-    elif io:
-        info_log("Generating input/output")
-        build_executables(no_checker)
-        if not ngvoc:
-            run_programs(all_solutions=all_solutions, specific_solution=specific_solution,
-                         cpu_number=cpu_count, no_validator=no_validator, no_generator=no_generator, no_output=no_output)
-        info_log("Input/output generated successfully")
-    else:
-        info_log(f'Building problem {problem_name}')
-        build_executables(no_checker)
-        if not ngvoc:
-            run_programs(all_solutions=all_solutions, specific_solution=specific_solution,
-                         cpu_number=cpu_count, no_validator=no_validator, no_generator=no_generator, no_checker=no_checker, no_output=no_output)
-        build_pdf()
-        info_log(f'Problem {problem_name} built successfully')
+    # if pdf:
+    #     info_log('Generating problem PDF')
+    #     build_pdf()
+    #     info_log('Problem PDF generated successfully')
+    # elif io:
+    #     info_log("Generating input/output")
+    #     build_executables(no_checker)
+    #     if not ngvoc:
+    #         run_programs(all_solutions=all_solutions, specific_solution=specific_solution,
+    #                      cpu_number=cpu_count, no_validator=no_validator, no_generator=no_generator, no_output=no_output)
+    #     info_log("Input/output generated successfully")
+    # else:
+    #     info_log(f'Building problem {problem_name}')
+    #     build_executables(no_checker)
+    #     if not ngvoc:
+    #         run_programs(all_solutions=all_solutions, specific_solution=specific_solution,
+    #                      cpu_number=cpu_count, no_validator=no_validator, no_generator=no_generator, no_checker=no_checker, no_output=no_output)
+    #     build_pdf()
+    #     info_log(f'Problem {problem_name} built successfully')
 
 
 def add_parser(subparsers) -> None:
@@ -55,6 +59,7 @@ def add_parser(subparsers) -> None:
     Args:
         subparsers: The argparse subparsers object.
     """
+
     parser_build = subparsers.add_parser(
         'build', help='build problem with main solution')
 
@@ -72,7 +77,7 @@ def add_parser(subparsers) -> None:
     default_threads = max(floor(os.cpu_count() * 0.7), 1)
     parser_build.add_argument('-c', '--cpu-count', help="number of threads to be used "
                               f"when checking solutions. Default is {
-                                  default_threads} threads.",
+                                    default_threads} threads.",
                               type=int, default=default_threads)
     parser_build.add_argument(
         '-nv', '--no-validator', help='build problem without the validator', action='store_true')

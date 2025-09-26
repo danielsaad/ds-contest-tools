@@ -241,7 +241,11 @@ def copy_validator(problem_id: str) -> None:
     info_log("Copying validator.")
     content = make_api_request('problem.validator', dict(), problem_id)
     content = json.loads(content)
-    copy_source_files(content['result'], 'validator.cpp')
+    validator_name = content['result']
+    if(validator_name==''):
+        warning_log('Problem does not have validator')
+    else:
+        copy_source_files(content['result'], 'validator.cpp')
 
 
 def copy_interactor(problem_id: str) -> None:
@@ -499,12 +503,11 @@ def update_problem_metadata(title: str, solutions: dict, interactive: bool, prob
     problem_metadata['problem']['subject'] = tags
     problem_metadata['problem']['interactive'] = interactive
     problem_metadata['problem']['grader'] = grader
-    problem_metadata['io_samples'] = len(package_json['sampleTests'])
+    problem_metadata['build']['io_samples'] = len(package_json['sampleTests'])
     problem_metadata['problem']['title'] = title.rstrip()
     problem_metadata['problem']['input_file'] = package_json['inputFile']
     problem_metadata['problem']['output_file'] = package_json['outputFile']
-    problem_metadata['problem']['time_limit'] = int(
-        package_json['timeLimit'] / 1000)
+    problem_metadata['problem']['time_limit'] = package_json['timeLimit'] / 1000
     problem_metadata['problem']['memory_limit_mb'] = int(
         (package_json['memoryLimit'] / 1024) / 1024)
     if not local:

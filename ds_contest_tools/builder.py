@@ -1,12 +1,12 @@
 from collections import namedtuple
 import pathlib
-from jsonutils import parse_json
-from utils import deep_merge_dicts
+from .jsonutils import parse_json
+from .utils import deep_merge_dicts
 import os
 from math import floor
 from .pdfutils import build_pdf
 from .toolchain import build_executables, run_programs
-from parsers import common
+from .parsers import common
 
 Build_params = namedtuple(
     'Build_params', 'problem_dir all_solutions specific_solution cpu_count io pdf no_validator no_generator no_checker no_ouptut ngvoc')
@@ -22,12 +22,20 @@ class Builder:
     def process_params(self, params: Build_params):
         # Adjust CPU count
         cpu_count: str = self.problem_metadata['build']['cpu_count']
-        if cpu_count.isdigit():
-            self.problem_metadata['build']['cpu_count'] = int(self)
-        else:
+        if cpu_count == 0:
             self.problem_metadata['build']['cpu_count'] = max(
                 floor(os.cpu_count() * 0.7), 1)
-        self.problem_metadata['build']['cpu-count'] == 'automatic'
+        if params.no_generator or params.ngvoc:
+            self.problem_metadata['build']['run_generator'] = False
+
+        if params.no_validator or params.ngvoc:
+            self.problem_metadata['build']['run_validator'] = False
+
+        if params.no_ouptut or params.ngvoc:
+            self.problem_metadata['build']['produce_outputs'] = False
+
+        if params.no_checker or params.ngvoc:
+            self.problem_metadata['build']['run_checker'] = False
 
         # Mutex group
         if params.pdf or params.io:
@@ -50,8 +58,9 @@ class Builder:
             self.problem_metadata['run_all_solutions'] = False
             self.problem_metadata['build']['run_specific_solution'] = params.specific_solution
 
-    def default_metadata() -> dict:
-        path = pathlib.Path('ds_contest_tools', 'files', 'problems.json')
+    def default_metadata(self) -> dict:
+        path = pathlib.Path(pathlib.Path(__file__).parent,
+                            'files', 'problem.json')
         return parse_json(path)
 
     def overwrite_metadata(self) -> None:
@@ -63,10 +72,11 @@ class Builder:
         problem_dir = self.problem_dir
         no_checker = not self.problem_metadata['build']['run_checker']
         no_validator = not self.problem_metadata['build']['run_validator']
-        no_generator= not self.problem_metadata['build']['run_generator']
+        no_generator = not self.problem_metadata['build']['run_generator']
         no_output = not self.problem_metadata['build']['produce_outputs']
         all_solutions = self.problem_metadata['build']['run_all_solutions']
         specific_solution = self.problem_metadata['build']['run_specific_solution']
+        build_pdf_flag = self.problem_metadata['build']['build_pdf']
         pdf = self.problem_metadata['build']['generate_pdf_only']
         io = self.problem_metadata['build']['generate_io_only']
         cpu_count = self.problem_metadata['build']['cpu_count']
@@ -90,5 +100,6 @@ class Builder:
             if not ngvoc:
                 run_programs(all_solutions=all_solutions, specific_solution=specific_solution,
                              cpu_number=cpu_count, no_validator=no_validator, no_generator=no_generator, no_checker=no_checker, no_output=no_output)
-            build_pdf()
-            common.info_log(f'Problem {problem_name} built successfully')
+            if build_pdf_flag:
+                build_pdf()
+                common.info_log(f'Problem {problem_name} built successfully')

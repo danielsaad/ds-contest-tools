@@ -51,9 +51,13 @@ class moj_converter:
         with open(conf_file, 'w') as ouf:
             print('PUBLIC=no', file=ouf)
             # print(f'ULIMITS[-s]={self.problem_metadata['problem']
-                  # ['memory_limit_mb']*1000}', file=ouf)
+            #       ['memory_limit_mb']*1000}', file=ouf)
             # print(f'ULIMITS[-v]={self.problem_metadata['problem']
-                  # ['memory_limit_mb']*1000}', file=ouf)
+            #       ['memory_limit_mb']*1000}', file=ouf)
+            # drift values
+            languages=['c','cpp']
+            for l in languages:
+                print(f'TLMOD[{l}.drift]=0.25',file=ouf)
 
     def fill_author(self):
         info_log('Creating author file')
@@ -99,7 +103,7 @@ class moj_converter:
             print(f'{statement_str}\n', file=ouf)
             print(f'## Entrada\n {input_str}\n', file=ouf)
             print(f'## Saída\n {output_str}\n', file=ouf)
-            n_io_sample = self.problem_metadata['io_samples']
+            n_io_sample = self.problem_metadata['build']['io_samples']
             if n_io_sample > 1:
                 print('## Exemplos\n', file=ouf)
             elif n_io_sample == 1:

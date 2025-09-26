@@ -9,6 +9,7 @@ from .utils import check_problem_metadata, check_subprocess_output, verify_path
 
 
 class default_boca_limits:
+    time_limit = 1
     number_of_repetitions = 1  # number of repetitions
     maximum_memory = 512  # Maximum memory size (MB)
     maximum_output_size = 4096  # Maximum output size (KB)
@@ -80,7 +81,7 @@ def boca_pack(problem_folder: str, output_folder: str) -> None:
     java_python_time_factor = 3
     for filename in os.listdir(os.path.join(boca_template_folder, 'limits')):
         with open(os.path.join(*[boca_folder, 'limits', filename]), 'w+') as f:
-            time_limit = problem_metadata['problem']['time_limit']
+            time_limit = problem_metadata['boca_config']['time_limit']
             if filename in ['java', 'py2', 'py3']:
                 time_limit *= java_python_time_factor
             
