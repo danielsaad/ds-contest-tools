@@ -16,11 +16,17 @@ def convert_date_epoch(date: str) -> str:
 
 
 def compress(contest_folder) -> None:
+    print(f'Compressing {contest_folder} into {contest_folder}.tar.gz')
     cmd = ['tar', '-cvzf', f'{contest_folder}.tar.gz', '-C',
            pathlib.Path(contest_folder), '.']
     print(' '.join([str(x) for x in cmd]))
     subprocess.run(cmd)
 
+def remove_old_pdfs(statements_folder) -> None:
+    print(f'Removing old pdfs in {statements_folder}')
+    for f in os.listdir(statements_folder):
+        if f.endswith('.pdf'):
+            os.remove(os.path.join(statements_folder, f))
 
 def main():
     parser = argparse.ArgumentParser()
@@ -33,7 +39,7 @@ def main():
     parser.add_argument('problem_dir', help='path to problem(s)', nargs='+')
     parser.add_argument('users_credentials_file',
                         help='users credentials file')
-    parser.add_argument('--password', help='users_password',
+    parser.add_argument('--password', help='users_password',type=str,
                         dest='users_password', default=None)
     parser.add_argument('--lang', nargs='+', help='allowed languages',
                         dest='allowed_languages', default=['C'])
@@ -54,9 +60,10 @@ def main():
     os.makedirs(contest_folder, exist_ok=True)
     statements_folder = os.path.join(contest_folder, 'enunciados')
     os.makedirs(statements_folder, exist_ok=True)
+    remove_old_pdfs(statements_folder)
     contest_file = os.path.join(args.contest_folder, 'contest-description.txt')
     sonic_flag = args.sonic_flag
-    showcode_flag = args.showcode_flag
+    showcode_flag = False if args.contest_type == 'prova' else args.showcode_flag
     statistics_flag = args.statistics_flag
     users_password = args.users_password
     with open(contest_file, 'w') as ouf:
@@ -88,7 +95,7 @@ def main():
 
         if users_password:
             for i,l in enumerate(lines):
-                if '.admin' in l:
+                if '.admin' in l or '.mon' in l:
                     continue
                 fields = l.split(':')
                 lines[i] = ':'.join([fields[0], users_password, fields[2], fields[3]])

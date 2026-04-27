@@ -34,5 +34,5 @@ def write_to_json(path: str, content: dict) -> None:
         content: Dictionary containing the keys and values to be written.
     """
     with open(path, 'w') as f:
-        f.write(json.dumps(content, ensure_ascii=False))
+        f.write(json.dumps(content, ensure_ascii=False,indent=4))
 

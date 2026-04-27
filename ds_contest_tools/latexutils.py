@@ -173,7 +173,7 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
                     "\\": "\\textbackslash{}",
                     " ": "~"}
         if io_samples > 0:
-            print("\n\n\\ExemploEntrada", file=f_out)
+            print("\n\n\\ExemploEntrada\n", file=f_out)
             print("\\begin{Exemplo}", file=f_out)
             for tc in range(0, len(in_list)):
                 tc_input = in_list[tc]
@@ -234,6 +234,8 @@ def print_tutorial_to_latex(problem_folder: str, problem_metadata: dict,
         print("\\usepackage{url}", file=f_out)
         print("\\pagenumbering{gobble}", file=f_out)
         print("\\usepackage{hyperref}", file=f_out)
+        print("\\usepackage{graphicx}", file=f_out)
+        print("\\input{statement/preamble.tex}", file=f_out)
         if preamble_info != None:
             print(preamble_info, file=f_out)
         print("\\title{ Tutorial: " +

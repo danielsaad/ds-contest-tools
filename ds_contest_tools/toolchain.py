@@ -51,8 +51,8 @@ def init_problem(interactive: bool, grader: bool, verify_folder: bool = True, ig
     # Verify interactive problem
     if interactive:
         # Create .interactive files for statement
-        os.makedirs(os.path.join(problem_folder, 'input'))
-        os.makedirs(os.path.join(problem_folder, 'output'))
+        os.makedirs(os.path.join(problem_folder, 'input'),exist_ok=True)
+        os.makedirs(os.path.join(problem_folder, 'output'),exist_ok=True)
         open(os.path.join(
             *[problem_folder, 'input', '1.interactive']), 'w').close()
         open(os.path.join(

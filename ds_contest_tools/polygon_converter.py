@@ -11,7 +11,7 @@ from .logger import info_log, warning_log
 from .metadata import Paths
 from .polygon_connection import download_package_polygon, make_api_request
 from .toolchain import init_problem
-from .utils import verify_path,verify_file
+from .utils import verify_path, verify_file
 
 DEFAULT_LANGUAGE = 'english'
 
@@ -181,6 +181,7 @@ def copy_source_files(polygon_name: str, file_name: str) -> None:
     else:
         warning_log(f"{file} could not be copied to {destination}")
 
+
 def copy_source_folder() -> None:
     """Copy source files from local package to problem folder."""
     info_log("Copying source folder")
@@ -210,7 +211,7 @@ def copy_grader_files(data: list) -> None:
             resource = 'grader.cpp'
         elif resource.endswith('.py'):
             resource = 'main.py'
-        shutil.copy(os.path.join(Paths().get_output_dir(), 'files', resource), 
+        shutil.copy(os.path.join(Paths().get_output_dir(), 'files', resource),
                     os.path.join(Paths().get_problem_dir(), 'src', resource))
 
 
@@ -242,7 +243,7 @@ def copy_validator(problem_id: str) -> None:
     content = make_api_request('problem.validator', dict(), problem_id)
     content = json.loads(content)
     validator_name = content['result']
-    if(validator_name==''):
+    if (validator_name == ''):
         warning_log('Problem does not have validator')
     else:
         copy_source_files(content['result'], 'validator.cpp')
@@ -283,7 +284,8 @@ def start_problem(interactive: bool, grader: bool) -> None:
         interactive: Whether the problem is interactive.
     """
     info_log("Initializing problem folder.")
-    init_problem(interactive, grader, verify_folder=False, ignore_patterns=IGNORED_DIRS + ['src'])
+    init_problem(interactive, grader, verify_folder=False,
+                 ignore_patterns=IGNORED_DIRS + ['src'])
 
     # Create necessary directories
     problem_folder = Paths().get_problem_dir()
@@ -295,7 +297,7 @@ def start_problem(interactive: bool, grader: bool) -> None:
     tool_path = os.path.dirname(os.path.abspath(__file__))
     testlib = os.path.join(tool_path, 'files', 'src')
     shutil.copy2(os.path.join(testlib, 'testlib.h'),
-                os.path.join(problem_folder, 'src', 'testlib.h'))
+                 os.path.join(problem_folder, 'src', 'testlib.h'))
 
     # Remove unused grader files
     if grader:
@@ -510,6 +512,9 @@ def update_problem_metadata(title: str, solutions: dict, interactive: bool, prob
     problem_metadata['problem']['time_limit'] = package_json['timeLimit'] / 1000
     problem_metadata['problem']['memory_limit_mb'] = int(
         (package_json['memoryLimit'] / 1024) / 1024)
+    problem_metadata['boca_config']['time_limit'] = int(
+        problem_metadata['problem']['time_limit'])
+    problem_metadata['boca_config']['maximum_memory_mb'] = problem_metadata['problem']['memory_limit_mb']
     if not local:
         problem_metadata['polygon_config']['id'] = problem_id
     for key in solutions:

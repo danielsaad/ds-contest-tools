@@ -122,7 +122,7 @@ def boca_pack(problem_folder: str, output_folder: str) -> None:
     problem_output_folder = os.path.join(problem_folder, 'output')
     os.makedirs(boca_output_folder, exist_ok=True)
     output_files = [os.path.join(problem_output_folder, f) for
-                    f in os.listdir(problem_output_folder) if os.path.isfile(os.path.join(problem_output_folder, f))]
+                    f in os.listdir(problem_output_folder) if os.path.isfile(os.path.join(problem_output_folder, f)) and not f.endswith('.interactive')]
     for filename in output_files:
         shutil.copy2(filename, boca_output_folder)
     rename_io(boca_output_folder)
