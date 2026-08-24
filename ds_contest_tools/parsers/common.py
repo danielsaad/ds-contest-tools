@@ -3,7 +3,8 @@ import sys
 from shutil import which
 from typing import Union
 
-from .. import logger, utils
+from .. import logger
+from ..util import utils
 
 
 def error_log(text: str) -> None:

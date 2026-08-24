@@ -1,7 +1,7 @@
 from typing import Union
 
 from ..boca import boca_pack
-from ..jsonutils import parse_json
+from ..util.jsonutils import parse_json
 from ..metadata import Paths
 from ..polygon_converter import get_polygon_problem
 from ..polygon_submitter import send_to_polygon

@@ -3,11 +3,11 @@ import shutil
 import subprocess
 
 from .boca import boca_pack
-from .latexutils import clean_auxiliary_files
+from .util.latexutils import clean_auxiliary_files
 from .logger import info_log
 from .metadata import Paths
-from .pdfutils import build_pdf, merge_pdfs
-from .utils import check_subprocess_output, convert_idx_to_string, verify_path
+from .util.pdfutils import build_pdf, merge_pdfs
+from .util.utils import check_subprocess_output, convert_idx_to_string, verify_path
 
 
 def build_contest_pdf(author: bool = False) -> None:

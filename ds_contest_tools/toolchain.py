@@ -8,11 +8,11 @@ from .checker import run_solutions
 from .config import (IGNORED_DIRS, JAVA_INTERPRETER,
                      JAVA_FLAG, PYTHON3_INTERPRETER,
                      custom_key)
-from .htmlutils import print_to_html
-from .jsonutils import parse_json, write_to_json
+from .util.htmlutils import print_to_html
+from .util.jsonutils import parse_json, write_to_json
 from .logger import debug_log, error_log, info_log, warning_log
 from .metadata import Paths, Problem, Solution
-from .utils import (check_problem_metadata, check_subprocess_output,
+from .util.utils import (check_problem_metadata, check_subprocess_output,
                     copy_files, verify_path)
 from .checker import memory_monitor
 

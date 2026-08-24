@@ -1,10 +1,10 @@
 import os
 import shutil
 
-from .jsonutils import parse_json
+from .util.jsonutils import parse_json
 from .logger import error_log, info_log
 from .metadata import Paths
-from .utils import check_problem_metadata, verify_path
+from .util.utils import check_problem_metadata, verify_path
 
 
 def create_config(showcases: str, memory_limit: int, cputime: int) -> None:

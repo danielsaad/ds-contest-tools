@@ -2,10 +2,10 @@ import os
 import shutil
 import subprocess
 
-from .fileutils import recursive_overwrite, rename_io
-from .jsonutils import parse_json
+from .util.fileutils import recursive_overwrite, rename_io
+from .util.jsonutils import parse_json
 from .logger import error_log, info_log
-from .utils import check_problem_metadata, check_subprocess_output, verify_path
+from .util.utils import check_problem_metadata, check_subprocess_output, verify_path
 
 
 class default_boca_limits:

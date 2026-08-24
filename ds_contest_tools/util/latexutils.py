@@ -2,10 +2,10 @@ import io
 import os
 import re
 
-from . import config
+from .. import config
 from .fileutils import get_statement_files
 from .jsonutils import parse_json
-from .logger import info_log
+from ..logger import info_log
 from .utils import check_problem_metadata, verify_path
 
 

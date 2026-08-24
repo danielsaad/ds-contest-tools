@@ -1,14 +1,14 @@
 import os
 from typing import Dict, List, Tuple, Union
 
-from .fileutils import get_statement_files
-from .jsonutils import parse_json
+from .util.fileutils import get_statement_files
+from .util.jsonutils import parse_json
 from .logger import error_log, warning_log
 from .metadata import Paths
 from .polygon_connection import (check_polygon_id, submit_concurrent_testcases,
                                  submit_requests_list)
 from .toolchain import generate_inputs
-from .utils import check_problem_metadata, verify_path
+from .util.utils import check_problem_metadata, verify_path
 
 LANGUAGE = 'english'
 ENCODING = 'utf-8'

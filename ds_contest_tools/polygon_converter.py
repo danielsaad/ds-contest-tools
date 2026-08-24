@@ -5,13 +5,13 @@ import xml.etree.ElementTree as ET
 from typing import Optional
 
 from .config import IGNORED_DIRS
-from .fileutils import get_statement_files, unzip_package
-from .jsonutils import parse_json, write_to_json
+from .util.fileutils import get_statement_files, unzip_package
+from .util.jsonutils import parse_json, write_to_json
 from .logger import info_log, warning_log
 from .metadata import Paths
 from .polygon_connection import download_package_polygon, make_api_request
 from .toolchain import init_problem
-from .utils import verify_path,verify_file
+from .util.utils import verify_path,verify_file
 
 DEFAULT_LANGUAGE = 'english'
 

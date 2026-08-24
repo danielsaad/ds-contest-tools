@@ -3,10 +3,10 @@ import subprocess
 import sys
 from typing import Optional
 
-from . import config
+from .. import config
 from .latexutils import clean_auxiliary_files, print_to_latex
-from .logger import error_log, info_log
-from .metadata import Paths
+from ..logger import error_log, info_log
+from ..metadata import Paths
 from .utils import check_subprocess_output, verify_path
 
 MERGE_TOOL = 'pdfjam'

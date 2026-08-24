@@ -1,8 +1,7 @@
 import json
 import os
-import sys
 
-from .logger import error_log
+from ..logger import error_log
 
 
 def parse_json(json_file: str) -> dict:

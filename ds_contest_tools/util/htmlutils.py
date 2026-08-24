@@ -2,8 +2,8 @@ import io
 import os
 from math import floor, inf
 
-from .logger import info_log
-from .metadata import Paths, Problem, ProblemAnswer, Solution, Status, Test
+from ..logger import info_log
+from ..metadata import Paths, Problem, ProblemAnswer, Solution, Status, Test
 
 REPORT_NAME = "report.html"
 

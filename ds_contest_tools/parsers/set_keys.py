@@ -1,6 +1,6 @@
 from getpass import getpass
 
-from ..jsonutils import write_to_json
+from ..util.jsonutils import write_to_json
 from .common import *
 
 

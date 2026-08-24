@@ -5,7 +5,7 @@ from math import floor, log10
 from typing import Optional
 
 from .jsonutils import parse_json
-from .logger import error_log
+from ..logger import error_log
 from .utils import verify_path
 
 
