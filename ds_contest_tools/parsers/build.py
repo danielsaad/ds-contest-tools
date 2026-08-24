@@ -24,7 +24,6 @@ def cli_handler(problem_dir, all, specific, cpu_count, io, pdf, no_validator, no
         ngvoc: Whether to build only executables and PDFs.
     """
     logger.info_log(f"Building problem in {problem_dir}")
-    logger.info_log(f'Problem Path: {problem_dir}')
     setup_and_validate_paths(problem_dir)
     options: BuildOptions = BuildOptions(all_solutions=all, specific_solution=specific, 
                                          cpu_count=cpu_count, io=io, pdf=pdf, no_validator=no_validator, no_generator=no_generator, no_checker=no_checker, no_output=no_output, ngvoc=ngvoc, problem_dir=problem_dir)

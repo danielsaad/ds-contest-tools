@@ -11,8 +11,13 @@ import psutil
 
 from .config import custom_key
 from .logger import debug_log, error_log, info_log, warning_log
-from .metadata import (Paths, Problem, ProblemAnswer, Solution, Statistic,
-                       Status, Test)
+from ds_contest_tools.enumarate.status import Status
+from ds_contest_tools.enumarate.problem_answer import ProblemAnswer
+from ds_contest_tools.models.problem import Problem
+from ds_contest_tools.models.solution import Solution
+from ds_contest_tools.models.statistics import Statistic
+from ds_contest_tools.models.tests import Test
+from ds_contest_tools.metadata import Paths
 
 
 def run_binary(problem_obj: Problem, solution: Solution, input_files: list, output_dict, pids: Queue,

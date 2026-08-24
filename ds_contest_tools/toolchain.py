@@ -11,10 +11,13 @@ from .config import (IGNORED_DIRS, JAVA_INTERPRETER,
 from .util.htmlutils import print_to_html
 from .util.jsonutils import parse_json, write_to_json
 from .logger import debug_log, error_log, info_log, warning_log
-from .metadata import Paths, Problem, Solution
+from .metadata import Paths
 from .util.utils import (check_problem_metadata, check_subprocess_output,
                     copy_files, verify_path)
-from .checker import memory_monitor
+
+from ds_contest_tools.models.problem import Problem
+from ds_contest_tools.models.solution import Solution
+
 
 
 def init_problem(interactive: bool, grader: bool, verify_folder: bool = True, ignore_patterns: list = IGNORED_DIRS) -> None:
@@ -364,7 +367,7 @@ def produce_outputs(problem_obj: Problem, problem_metadata: dict) -> None:
                          if not f.endswith('.interactive')]
     main_solution = Solution(
         problem_metadata["solutions"]["main-ac"], 'main-ac', problem_obj.problem_dir)
-    command = identify_language(main_solution).split()
+    command = identify_language(main_solution)
     interactive = problem_metadata["problem"]["interactive"]
 
     # Create FIFO to run the interactive problem
@@ -445,7 +448,6 @@ def identify_language(solution: Solution, grader: bool = False) -> str:
     Identifies the programming language of the solution and returns the appropriate command-line arguments.
 
     Args:
-        problem_obj: The problem being solved.
         solution: The solution to the problem.
         grader: Boolean indicating whether the problem is a grader.
 

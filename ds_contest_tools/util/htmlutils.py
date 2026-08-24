@@ -3,7 +3,13 @@ import os
 from math import floor, inf
 
 from ..logger import info_log
-from ..metadata import Paths, Problem, ProblemAnswer, Solution, Status, Test
+from ds_contest_tools.models.problem import Problem
+from ds_contest_tools.models.solution import Solution
+from ds_contest_tools.models.tests import Test
+from ds_contest_tools.metadata import Paths
+
+from ds_contest_tools.enumarate.status import Status
+from ds_contest_tools.enumarate.problem_answer import ProblemAnswer
 
 REPORT_NAME = "report.html"
 
