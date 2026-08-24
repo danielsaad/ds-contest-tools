@@ -1,50 +1,22 @@
 import os
 from math import floor
 
-from ..pdfutils import build_pdf
-from ..toolchain import build_executables, run_programs
+from ds_contest_tools.builder import execute_build
+from ds_contest_tools.parsers.dto.build_options import BuildOptions
+
 from .common import *
 
-
-def process_build(problem_dir: str, all_solutions: bool, specific_solution: str, cpu_count: int, io: bool, pdf: bool, no_validator: bool, no_generator: bool, no_checker: bool, no_output: bool, ngvoc: bool) -> None:
-    """Build a problem.
+def cli_handler(args) -> None:
+    """
+    Handle the command line interface for the build command.
 
     Args:
-        problem_dir: Path to the problem directory.
-        all_solutions: Whether to build all solutions or not.
-        specific_solution: Name of the solution to be checked.
-        cpu_count: Number of threads to be used when checking solutions.
-        io: Whether to generate only input/output files or not.
-        pdf: Whether to generate only PDFs or not.
-        no_validator: Whether to build problem without the validator or not.
-        no_generator: Whether to build problem without the generator or not.
-        no_checker: Whether to build problem without running the checker or not.
-        no_output: Whether to build problem without generating output or not.
-        ngvoc: Whether to build only problem executables and PDFs or not.
+        args: The parsed command line arguments.
     """
-    setup_and_validate_paths(problem_dir)
-    problem_name = get_basename(problem_dir)
+    setup_and_validate_paths(args.problem_dir)
+    options: BuildOptions = BuildOptions(args.all, args.specific, args.cpu_count, args.io, args.pdf, args.no_validator, args.no_generator, args.no_checker, args.no_output, args.ngvoc)
 
-    if pdf:
-        info_log('Generating problem PDF')
-        build_pdf()
-        info_log('Problem PDF generated successfully')
-    elif io:
-        info_log("Generating input/output")
-        build_executables(no_checker)
-        if not ngvoc:
-            run_programs(all_solutions=all_solutions, specific_solution=specific_solution,
-                     cpu_number=cpu_count, no_validator=no_validator, no_generator=no_generator, no_output=no_output)
-        info_log("Input/output generated successfully")
-    else:
-        info_log(f'Building problem {problem_name}')
-        build_executables(no_checker)
-        if not ngvoc:
-            run_programs(all_solutions=all_solutions, specific_solution=specific_solution,
-                        cpu_number=cpu_count, no_validator=no_validator, no_generator=no_generator, no_checker=no_checker, no_output=no_output)
-        build_pdf()
-        info_log(f'Problem {problem_name} built successfully')
-
+    execute_build(options)
 
 def add_parser(subparsers) -> None:
     """
@@ -82,5 +54,5 @@ def add_parser(subparsers) -> None:
     parser_build.add_argument(
         '-ngvoc', help='build only problem executables and PDFs', action='store_true')
     parser_build.add_argument('problem_dir', help='path to the problem directory')
-    parser_build.set_defaults(function=lambda options: process_build(
+    parser_build.set_defaults(function=lambda options: cli_handler(
         options.problem_dir, options.all, options.specific, options.cpu_count, options.io, options.pdf, options.no_validator, options.no_generator, options.no_checker, options.no_output, options.ngvoc))
