@@ -2,19 +2,32 @@ import os
 from math import floor
 
 from ds_contest_tools.builder import execute_build
-from ds_contest_tools.parsers.dto.build_options import BuildOptions
+from ds_contest_tools.models.build_options import BuildOptions
 
 from .common import *
 
-def cli_handler(args) -> None:
+def cli_handler(problem_dir, all, specific, cpu_count, io, pdf, no_validator, no_generator, no_checker, no_output, ngvoc) -> None:
     """
     Handle the command line interface for the build command.
 
     Args:
-        args: The parsed command line arguments.
+        problem_dir: The directory of the problem to build.
+        all: Whether to build all solutions.
+        specific: The specific solution to build.
+        cpu_count: The number of CPU threads to use.
+        io: Whether to generate input/output files.
+        pdf: Whether to generate PDFs.
+        no_validator: Whether to skip validation.
+        no_generator: Whether to skip generation.
+        no_checker: Whether to skip checking.
+        no_output: Whether to skip output generation.
+        ngvoc: Whether to build only executables and PDFs.
     """
-    setup_and_validate_paths(args.problem_dir)
-    options: BuildOptions = BuildOptions(args.all, args.specific, args.cpu_count, args.io, args.pdf, args.no_validator, args.no_generator, args.no_checker, args.no_output, args.ngvoc)
+    logger.info_log(f"Building problem in {problem_dir}")
+    logger.info_log(f'Problem Path: {problem_dir}')
+    setup_and_validate_paths(problem_dir)
+    options: BuildOptions = BuildOptions(all_solutions=all, specific_solution=specific, 
+                                         cpu_count=cpu_count, io=io, pdf=pdf, no_validator=no_validator, no_generator=no_generator, no_checker=no_checker, no_output=no_output, ngvoc=ngvoc, problem_dir=problem_dir)
 
     execute_build(options)
 
@@ -55,4 +68,4 @@ def add_parser(subparsers) -> None:
         '-ngvoc', help='build only problem executables and PDFs', action='store_true')
     parser_build.add_argument('problem_dir', help='path to the problem directory')
     parser_build.set_defaults(function=lambda options: cli_handler(
-        options.problem_dir, options.all, options.specific, options.cpu_count, options.io, options.pdf, options.no_validator, options.no_generator, options.no_checker, options.no_output, options.ngvoc))
+        problem_dir=options.problem_dir, all=options.all, specific=options.specific, cpu_count=options.cpu_count, io=options.io, pdf=options.pdf, no_validator=options.no_validator, no_generator=options.no_generator, no_checker=options.no_checker, no_output=options.no_output, ngvoc=options.ngvoc))

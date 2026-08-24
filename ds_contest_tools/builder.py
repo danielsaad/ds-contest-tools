@@ -1,4 +1,4 @@
-from ds_contest_tools.parsers.dto.build_options import BuildOptions
+from ds_contest_tools.models.build_options import BuildOptions
 from ds_contest_tools.util.pdfutils import build_pdf
 from ds_contest_tools.toolchain import build_executables, run_programs
 from ds_contest_tools.parsers.common import info_log, get_basename
