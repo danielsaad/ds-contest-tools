@@ -1,5 +1,8 @@
 import os
 
+# Diretório raiz do projeto (ds-contest-tools)
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 DEFAULT_PDF_OPTIONS = {
     'display_author': True,
     'problem_label': '',

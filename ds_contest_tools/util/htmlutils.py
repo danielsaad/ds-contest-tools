@@ -1,6 +1,7 @@
 import io
 import os
 from math import floor, inf
+from ds_contest_tools.config import ROOT_DIR
 
 from ..logger import info_log
 from ds_contest_tools.models.problem import Problem
@@ -430,7 +431,7 @@ def create_test_info_file(problem_obj: Problem) -> None:
     os.makedirs(html_tmp_folder, exist_ok=True)
     solution: Solution = None
     default_html_file: str = os.path.join(
-        os.path.dirname(__file__), 'files', 'assets', 'test-case-info.html')
+        ROOT_DIR,'ds_contest_tools', 'files', 'assets', 'test-case-info.html')
 
     script_line: int = find_html_line(
         default_html_file, '<script id="ds-script-app"')
