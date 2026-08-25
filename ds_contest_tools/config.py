@@ -3,10 +3,17 @@ import os
 # Diretório raiz do projeto (ds-contest-tools)
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+LATEX_CLASS_FILES = {
+    'ds-contest-tools': 'maratona.cls',
+}
+LATEX_CLASSES = tuple(LATEX_CLASS_FILES)
+DEFAULT_LATEX_CLASS = 'ds-contest-tools'
+
 DEFAULT_PDF_OPTIONS = {
     'display_author': True,
     'problem_label': '',
-    'event': False
+    'event': False,
+    'latex_class': DEFAULT_LATEX_CLASS
 }
 
 IGNORED_DIRS = [

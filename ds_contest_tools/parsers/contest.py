@@ -1,9 +1,10 @@
 from ..contest import *
+from ..config import DEFAULT_LATEX_CLASS, LATEX_CLASSES
 from ..metadata import Paths
 from .common import *
 
 
-def process_contest(problems_dir: list, output_dir: str, pdf: bool, io: bool, author: bool, no_verify: bool) -> None:
+def process_contest(problems_dir: list, output_dir: str, pdf: bool, io: bool, author: bool, no_verify: bool, latex_class: str) -> None:
     """
     Process the contest files.
 
@@ -14,6 +15,7 @@ def process_contest(problems_dir: list, output_dir: str, pdf: bool, io: bool, au
         io: Whether is to generate only contest input/output files.
         author: Whether is to add author name to PDFs.
         no_verify: Whether is to verify and rebuild problems.
+        latex_class: The LaTeX class file to be used to build the PDFs.
     """
     setup_and_validate_paths(problems_dir, output_dir, additional_verification=['pdfjam'])
     os.makedirs(output_dir, exist_ok=True)
@@ -26,10 +28,10 @@ def process_contest(problems_dir: list, output_dir: str, pdf: bool, io: bool, au
     if io:
         build_input_output()
     elif pdf:
-        build_contest_pdf(author=author)
+        build_contest_pdf(author=author, latex_class=latex_class)
     else:
-        build_boca_packages(author=author)
-        build_contest_pdf(author=author)
+        build_boca_packages(author=author, latex_class=latex_class)
+        build_contest_pdf(author=author, latex_class=latex_class)
     info_log('Contest files generated successfully')
 
 
@@ -50,8 +52,11 @@ def add_parser(subparsers) -> None:
     contest_parser.add_argument('--author', action='store_true', help='add author name to PDFs')
     contest_parser.add_argument('-nv', '--no-verify', action='store_true', help='do not verify and rebuild problems', default=False)
     contest_parser.add_argument(
+        '-lc', '--latex-class', help='LaTeX class file to be used to build the PDFs (without .cls extension)',
+        choices=LATEX_CLASSES, default=DEFAULT_LATEX_CLASS)
+    contest_parser.add_argument(
         'problem_dir', help='path to problem(s)', nargs='+')
     contest_parser.add_argument(
         'contest_dir', help='directory which the contest will be saved')
     contest_parser.set_defaults(function=lambda options: process_contest(
-        options.problem_dir, options.contest_dir, options.pdf, options.io, options.author, options.no_verify))
+        options.problem_dir, options.contest_dir, options.pdf, options.io, options.author, options.no_verify, options.latex_class))

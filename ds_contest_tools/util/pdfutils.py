@@ -60,7 +60,9 @@ def build_pdf(problem_folder: Optional[str] = '', output_directory: Optional[str
     info_log('Building PDF')
     if problem_folder == '':
         problem_folder = Paths().get_problem_dir()
-    verify_path(os.path.join(problem_folder, 'maratona.cls'))
+    latex_class = options.get('latex_class', config.DEFAULT_LATEX_CLASS)
+    class_file = config.LATEX_CLASS_FILES[latex_class]
+    verify_path(os.path.join(problem_folder, class_file))
 
     # Generate PDF from tex file
     print_to_latex(problem_folder, options)

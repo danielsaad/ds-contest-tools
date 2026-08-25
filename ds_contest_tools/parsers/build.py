@@ -2,11 +2,12 @@ import os
 from math import floor
 
 from ds_contest_tools.builder import execute_build
+from ds_contest_tools.config import DEFAULT_LATEX_CLASS, LATEX_CLASSES
 from ds_contest_tools.models.build_options import BuildOptions
 
 from .common import *
 
-def cli_handler(problem_dir, all, specific, cpu_count, io, pdf, no_validator, no_generator, no_checker, no_output, ngvoc) -> None:
+def cli_handler(problem_dir, all, specific, cpu_count, io, pdf, no_validator, no_generator, no_checker, no_output, ngvoc, latex_class) -> None:
     """
     Handle the command line interface for the build command.
 
@@ -22,11 +23,12 @@ def cli_handler(problem_dir, all, specific, cpu_count, io, pdf, no_validator, no
         no_checker: Whether to skip checking.
         no_output: Whether to skip output generation.
         ngvoc: Whether to build only executables and PDFs.
+        latex_class: The LaTeX class file to be used to build the PDFs.
     """
     logger.info_log(f"Building problem in {problem_dir}")
     setup_and_validate_paths(problem_dir)
     options: BuildOptions = BuildOptions(all_solutions=all, specific_solution=specific, 
-                                         cpu_count=cpu_count, io=io, pdf=pdf, no_validator=no_validator, no_generator=no_generator, no_checker=no_checker, no_output=no_output, ngvoc=ngvoc, problem_dir=problem_dir)
+                                         cpu_count=cpu_count, io=io, pdf=pdf, no_validator=no_validator, no_generator=no_generator, no_checker=no_checker, no_output=no_output, ngvoc=ngvoc, latex_class=latex_class, problem_dir=problem_dir)
 
     execute_build(options)
 
@@ -65,6 +67,9 @@ def add_parser(subparsers) -> None:
         '-nc', '--no-checker', help='build problem without running the checker', action='store_true')
     parser_build.add_argument(
         '-ngvoc', help='build only problem executables and PDFs', action='store_true')
+    parser_build.add_argument(
+        '-lc', '--latex-class', help='LaTeX class file to be used to build the PDFs (without .cls extension)',
+        choices=LATEX_CLASSES, default=DEFAULT_LATEX_CLASS)
     parser_build.add_argument('problem_dir', help='path to the problem directory')
     parser_build.set_defaults(function=lambda options: cli_handler(
-        problem_dir=options.problem_dir, all=options.all, specific=options.specific, cpu_count=options.cpu_count, io=options.io, pdf=options.pdf, no_validator=options.no_validator, no_generator=options.no_generator, no_checker=options.no_checker, no_output=options.no_output, ngvoc=options.ngvoc))
+        problem_dir=options.problem_dir, all=options.all, specific=options.specific, cpu_count=options.cpu_count, io=options.io, pdf=options.pdf, no_validator=options.no_validator, no_generator=options.no_generator, no_checker=options.no_checker, no_output=options.no_output, ngvoc=options.ngvoc, latex_class=options.latex_class))

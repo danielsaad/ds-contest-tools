@@ -3,6 +3,7 @@ import shutil
 import subprocess
 
 from .boca import boca_pack
+from . import config
 from .util.latexutils import clean_auxiliary_files
 from .logger import info_log
 from .metadata import Paths
@@ -10,7 +11,7 @@ from .util.pdfutils import build_pdf, merge_pdfs
 from .util.utils import check_subprocess_output, convert_idx_to_string, verify_path
 
 
-def build_contest_pdf(author: bool = False) -> None:
+def build_contest_pdf(author: bool = False, latex_class: str = config.DEFAULT_LATEX_CLASS) -> None:
     """Build contest PDF from PDFs of the list of problems."""
     info_log('Creating contest PDF')
 
@@ -20,14 +21,15 @@ def build_contest_pdf(author: bool = False) -> None:
     output_folder = Paths().get_output_dir()
 
     cls_file = os.path.join(os.path.join(os.path.dirname(
-        os.path.abspath(__file__)), 'files'), 'maratona.cls')
+        os.path.abspath(__file__)), 'files'), config.LATEX_CLASS_FILES[latex_class])
     shutil.copy(cls_file, output_folder)
     # Generate problems PDFs
     for i, folder in enumerate(problem_folder_l):
         label = convert_idx_to_string(i)
         options = {'display_author': author,
                    'problem_label': label,
-                   'event': True}
+                   'event': True,
+                   'latex_class': latex_class}
         build_pdf(folder, output_folder, options)
         basename = os.path.basename(folder)
         problem_pdf_l.append(os.path.join(output_folder, basename+'.pdf'))
@@ -52,10 +54,11 @@ def build_contest_pdf(author: bool = False) -> None:
         if folder_name != os.path.basename(f):
             os.remove(f)
     if output_folder not in problem_folder_l:
-        os.remove(os.path.join(output_folder, 'maratona.cls'))
+        os.remove(os.path.join(
+            output_folder, config.LATEX_CLASS_FILES[latex_class]))
 
 
-def build_boca_packages(author: bool = False) -> None:
+def build_boca_packages(author: bool = False, latex_class: str = config.DEFAULT_LATEX_CLASS) -> None:
     """Build BOCA packages from the list of problems."""
     info_log('Creating BOCA Files')
     problem_folder_l = Paths().get_problem_dir()
@@ -64,7 +67,8 @@ def build_boca_packages(author: bool = False) -> None:
         label = convert_idx_to_string(i)
         options = {'display_author': author,
                    'problem_label': label,
-                   'event': True}
+                   'event': True,
+                   'latex_class': latex_class}
         # Update PDF with new label and event
         build_pdf(folder, folder, options)
         boca_pack(folder, folder)
