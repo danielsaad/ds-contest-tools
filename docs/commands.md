@@ -31,6 +31,7 @@ Opções de construção:
 - **-nc, --no-checker**: Constrói o problema sem utilizar o checker nas soluções.
 - **-ngvoc**: Gera apenas os executáveis e os PDFs do problema. É a união entre as opções *-ng*, *-no* e *-nc*.
 - **-c, --cpu-count `<qtde-threads>`**: Define a quantidade de *threads* a serem criadas na execução do checker, indicado por *qtde-threads*.
+- **-lc, --latex-class `<formato>`**: Define o formato usado para gerar o PDF. Os formatos aceitos são `ds-contest-tools` e `polygon`; `ds-contest-tools` utiliza internamente `maratona.cls` e é a opção padrão.
 
 ## contest
 
@@ -43,6 +44,7 @@ Opções:
 - **-p, --pdf**: Gera apenas os PDFs da maratona.
 - **-i, --io**: Gera apenas os arquivos de entrada/saída dos problemas da maratona.
 - **--author**: Adiciona o nome do autor no cabeçalho dos PDFs da maratona.
+- **-lc, --latex-class `<formato>`**: Define o formato usado para gerar os PDFs. Os formatos aceitos são `ds-contest-tools` e `polygon`; `ds-contest-tools` utiliza internamente `maratona.cls` e é a opção padrão.
 
 ## convert_to
 
