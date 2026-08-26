@@ -20,42 +20,41 @@ def build_contest_pdf(author: bool = False, latex_class: str = config.DEFAULT_LA
     problem_folder_l = Paths().get_problem_dir()
     output_folder = Paths().get_output_dir()
 
-    cls_file = os.path.join(os.path.join(os.path.dirname(
-        os.path.abspath(__file__)), 'files'), config.LATEX_CLASS_FILES[latex_class])
-    shutil.copy(cls_file, output_folder)
-    # Generate problems PDFs
-    for i, folder in enumerate(problem_folder_l):
-        label = convert_idx_to_string(i)
-        options = {'display_author': author,
-                   'problem_label': label,
-                   'event': True,
-                   'latex_class': latex_class}
-        build_pdf(folder, output_folder, options)
-        basename = os.path.basename(folder)
-        problem_pdf_l.append(os.path.join(output_folder, basename+'.pdf'))
-        if os.path.exists(os.path.join(folder, basename+'-tutorial.pdf')):
-            tutorial_pdf_l.append(os.path.join(
-                output_folder, basename+'-tutorial.pdf'))
-    # Merge PDFs
-    clean_auxiliary_files(output_folder)
-    merge_pdf = os.path.join(output_folder, 'maratona.pdf')
-    merge_tutorial_pdf = os.path.join(output_folder, 'tutoriais.pdf')
-    merge_pdfs(problem_pdf_l, merge_pdf)
-    if (tutorial_pdf_l):
-        merge_pdfs(tutorial_pdf_l, merge_tutorial_pdf)
-    # Remove problems PDFs and ignore PDFs which are from
-    # the same folder as the contest.
-    for f in problem_pdf_l:
-        folder_name = os.path.basename(output_folder) + '.pdf'
-        if folder_name != os.path.basename(f):
-            os.remove(f)
-    for f in tutorial_pdf_l:
-        folder_name = os.path.basename(output_folder) + '-tutorial.pdf'
-        if folder_name != os.path.basename(f):
-            os.remove(f)
-    if output_folder not in problem_folder_l:
-        os.remove(os.path.join(
-            output_folder, config.LATEX_CLASS_FILES[latex_class]))
+    from .util.pdfutils import copy_latex_assets, remove_latex_assets
+    copied_assets = copy_latex_assets(latex_class, output_folder)
+    try:
+        # Generate problems PDFs
+        for i, folder in enumerate(problem_folder_l):
+            label = convert_idx_to_string(i)
+            options = {'display_author': author,
+                       'problem_label': label,
+                       'event': True,
+                       'latex_class': latex_class}
+            build_pdf(folder, output_folder, options)
+            basename = os.path.basename(folder)
+            problem_pdf_l.append(os.path.join(output_folder, basename+'.pdf'))
+            if os.path.exists(os.path.join(folder, basename+'-tutorial.pdf')):
+                tutorial_pdf_l.append(os.path.join(
+                    output_folder, basename+'-tutorial.pdf'))
+        # Merge PDFs
+        clean_auxiliary_files(output_folder)
+        merge_pdf = os.path.join(output_folder, 'maratona.pdf')
+        merge_tutorial_pdf = os.path.join(output_folder, 'tutoriais.pdf')
+        merge_pdfs(problem_pdf_l, merge_pdf)
+        if tutorial_pdf_l:
+            merge_pdfs(tutorial_pdf_l, merge_tutorial_pdf)
+        # Remove problems PDFs and ignore PDFs which are from
+        # the same folder as the contest.
+        for f in problem_pdf_l:
+            folder_name = os.path.basename(output_folder) + '.pdf'
+            if folder_name != os.path.basename(f):
+                os.remove(f)
+        for f in tutorial_pdf_l:
+            folder_name = os.path.basename(output_folder) + '-tutorial.pdf'
+            if folder_name != os.path.basename(f):
+                os.remove(f)
+    finally:
+        remove_latex_assets(copied_assets)
 
 
 def build_boca_packages(author: bool = False, latex_class: str = config.DEFAULT_LATEX_CLASS) -> None:

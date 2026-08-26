@@ -3,10 +3,17 @@ import os
 # Diretório raiz do projeto (ds-contest-tools)
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-LATEX_CLASS_FILES = {
-    'ds-contest-tools': 'maratona.cls',
+LATEX_FORMATS = {
+    'ds-contest-tools': {
+        'class_file': 'maratona.cls',
+        'support_files': [],
+    },
+    'polygon': {
+        'class_file': 'polygon.cls',
+        'support_files': ['olymp.sty'],
+    },
 }
-LATEX_CLASSES = tuple(LATEX_CLASS_FILES)
+LATEX_CLASSES = tuple(LATEX_FORMATS)
 DEFAULT_LATEX_CLASS = 'ds-contest-tools'
 
 DEFAULT_PDF_OPTIONS = {

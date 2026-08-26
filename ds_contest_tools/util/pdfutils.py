@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import sys
 from typing import Optional
@@ -10,6 +11,32 @@ from ..metadata import Paths
 from .utils import check_subprocess_output, verify_path
 
 MERGE_TOOL = 'pdfjam'
+LATEX_PASSES = 3
+
+def copy_latex_assets(latex_class: str, target_dir: str) -> list:
+    import shutil
+    from ds_contest_tools.core.factory.formatter_factory import FormatterFactory
+    
+    formatter = FormatterFactory.get_formatter(latex_class)
+    assets = formatter.get_required_assets()
+    
+    copied_files = []
+    base_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'files')
+    
+    for asset in assets:
+        source = os.path.join(base_dir, asset)
+        verify_path(source)
+        dest = os.path.join(target_dir, asset)
+        if not os.path.exists(dest):
+            shutil.copy(source, dest)
+            copied_files.append(dest)
+            
+    return copied_files
+
+def remove_latex_assets(copied_files: list) -> None:
+    for f in copied_files:
+        if os.path.exists(f):
+            os.remove(f)
 
 
 def build_merge_command(pdf_list: list, output_file: str) -> list:
@@ -61,22 +88,23 @@ def build_pdf(problem_folder: Optional[str] = '', output_directory: Optional[str
     if problem_folder == '':
         problem_folder = Paths().get_problem_dir()
     latex_class = options.get('latex_class', config.DEFAULT_LATEX_CLASS)
-    class_file = config.LATEX_CLASS_FILES[latex_class]
-    verify_path(os.path.join(problem_folder, class_file))
+    copied_assets = copy_latex_assets(latex_class, problem_folder)
+    try:
+        # Generate PDF from tex file
+        print_to_latex(problem_folder, options)
+        folder = problem_folder if output_directory == '' else output_directory
 
-    # Generate PDF from tex file
-    print_to_latex(problem_folder, options)
-    folder = problem_folder if output_directory == '' else output_directory
+        tex_filename = os.path.basename(problem_folder) + '.tex'
+        tex_filepath = os.path.join(problem_folder, tex_filename)
+        generate_pdf(problem_folder, folder, tex_filepath)
 
-    tex_filename = os.path.basename(problem_folder) + '.tex'
-    tex_filepath = os.path.join(problem_folder, tex_filename)
-    generate_pdf(problem_folder, folder, tex_filepath)
-
-    # Generate tutorial PDF from tex file
-    tutorial_filename = os.path.basename(problem_folder)+'-tutorial.tex'
-    tutorial_filepath = os.path.join(problem_folder, tutorial_filename)
-    if os.path.isfile(tutorial_filepath):
-        generate_pdf(problem_folder, folder, tutorial_filepath)
+        # Generate tutorial PDF from tex file
+        tutorial_filename = os.path.basename(problem_folder)+'-tutorial.tex'
+        tutorial_filepath = os.path.join(problem_folder, tutorial_filename)
+        if os.path.isfile(tutorial_filepath):
+            generate_pdf(problem_folder, folder, tutorial_filepath)
+    finally:
+        remove_latex_assets(copied_assets)
 
 
 def generate_pdf(problem_folder: str, output_folder: str, tex_path: str) -> None:
@@ -90,13 +118,16 @@ def generate_pdf(problem_folder: str, output_folder: str, tex_path: str) -> None
     command = ["pdflatex", '--output-directory',
                output_folder, '-interaction=nonstopmode', tex_path]
 
-    os.chdir(problem_folder)
     try:
-        p = subprocess.run(command, stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE, timeout=10)
-    except subprocess.TimeoutExpired:
-        error_log("Timeout error while generating pdf. Maybe a package is missing?")
-    os.chdir(old_cwd)
+        os.chdir(problem_folder)
+        for _ in range(LATEX_PASSES):
+            try:
+                p = subprocess.run(command, stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE, timeout=10)
+            except subprocess.TimeoutExpired:
+                error_log("Timeout error while generating pdf. Maybe a package is missing?")
+            check_subprocess_output(p, "Generation of problem file failed.")
+    finally:
+        os.chdir(old_cwd)
 
     clean_auxiliary_files(output_folder)
-    check_subprocess_output(p, "Generation of problem file failed.")
