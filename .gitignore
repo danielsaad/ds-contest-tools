@@ -1,3 +1,7 @@
 __pycache__
 .vscode/
 secrets.json
+ds_contest_tools/_version.py
+dist/
+build/
+*.egg-info/
