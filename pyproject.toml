@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=68.0.0", "wheel"]
+requires = ["setuptools>=68.0.0", "setuptools-scm>=8", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "ds-contest-tools"
-version = "1.0.0"
+dynamic = ["version"]
 description = "Tools for contest and competitive problems preparation."
 readme = "README.md"
 requires-python = ">=3.8"
@@ -14,7 +14,7 @@ authors = [
 ]
 maintainers = [
     { name = "Matheus Loiola Pinto Curado Silva", email = "matheusloiolapinto@gmail.com" },
-    { name = "Leonam Knupp", email = "leonam.knupp@estudante.ifb.edu.br" },
+    { name = "Leonam Knupp", email = "leonamknupp@hotmail.com" },
 ]
 keywords = ["contest", "competitive programming", "tools"]
 classifiers = [
@@ -35,3 +35,7 @@ dscontest = "ds_contest_tools:main"
 [project.urls]
 repository = "https://github.com/danielsaad/ds-contest-tools/"
 documentation = "https://danielsaad.com/ds-contest-tools/"
+
+[tool.setuptools_scm]
+tag_regex = "^v(?P<version>.*)$"
+write_to = "ds_contest_tools/_version.py"
