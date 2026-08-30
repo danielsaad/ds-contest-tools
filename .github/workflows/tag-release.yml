@@ -1,0 +1,57 @@
+name: Create Release Tag
+
+on:
+  pull_request:
+    branches: [ master ]
+    types: [ closed ]
+
+permissions:
+  contents: write
+
+jobs:
+  create-tag:
+    name: Create Git Tag from Release PR
+    runs-on: ubuntu-latest
+    # Só executa se o PR foi mergeado (não apenas fechado) E o título segue o padrão de release
+    if: >
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.title, 'Release v')
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Extrair versão do título do PR
+      id: extract-version
+      run: |
+        PR_TITLE="${{ github.event.pull_request.title }}"
+        VERSION=$(echo "$PR_TITLE" | grep -oP '^Release v\K.*')
+
+        # Validação SemVer estrita
+        if ! echo "$VERSION" | grep -qP '^\d+\.\d+\.\d+$'; then
+          echo "::error::Formato de versão inválido: '$VERSION'. Esperado: X.Y.Z"
+          exit 1
+        fi
+
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "TAG=v$VERSION" >> $GITHUB_OUTPUT
+        echo "Versão extraída: $VERSION | Tag: v$VERSION"
+
+    - name: Verificar se a tag já existe
+      run: |
+        TAG="${{ steps.extract-version.outputs.TAG }}"
+        if git rev-parse "$TAG" >/dev/null 2>&1; then
+          echo "::error::A tag $TAG já existe no repositório. Abortando."
+          exit 1
+        fi
+        echo "Tag $TAG ainda não existe. Prosseguindo."
+
+    - name: Criar e enviar a tag
+      run: |
+        TAG="${{ steps.extract-version.outputs.TAG }}"
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git tag -a "$TAG" -m "Release $TAG"
+        git push origin "$TAG"
+        echo "✅ Tag $TAG criada e enviada com sucesso!"

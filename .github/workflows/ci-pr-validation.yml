@@ -1,0 +1,81 @@
+name: CI PR Validation
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test-and-build:
+    name: Run Tests and Dry Build
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+      
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+        cache: "pip"
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install build
+        
+    - name: Dry-run Build
+      run: |
+        python -m build
+        
+    - name: Check wheel contents
+      run: |
+        # Verificamos superficialmente se o pacote contém o .cls necessário
+        unzip -l dist/*.whl | grep "polygon.cls"
+        
+  validate-release-version:
+    name: Validate Release Version in CHANGELOG
+    runs-on: ubuntu-latest
+    if: startsWith(github.event.pull_request.title, 'Release v')
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Extrair versão do Título do PR
+      id: extract-version
+      run: |
+        # Extrai X.Y.Z do título 'Release vX.Y.Z'
+        PR_TITLE="${{ github.event.pull_request.title }}"
+        VERSION=$(echo "$PR_TITLE" | grep -oP '^Release v\K.*')
+        
+        if [ -z "$VERSION" ]; then
+          echo "::error::Não foi possível extrair a versão do título do PR. Certifique-se de que o título é exatamente 'Release vX.Y.Z'"
+          exit 1
+        fi
+        
+        # Validação SemVer estrita: apenas X.Y.Z com números
+        if ! echo "$VERSION" | grep -qP '^\d+\.\d+\.\d+$'; then
+          echo "::error::Formato de versão inválido: '$VERSION'. Use o padrão SemVer: X.Y.Z (ex: 1.2.0)"
+          exit 1
+        fi
+        
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "Versão extraída: $VERSION"
+        
+    - name: Validar CHANGELOG.md
+      run: |
+        VERSION="${{ steps.extract-version.outputs.VERSION }}"
+        
+        # Verifica se existe um cabeçalho '## [X.Y.Z]' no CHANGELOG.md
+        if grep -q "## \[$VERSION\]" CHANGELOG.md; then
+          echo "Sucesso: Versão $VERSION encontrada no CHANGELOG.md."
+        else
+          echo "::error::Versão $VERSION NÃO encontrada no CHANGELOG.md. Adicione a seção '## [$VERSION]' no CHANGELOG."
+          exit 1
+        fi

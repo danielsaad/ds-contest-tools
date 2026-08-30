@@ -1,0 +1,10 @@
+# Os usuários marcados com @ serão automaticamente solicitados para revisão
+# quando um Pull Request for aberto modificando os arquivos listados.
+
+# Define os "donos" de todo o código do repositório (*)
+* @danielsaad
+
+# Proteção adicional (Opcional): Se alguém tentar modificar a pasta .github 
+# (onde fica o próprio CODEOWNERS e os workflows), podemos forçar que 
+# obrigatoriamente um administrador aprove.
+.github/ @danielsaad
