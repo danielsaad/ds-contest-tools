@@ -2,9 +2,9 @@
 # quando um Pull Request for aberto modificando os arquivos listados.
 
 # Define os "donos" de todo o código do repositório (*)
-* @lknupp
+* @danielsaad
 
 # Proteção adicional (Opcional): Se alguém tentar modificar a pasta .github 
 # (onde fica o próprio CODEOWNERS e os workflows), podemos forçar que 
 # obrigatoriamente um administrador aprove.
-.github/ @lknupp
+.github/ @danielsaad

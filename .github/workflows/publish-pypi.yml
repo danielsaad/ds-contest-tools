@@ -4,13 +4,13 @@ on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
 
 jobs:
   build-and-publish:
     name: Build and Publish Release
     runs-on: ubuntu-latest
     
-    # As permissões necessárias para o Trusted Publishing do PyPI (OIDC)
     permissions:
       contents: read
       id-token: write
@@ -18,13 +18,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        # Puxamos todo o histórico para que o setuptools-scm possa ler a tag
         fetch-depth: 0
 
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: "3.10"
+        python-version: "3.8"
 
     - name: Install build dependencies
       run: |
@@ -44,6 +43,5 @@ jobs:
         # Ignora falhas no TestPyPI caso a versão já exista de testes anteriores
         skip-existing: true
         
-    # DESCOMENTE ESTA ETAPA QUANDO FOR PUBLICAR OFICIALMENTE NO PYPI
-    # - name: Publish package to PyPI
-    #   uses: pypa/gh-action-pypi-publish@release/v1
+    - name: Publish package to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1

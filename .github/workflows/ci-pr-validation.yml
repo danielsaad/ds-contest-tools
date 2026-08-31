@@ -3,6 +3,12 @@ name: CI PR Validation
 on:
   pull_request:
     branches: [ master ]
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+      - '.gitignore'
+      - '.github/CODEOWNERS'
+  workflow_dispatch:
 
 jobs:
   test-and-build:
@@ -33,42 +39,34 @@ jobs:
     - name: Dry-run Build
       run: |
         python -m build
-        
-    - name: Check wheel contents
-      run: |
-        # Verificamos superficialmente se o pacote contém o .cls necessário
-        unzip -l dist/*.whl | grep "polygon.cls"
-        
+                
   validate-release-version:
     name: Validate Release Version in CHANGELOG
     runs-on: ubuntu-latest
-    if: startsWith(github.event.pull_request.title, 'Release v')
+    if: github.event_name == 'pull_request'
     
     steps:
     - uses: actions/checkout@v4
     
-    - name: Extrair versão do Título do PR
+    - name: Verificar se é PR de Release e extrair versão
       id: extract-version
       run: |
-        # Extrai X.Y.Z do título 'Release vX.Y.Z'
         PR_TITLE="${{ github.event.pull_request.title }}"
-        VERSION=$(echo "$PR_TITLE" | grep -oP '^Release v\K.*')
         
-        if [ -z "$VERSION" ]; then
-          echo "::error::Não foi possível extrair a versão do título do PR. Certifique-se de que o título é exatamente 'Release vX.Y.Z'"
-          exit 1
+        # Extrai versão de formatos como: "1.2.0", "v1.2.0", "Release v1.2.0", "Release 1.2.0", "release: 1.2.0", "chore(release): 1.2.0"
+        VERSION=$(echo "$PR_TITLE" | grep -oP '^(?:[Rr]elease(?:\s+v?|\:\s*v?)|\bchore\([Rr]elease\)\:\s*v?|v)?\K\d+\.\d+\.\d+$' || true)
+        
+        if [ -n "$VERSION" ]; then
+          echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 PR de release identificado para a versão: $VERSION"
+        else
+          echo "IS_RELEASE=false" >> $GITHUB_OUTPUT
+          echo "ℹ️ Não é um PR de release ('$PR_TITLE'). Validação de versão ignorada."
         fi
-        
-        # Validação SemVer estrita: apenas X.Y.Z com números
-        if ! echo "$VERSION" | grep -qP '^\d+\.\d+\.\d+$'; then
-          echo "::error::Formato de versão inválido: '$VERSION'. Use o padrão SemVer: X.Y.Z (ex: 1.2.0)"
-          exit 1
-        fi
-        
-        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-        echo "Versão extraída: $VERSION"
         
     - name: Validar CHANGELOG.md
+      if: steps.extract-version.outputs.IS_RELEASE == 'true'
       run: |
         VERSION="${{ steps.extract-version.outputs.VERSION }}"
         

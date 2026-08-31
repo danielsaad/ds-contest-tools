@@ -52,7 +52,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   - Descrição da correção de vulnerabilidade.
 -->
 
-## [1.1.0] - 30/08/2026
+## [1.0.0] - 30/08/2026
 
 ### Adicionado
 
@@ -62,4 +62,4 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Adicionado
 
-- Adicionada esteira de CI/CD para validação do merge para a branch principal e publicação do pacote no PyPI.
+- Implemntação

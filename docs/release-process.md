@@ -20,7 +20,7 @@ Cole logo após o bloco de comentário e preencha com as alterações da versão
 
 **Exemplo:**
 ```markdown
-## [1.2.0] - 2026-08-29
+## [1.2.0] - 29/08/2026
 
 ### Adicionado
 - Nova funcionalidade incrível.
@@ -33,7 +33,28 @@ Cole logo após o bloco de comentário e preencha com as alterações da versão
 
 Faça o commit dessa alteração (ex: `git commit -m "chore: release v1.2.0"`) e abra um Pull Request para a branch `master`.
 
-> **IMPORTANTE:** O **Título** do Pull Request deve ser obrigatoriamente no formato: `Release vX.Y.Z` (ex: `Release v1.2.0`).
+> **IMPORTANTE: Padrões de Nomenclatura do PR**
+>
+> A esteira é inteligente, mas precisa que o título do Pull Request indique claramente que se trata de uma release para poder extrair a versão. Os formatos aceitos abrangem várias convenções da comunidade (com ou sem 'v' maiúsculo/minúsculo):
+>
+> **Família "Release":**
+>
+> * `Release v1.2.0` (Recomendado)
+> * `Release 1.2.0`
+> * `release v1.2.0`
+> * `release 1.2.0`
+> * `Release: 1.2.0`
+> * `release: 1.2.0`
+>
+> **Família "Conventional Commits":**
+>
+> * `chore(release): 1.2.0`
+> * `chore(release): v1.2.0`
+>
+> **Versão Direta:**
+>
+> * `v1.2.0`
+> * `1.2.0`
 
 ### Passo 3: Validação Automática (CI)
 
@@ -67,6 +88,6 @@ Pronto! Em alguns minutos a nova versão estará disponível para todo o mundo v
 ## ⚠️ Regras Importantes
 
 * O formato da versão no CHANGELOG deve ser estritamente `[X.Y.Z]`.
-* O título do Pull Request de release deve ser estritamente `Release vX.Y.Z`.
+* O título do Pull Request de release deve seguir um dos padrões aceitos (ex: `Release vX.Y.Z`).
 * As aprovações de Pull Request na `master` são restritas aos responsáveis configurados no `CODEOWNERS`.
 * **Não crie tags manualmente.** A esteira `tag-release` é responsável por isso após o merge.
