@@ -3,11 +3,12 @@
 
 import argparse
 from sys import argv
-
+from argparse import ArgumentParser
 from .parsers import build, clean, contest, convert, init, set_keys
+from ds_contest_tools.parsers import helper_options
 
 
-def add_argcomplete(parser: argparse.ArgumentParser):
+def add_argcomplete(parser: ArgumentParser):
     """Add autocomplete to the parser.
 
     Args:
@@ -27,13 +28,19 @@ def add_argcomplete(parser: argparse.ArgumentParser):
         pass
 
 
-def create_parser() -> argparse.ArgumentParser:
+def create_parser() -> ArgumentParser:
     """Create a CLI parser of the tool.
 
     Returns:
         The parser object.
     """
-    parser = argparse.ArgumentParser(prog="ds-contest-tools")
+    parser: ArgumentParser = ArgumentParser(
+        prog="ds-contest-tools",
+        formatter_class=argparse.RawTextHelpFormatter
+        )
+
+    helper_options.add_version_parser(parser)
+    
     subparsers = parser.add_subparsers(
         title='available commands',
         description='',
@@ -52,7 +59,13 @@ def create_parser() -> argparse.ArgumentParser:
 
 
 def main():
-    parser = create_parser()
+    parser: ArgumentParser = create_parser()
+    
+    if len(argv) == 1:
+        helper_options.print_welcome_message()
+        parser.print_help()
+        return
+
     options = parser.parse_args(argv[1:])
     options.function(options)
 

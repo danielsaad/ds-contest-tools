@@ -26,7 +26,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Operating System :: Unix",
 ]
-dependencies = ["requests", "psutil"]
+dependencies = ["requests==2.32.4", "psutil"]
 
 
 [project.scripts]
