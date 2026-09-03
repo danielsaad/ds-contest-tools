@@ -14,7 +14,7 @@ class DsContestToolsFormatter(LatexFormatter):
         print(f"\\documentclass{{{class_name}}}", file=f_out)
         print("\\begin{document}", file=f_out)
         if options.get('event'):
-            print("\\lhead{" + problem_metadata['problem']['event'] + "}\n", file=f_out)
+            print("\\Evento{" + problem_metadata['problem']['event'] + "}\n", file=f_out)
         
         if options.get('display_author'):
             print("\\begin{ProblemaAutor}{" + options.get('problem_label', '')
@@ -62,21 +62,21 @@ class DsContestToolsFormatter(LatexFormatter):
             regex = re.compile("(%s)" % "|".join(map(re.escape, patterns_dict.keys())))
             return regex.sub(lambda mo: patterns_dict[mo.string[mo.start():mo.end()]], text)
 
+        # Apenas a estrutura lógica é emitida aqui. Fonte, zebrado e
+        # alinhamento são responsabilidade da classe LaTeX (\LinhaExemplo).
         print("\n\n\\ExemploEntrada", file=f_out)
         print("\\begin{Exemplo}", file=f_out)
         for tc in range(0, len(in_list)):
             tc_input = in_list[tc]
             tc_output = out_list[tc]
+            print('\\CasoExemplo', file=f_out)
             max_lines = max(len(tc_input), len(tc_output))
             for i in range(0, max_lines):
-                if tc % 2:
-                    print('\\rowcolor{gray!20}', end='', file=f_out)
-                if i < len(tc_input):
-                    print('\\texttt{'+multiple_replace(patterns, tc_input[i])+'}', end='', file=f_out)
-                print(' & ', end='', file=f_out)
-                if i < len(tc_output):
-                    print('\\texttt{'+multiple_replace(patterns, tc_output[i])+'}', end='', file=f_out)
-                print('\\\\', file=f_out)
+                left = multiple_replace(
+                    patterns, tc_input[i]) if i < len(tc_input) else ''
+                right = multiple_replace(
+                    patterns, tc_output[i]) if i < len(tc_output) else ''
+                print(f'\\LinhaExemplo{{{left}}}{{{right}}}', file=f_out)
         print("\\end{Exemplo}\n", file=f_out)
 
     def write_notes(self, f_out: io.TextIOWrapper, note_lines: list) -> None:

@@ -8,6 +8,8 @@ from .jsonutils import parse_json
 from ..logger import error_log
 from .utils import verify_path
 
+from ds_contest_tools.enumarate.statement_files import StatementFiles
+
 
 def rename_io(io_folder: str) -> None:
     """Renames files in the given directory by adding leading zeros to 
@@ -80,26 +82,23 @@ def copy_directory(source: str, dest: str) -> None:
                                 os.path.join(dest_path, file))
 
 
-def get_statement_files(statement_folder: str, interactive: Optional[bool] = False) -> list:
-    """Return list of statement files of the problem.
+def get_statement_files(statement_folder: str, statement_file: StatementFiles, interactive: Optional[bool] = False) -> list:
+    """Return statement file of the problem.
 
     Args:
         statement_folder: Path to the statement folder.
+        statement_file: The type of statement file to retrieve.
         interactive : Whether the problem is interactive. Defaults to False.
 
     Returns:
         A list containing the absolute path to the statement files.
     """
-    statement_files = ['description.tex',
-                       'input.tex',
-                       'output.tex',
-                       'notes.tex',
-                       'tutorial.tex']
-    if interactive:
-        statement_files.append('interactor.tex')
+    statement_file = statement_file.file_name + statement_file.extension
 
-    statement_files = [os.path.join(statement_folder, file)
-                       for file in statement_files]
+    if interactive and statement_file == StatementFiles.INTERACTOR.filename:
+        statement_files = [os.path.join(statement_folder, statement_file)]
+    else:
+        statement_files = [os.path.join(statement_folder, statement_file)]
     [verify_path(file) for file in statement_files]
     return statement_files
 
@@ -120,7 +119,13 @@ def check_interactive_problem(problem_dir: str) -> bool:
         error_log("Interactive value in problem.json is not defined.")
     return problem_metadata['problem']['interactive']
 
-
+def has_lines(statement_folder: str, statement_file: StatementFiles) -> bool:
+    filepath = os.path.join(statement_folder, statement_file.filename)
+    lines = []
+    with open(filepath, 'r') as f:
+        lines = f.readlines()
+    return len(lines) > 0
+    
 def unzip_package(path: str) -> None:
     """Unzips the package at the given path.
 

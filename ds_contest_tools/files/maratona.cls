@@ -128,45 +128,85 @@
 % Código-fonte
 \newcommand{\codigofonte}[1]{Nome do arquivo fonte: {#1}}
 
-% Entrada
-\newcommand{\Entrada}{
+% ---------------------------------------------------------------
+% Rótulos das seções do enunciado
+%
+% Para trocar de idioma, sobrescreva no .tex antes de \begin{document}:
+%     \renewcommand{\NomeEntrada}{Input}
+%     \renewcommand{\NomeSaida}{Output}
+%
+% Mesma separação rótulo/formatação adotada pelo olymp.sty (\kw@Input +
+% \createsection), mas sem "@" no nome, para permitir \renewcommand
+% direto no .tex sem precisar de \makeatletter.
+% ---------------------------------------------------------------
+\newcommand{\NomeEntrada}{Entrada}
+\newcommand{\NomeSaida}{Saída}
+\newcommand{\NomeInteracao}{Interação}
+\newcommand{\NomeNotas}{Notas}
+\newcommand{\NomeExemplo}{Exemplo}
+
+% Formatação comum a todas as seções do enunciado.
+% Altere aqui para mudar espaçamento ou tipografia de todas de uma vez.
+\newcommand{\SecaoEnunciado}[1]{
 	\bigskip
 	\begin{large}
-		\textbf{Entrada} \\
+		\textbf{#1} \\
 	\end{large}
 }
+
+% Entrada
+\newcommand{\Entrada}{\SecaoEnunciado{\NomeEntrada}}
 
 % Saida
-\newcommand{\Saida}{
-	\bigskip
-	\begin{large}
-		\textbf{Saída} \\
-	\end{large}
+\newcommand{\Saida}{\SecaoEnunciado{\NomeSaida}}
+
+\newcommand{\Interacao}{\SecaoEnunciado{\NomeInteracao}}
+
+\newcommand{\Notas}{\SecaoEnunciado{\NomeNotas}}
+
+% ---------------------------------------------------------------
+% Cabeçalho do evento
+%
+% O gerador emite \Evento{...}; a classe decide onde ele aparece.
+% ---------------------------------------------------------------
+\newcommand{\Evento}[1]{\lhead{#1}}
+
+% ---------------------------------------------------------------
+% Exemplos
+%
+% O gerador emite apenas a estrutura lógica:
+%
+%     \begin{Exemplo}
+%     \CasoExemplo                  <- inicia um caso de teste
+%     \LinhaExemplo{entrada}{saida} <- uma linha do caso
+%     \LinhaExemplo{entrada}{}
+%     \CasoExemplo
+%     ...
+%     \end{Exemplo}
+%
+% Fonte, zebrado e alinhamento são decididos aqui, não no gerador.
+% ---------------------------------------------------------------
+\newcounter{exemplocaso}
+
+% O \noalign é necessário: \stepcounter é inexpansível e, sem ele, abriria
+% a primeira célula da linha, fazendo o \rowcolor de \LinhaExemplo cair no
+% meio da célula (erro "Misplaced \noalign").
+\newcommand{\CasoExemplo}{\noalign{\stepcounter{exemplocaso}}}
+
+\newcommand{\LinhaExemplo}[2]{%
+	\ifodd\value{exemplocaso}\else\rowcolor{gray!20}\fi%
+	\texttt{#1} & \texttt{#2}\\%
 }
 
-\newcommand{\Interacao}{
-	\bigskip
-	\begin{large}
-		\textbf{Interação} \\
-	\end{large}
-}
-
-\newcommand{\Notas}{
-	\bigskip
-	\begin{large}
-		\textbf{Notas} \\
-	\end{large}
-}
-
-% Exemplo
 \newenvironment{Exemplo}
 {
-	
+
+	\setcounter{exemplocaso}{0}%
 	\tabularx{\textwidth}{XX}
 	%    {@{\extracolsep{\fill}}|l|l|}
 	%    {|l|l@{\extracolsep{\fill}|}}
 	\hline
-	Entrada & Saída \\\hline 
+	\NomeEntrada & \NomeSaida \\\hline
 }
 {
 	\hline
@@ -175,12 +215,7 @@
 
 % Exemplo de Entrada
 \newenvironment{ExemploEntrada}
-{
-	\bigskip
-	\begin{large}
-		\textbf{Exemplo} \\
-	\end{large}
-}
+{\SecaoEnunciado{\NomeExemplo}}
 {
 }
 

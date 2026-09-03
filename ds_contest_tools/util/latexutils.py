@@ -1,16 +1,17 @@
-import io
 import os
-import re
+
+from ds_contest_tools.enumarate.statement_files import StatementFiles
 
 from .. import config
 from ..core.factory.formatter_factory import FormatterFactory
-from .fileutils import get_statement_files
+from .fileutils import has_lines
 from .jsonutils import parse_json
 from ..logger import info_log
 from .utils import check_problem_metadata, verify_path
 
 from ds_contest_tools.core.tutorial_formatter import TutorialFormatter
 from ds_contest_tools.core.contracts.latex_formatter_interface import LatexFormatter
+from ds_contest_tools.core.base_latex_formatter import BaseLatexFormatter
 
 def get_io(io_folder: str, problem_metadata: dict) -> list:
     """Return input/output examples for the problem from the given folder.
@@ -68,40 +69,36 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
         latex_class = options.get('latex_class', config.DEFAULT_LATEX_CLASS)
 
         formatter: LatexFormatter = FormatterFactory.get_formatter(latex_class)
-        formatter.write_header(f_out, problem_metadata, options)
 
-        # Get statement information
-        statement_files = get_statement_files(statement_folder, interactive)
-        with open(statement_files[0], 'r') as f:
-            statement_lines = f.readlines()
-        with open(statement_files[1], 'r') as f:
-            input_lines = f.readlines()
-        with open(statement_files[2], 'r') as f:
-            output_lines = f.readlines()
-        with open(statement_files[3], 'r') as f:
-            note_lines = f.readlines()
-        with open(statement_files[4], 'r') as f:
-            tutorial_lines = f.readlines()
-        interactor_lines = []
+        base_latex_formatter: BaseLatexFormatter = BaseLatexFormatter(f_out, problem_metadata, options, statement_folder)
+
+        # formatter.write_header(f_out, problem_metadata, options)
+
+        base_latex_formatter.write_header()
+                
+        base_latex_formatter.write_description()
+
+        base_latex_formatter.write_input()
+
+        base_latex_formatter.write_output()
+
         if interactive:
-            with open(statement_files[5], 'r') as f:
-                interactor_lines = f.readlines()
-
-        formatter.write_statement(f_out, statement_lines)
-        formatter.write_io_formats(
-            f_out, input_lines, output_lines, interactive, interactor_lines)
-
+            base_latex_formatter.write_interactor()
+        
         # Print I/O examples
         in_list = get_io(input_folder, problem_metadata)
         out_list = get_io(output_folder, problem_metadata)
 
-        formatter.write_examples(f_out, in_list, out_list)
-        formatter.write_notes(f_out, note_lines)
-        formatter.write_footer(f_out, options)
-    if (tutorial_lines):
+        base_latex_formatter.write_examples(in_list, out_list)
+
+        base_latex_formatter.write_notes()
+
+        base_latex_formatter.write_footer()
+
+    if (has_lines(statement_folder, StatementFiles.TUTORIAL)):
         info_log("Creating problem tutorial")
-        tutorial_formatter = TutorialFormatter(problem_metadata)
-        tutorial_formatter.build_tutorial(problem_folder, tutorial_lines)
+        tutorial_formatter = TutorialFormatter(problem_metadata, problem_folder)
+        tutorial_formatter.build_tutorial()
 
 
 def clean_auxiliary_files(folder: str, extensions: list = None) -> None:
