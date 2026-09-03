@@ -61,7 +61,7 @@ class BaseLatexFormatter():
         self.f_out.write(latex_command)
 
     def write_interactor(self) -> None:
-        self.f_out("\n\n\\Interacao\n")
+        self.f_out.write("\n\n\\Interacao\n")
         latex_command: str = self.__get_latex_input(
             self.statement_folder, StatementFiles.INTERACTOR.file_name)
         self.f_out.write(latex_command)
