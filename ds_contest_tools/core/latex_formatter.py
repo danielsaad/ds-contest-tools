@@ -1,28 +1,41 @@
-import io
 import os
 import re
 
 from io import TextIOWrapper
 
 from ds_contest_tools import config
-from ds_contest_tools.core.contracts.latex_formatter_interface import LatexFormatter
 from ds_contest_tools.enumarate.statement_files import StatementFiles
 
 
-class BaseLatexFormatter():
+class LatexFormatter:
+    """Serializa os metadados e a estrutura de um problema em LaTeX.
+
+    É o **único** formatador do sistema. Não existe hierarquia de estratégias
+    por formato porque não há comportamento divergente a encapsular: todos os
+    formatos suportados recebem a mesma marcação, e a diferença visual entre
+    eles vive inteiramente nas macros de cada `.cls`.
+
+    Escreve em um arquivo já aberto. Não abre arquivos, não invoca `pdflatex`,
+    não lê `problem.json` e não conhece `Paths()`.
+    """
+
     def __init__(self, f_out: TextIOWrapper, problem_metadata: dict, options: dict, statement_folder: str) -> None:
         self.f_out = f_out
         self.problem_metadata = problem_metadata
         self.options = options
         self.statement_folder = statement_folder
 
-    def write_header(self, ) -> None:
+    def __write_preamble(self) -> None:
+        """Abre o documento com a classe escolhida pelo formato."""
         latex_class = self.options.get('latex_class', config.DEFAULT_LATEX_CLASS)
         class_name = os.path.splitext(
             config.LATEX_FORMATS[latex_class]['class_file'])[0]
-        
+
         self.f_out.write(f"\\documentclass{{{class_name}}}")
         self.f_out.write("\\begin{document}")
+
+    def write_header(self, ) -> None:
+        self.__write_preamble()
 
         if self.options.get('event'):
             self.f_out.write(
@@ -109,6 +122,26 @@ class BaseLatexFormatter():
                     patterns, tc_output[i]) if i < len(tc_output) else ''
                 self.f_out.write(f'\\LinhaExemplo{{{left}}}{{{right}}}\n')
         self.f_out.write("\\end{Exemplo}\n\n")
+
+    def write_tutorial(self) -> None:
+        """Escreve o documento do tutorial (editorial) do problema.
+
+        Emite apenas estrutura. Corpo da fonte, pacotes, numeração de página e
+        layout do título são decididos pelo ambiente `Tutorial` de cada `.cls`
+        — antes viviam num preâmbulo montado aqui em Python.
+        """
+        self.__write_preamble()
+
+        self.f_out.write(
+            "\\begin{Tutorial}{" + self.problem_metadata["problem"]["title"]
+            + "}{" + self.problem_metadata["author"]["name"] + "}\n")
+
+        latex_command: str = self.__get_latex_input(
+            self.statement_folder, StatementFiles.TUTORIAL.file_name)
+        self.f_out.write(latex_command)
+
+        self.f_out.write("\\end{Tutorial}\n")
+        self.f_out.write("\\end{document}")
 
     def __get_latex_input(self, statement_folder: str, file_name: str) -> str:
         """Write the LaTeX input command for the statement folder."""

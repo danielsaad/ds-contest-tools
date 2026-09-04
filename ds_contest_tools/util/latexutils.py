@@ -3,15 +3,11 @@ import os
 from ds_contest_tools.enumarate.statement_files import StatementFiles
 
 from .. import config
-from ..core.factory.formatter_factory import FormatterFactory
+from ..core.latex_formatter import LatexFormatter
 from .fileutils import has_lines
 from .jsonutils import parse_json
 from ..logger import info_log
 from .utils import check_problem_metadata, verify_path
-
-from ds_contest_tools.core.tutorial_formatter import TutorialFormatter
-from ds_contest_tools.core.contracts.latex_formatter_interface import LatexFormatter
-from ds_contest_tools.core.base_latex_formatter import BaseLatexFormatter
 
 def get_io(io_folder: str, problem_metadata: dict) -> list:
     """Return input/output examples for the problem from the given folder.
@@ -66,39 +62,34 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
     info_log(f"Creating {os.path.basename(tex_filepath)}")
 
     with open(tex_filepath, 'w') as f_out:
-        latex_class = options.get('latex_class', config.DEFAULT_LATEX_CLASS)
+        formatter = LatexFormatter(
+            f_out, problem_metadata, options, statement_folder)
 
-        formatter: LatexFormatter = FormatterFactory.get_formatter(latex_class)
-
-        base_latex_formatter: BaseLatexFormatter = BaseLatexFormatter(f_out, problem_metadata, options, statement_folder)
-
-        # formatter.write_header(f_out, problem_metadata, options)
-
-        base_latex_formatter.write_header()
-                
-        base_latex_formatter.write_description()
-
-        base_latex_formatter.write_input()
-
-        base_latex_formatter.write_output()
+        formatter.write_header()
+        formatter.write_description()
+        formatter.write_input()
+        formatter.write_output()
 
         if interactive:
-            base_latex_formatter.write_interactor()
-        
+            formatter.write_interactor()
+
         # Print I/O examples
         in_list = get_io(input_folder, problem_metadata)
         out_list = get_io(output_folder, problem_metadata)
 
-        base_latex_formatter.write_examples(in_list, out_list)
+        formatter.write_examples(in_list, out_list)
+        formatter.write_notes()
+        formatter.write_footer()
 
-        base_latex_formatter.write_notes()
+    if has_lines(statement_folder, StatementFiles.TUTORIAL):
+        tutorial_filename = os.path.basename(
+            os.path.abspath(problem_folder)) + '-tutorial.tex'
+        tutorial_filepath = os.path.join(problem_folder, tutorial_filename)
+        info_log(f"Creating {tutorial_filename}")
 
-        base_latex_formatter.write_footer()
-
-    if (has_lines(statement_folder, StatementFiles.TUTORIAL)):
-        info_log("Creating problem tutorial")
-        tutorial_formatter = TutorialFormatter(problem_metadata, problem_folder)
-        tutorial_formatter.build_tutorial()
+        with open(tutorial_filepath, 'w') as f_out:
+            LatexFormatter(f_out, problem_metadata, options,
+                           statement_folder).write_tutorial()
 
 
 def clean_auxiliary_files(folder: str, extensions: list = None) -> None:

@@ -13,13 +13,38 @@ from .utils import check_subprocess_output, verify_path
 MERGE_TOOL = 'pdfjam'
 LATEX_PASSES = 3
 
+def get_required_assets(latex_class: str) -> list:
+    """Return the LaTeX files a given format needs to compile.
+
+    `config.LATEX_FORMATS` é o registro único de formatos: a chave da classe e
+    os arquivos de apoio já estão declarados lá.
+
+    Args:
+        latex_class: Key of the format in `config.LATEX_FORMATS`.
+
+    Returns:
+        The class file followed by its support files.
+    """
+    try:
+        format_info = config.LATEX_FORMATS[latex_class]
+    except KeyError as error:
+        raise ValueError(f"Unknown LaTeX format: {latex_class}") from error
+    return [format_info['class_file'], *format_info.get('support_files', [])]
+
+
 def copy_latex_assets(latex_class: str, target_dir: str) -> list:
-    import shutil
-    from ds_contest_tools.core.factory.formatter_factory import FormatterFactory
-    
-    formatter = FormatterFactory.get_formatter(latex_class)
-    assets = formatter.get_required_assets()
-    
+    """Copy the assets of a format into the target directory.
+
+    Args:
+        latex_class: Key of the format in `config.LATEX_FORMATS`.
+        target_dir: Directory the assets are copied into.
+
+    Returns:
+        The paths copied by this call — and only those, so that
+        `remove_latex_assets` never deletes a file it did not create.
+    """
+    assets = get_required_assets(latex_class)
+
     copied_files = []
     base_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'files')
     

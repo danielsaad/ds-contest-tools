@@ -16,6 +16,11 @@
 \RequirePackage{graphics}
 \RequirePackage{graphicx}
 \RequirePackage{amssymb,amsmath,wrapfig}
+% amsthm depois de amsmath (exigência do pacote). Usado pelo ambiente Tutorial.
+\RequirePackage{amsthm}
+\RequirePackage{url}
+% Permite quebra de linha dentro das células de exemplo — ver \LinhaExemplo.
+\RequirePackage{seqsplit}
 \RequirePackage{xcolor,colortbl}
 \RequirePackage{xcolor}
 \RequirePackage{ifthen}
@@ -144,6 +149,7 @@
 \newcommand{\NomeInteracao}{Interação}
 \newcommand{\NomeNotas}{Notas}
 \newcommand{\NomeExemplo}{Exemplo}
+\newcommand{\NomeTutorial}{Tutorial}
 
 % Formatação comum a todas as seções do enunciado.
 % Altere aqui para mudar espaçamento ou tipografia de todas de uma vez.
@@ -193,9 +199,16 @@
 % meio da célula (erro "Misplaced \noalign").
 \newcommand{\CasoExemplo}{\noalign{\stepcounter{exemplocaso}}}
 
+% O \seqsplit permite quebra em qualquer posição dentro da célula.
+%
+% Sem ele o conteúdo transborda em vez de quebrar: o gerador converte todo
+% espaço em "~" (espaço inquebrável) para preservar espaços consecutivos, e o
+% "~" proíbe a quebra que a coluna X do tabularx faria naturalmente.
+% Preservar o espaço é decisão de conteúdo (fica no gerador); permitir a
+% quebra é decisão de apresentação e mora aqui.
 \newcommand{\LinhaExemplo}[2]{%
 	\ifodd\value{exemplocaso}\else\rowcolor{gray!20}\fi%
-	\texttt{#1} & \texttt{#2}\\%
+	\texttt{\seqsplit{#1}} & \texttt{\seqsplit{#2}}\\%
 }
 
 \newenvironment{Exemplo}
@@ -219,5 +232,27 @@
 {
 }
 
-% Sample Output
+% ---------------------------------------------------------------
+% Tutorial (editorial do problema)
+%
+% O gerador emite apenas:
+%
+%     \begin{Tutorial}{<título do problema>}{<autor>}
+%     \input{statement/tutorial}
+%     \end{Tutorial}
+%
+% Corpo da fonte, pacotes, numeração de página e layout do título são
+% decididos aqui. Antes viviam num preâmbulo montado em Python.
+%
+% Nota de layout: o tutorial passa a usar as margens desta classe, e não as
+% do pacote fullpage que o gerador carregava. É deliberado — o objetivo de
+% usar a mesma classe é que enunciado e tutorial tenham identidade visual
+% coerente.
+% ---------------------------------------------------------------
+\newenvironment{Tutorial}[2]{%
+	\title{\NomeTutorial: #1}%
+	\author{#2}%
+	\date{}%
+	\maketitle%
+}{}
 
