@@ -12,6 +12,10 @@ LATEX_FORMATS = {
         'class_file': 'polygon.cls',
         'support_files': ['olymp.sty'],
     },
+    'atcoder': {
+        'class_file': 'atcoder.cls',
+        'support_files': [],
+    },
 }
 LATEX_CLASSES = tuple(LATEX_FORMATS)
 DEFAULT_LATEX_CLASS = 'ds-contest-tools'

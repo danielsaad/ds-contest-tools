@@ -1,14 +1,15 @@
 import os
 import shutil
 import subprocess
-import sys
 from typing import Optional
 
 from .. import config
-from .latexutils import clean_auxiliary_files, print_to_latex
+from .latexutils import clean_auxiliary_files
 from ..logger import error_log, info_log
 from ..metadata import Paths
 from .utils import check_subprocess_output, verify_path
+
+from ds_contest_tools.core.latex_formatter import LatexFormatter
 
 MERGE_TOOL = 'pdfjam'
 LATEX_PASSES = 3
@@ -115,8 +116,10 @@ def build_pdf(problem_folder: Optional[str] = '', output_directory: Optional[str
     latex_class = options.get('latex_class', config.DEFAULT_LATEX_CLASS)
     copied_assets = copy_latex_assets(latex_class, problem_folder)
     try:
-        # Generate PDF from tex file
-        print_to_latex(problem_folder, options)
+        formatter: LatexFormatter = LatexFormatter(options, problem_folder)
+        
+        formatter.write_latex_file()        
+
         folder = problem_folder if output_directory == '' else output_directory
 
         tex_filename = os.path.basename(problem_folder) + '.tex'

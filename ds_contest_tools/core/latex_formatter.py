@@ -5,6 +5,11 @@ from io import TextIOWrapper
 
 from ds_contest_tools import config
 from ds_contest_tools.enumarate.statement_files import StatementFiles
+from ds_contest_tools.util.jsonutils import parse_json
+from ds_contest_tools.util.latexutils import get_io
+from ds_contest_tools.logger import info_log
+from ds_contest_tools.util.utils import check_problem_metadata, verify_path
+from ds_contest_tools.util.fileutils import has_lines
 
 
 class LatexFormatter:
@@ -19,11 +24,53 @@ class LatexFormatter:
     não lê `problem.json` e não conhece `Paths()`.
     """
 
-    def __init__(self, f_out: TextIOWrapper, problem_metadata: dict, options: dict, statement_folder: str) -> None:
-        self.f_out = f_out
-        self.problem_metadata = problem_metadata
+    def __init__(self, options: dict, problem_folder: str) -> None:
+        self.f_out: TextIOWrapper = None
         self.options = options
-        self.statement_folder = statement_folder
+        self.problem_folder = problem_folder
+        self.statement_folder: str = ''
+        self.problem_metadata: dict = {}
+
+        self.__set_problem_statement_folder()
+        self.__set_problem_metadata()
+        
+
+    def write_latex_file(self) -> None:
+        """Escreve o arquivo LaTeX do problema, incluindo preâmbulo, enunciado,
+        exemplos e notas.
+
+        O arquivo é escrito no mesmo diretório do enunciado, com o nome
+        `problem.tex`. O conteúdo do arquivo é determinado pelo dicionário
+        `problem_metadata` e pelas opções de formatação em `options`.
+        """
+        tex_filename = os.path.basename(os.path.abspath(self.problem_folder)) + '.tex'
+        tex_filepath = os.path.join(self.problem_folder, tex_filename)
+        info_log(f"Creating {os.path.basename(tex_filepath)}")
+
+        with open(tex_filepath, 'w') as f_out:
+            self.f_out: TextIOWrapper = f_out
+            self.__write_header()
+            self.__write_description()
+            self.__write_input()
+            self.__write_output()
+
+            interactive: bool = self.problem_metadata['problem']['interactive']
+            if interactive:
+                self.__write_interactor()
+
+            self.__write_examples()
+            self.__write_notes()
+            self.__write_footer()
+
+        if has_lines(self.statement_folder, StatementFiles.TUTORIAL):
+            tutorial_filename = os.path.basename(
+                os.path.abspath(self.problem_folder)) + '-tutorial.tex'
+            tutorial_filepath = os.path.join(self.problem_folder, tutorial_filename)
+            info_log(f"Creating {tutorial_filename}")
+        
+            with open(tutorial_filepath, 'w') as f_out:
+                self.f_out: TextIOWrapper = f_out
+                self.__write_tutorial()
 
     def __write_preamble(self) -> None:
         """Abre o documento com a classe escolhida pelo formato."""
@@ -34,7 +81,7 @@ class LatexFormatter:
         self.f_out.write(f"\\documentclass{{{class_name}}}")
         self.f_out.write("\\begin{document}")
 
-    def write_header(self, ) -> None:
+    def __write_header(self, ) -> None:
         self.__write_preamble()
 
         if self.options.get('event'):
@@ -56,39 +103,36 @@ class LatexFormatter:
                   str(self.problem_metadata["problem"]["memory_limit_mb"]) +
                   "}\n")
 
-    def write_description(self) -> None:
+    def __write_description(self) -> None:
         latex_command: str = self.__get_latex_input(
             self.statement_folder, StatementFiles.DESCRIPTION.file_name)
         self.f_out.write(latex_command)
 
-    def write_input(self) -> None:
+    def __write_input(self) -> None:
         self.f_out.write("\\Entrada\n\n")
         latex_command: str = self.__get_latex_input(
             self.statement_folder, StatementFiles.INPUT.file_name)
         self.f_out.write(latex_command)
 
-    def write_output(self) -> None:
+    def __write_output(self) -> None:
         self.f_out.write("\n\n\\Saida\n")
         latex_command: str = self.__get_latex_input(
             self.statement_folder, StatementFiles.OUTPUT.file_name)
         self.f_out.write(latex_command)
 
-    def write_interactor(self) -> None:
+    def __write_interactor(self) -> None:
         self.f_out.write("\n\n\\Interacao\n")
         latex_command: str = self.__get_latex_input(
             self.statement_folder, StatementFiles.INTERACTOR.file_name)
         self.f_out.write(latex_command)
 
-    # def write_examples(self) -> None:
-    #     pass
-
-    def write_notes(self) -> None:
+    def __write_notes(self) -> None:
         self.f_out.write("\\Notas\n\n")
         latex_command: str = self.__get_latex_input(
             self.statement_folder, StatementFiles.NOTES.file_name)
         self.f_out.write(latex_command)
 
-    def write_footer(self) -> None:
+    def __write_footer(self) -> None:
         if self.options.get('display_author'):
             self.f_out.write("\\end{ProblemaAutor}\n\n")
         else:
@@ -96,7 +140,13 @@ class LatexFormatter:
 
         self.f_out.write("\\end{document}")
 
-    def write_examples(self, in_list: list, out_list: list) -> None:
+    def __write_examples(self) -> None:
+        input_folder: str = os.path.join(self.problem_folder, 'input')
+        output_folder: str = os.path.join(self.problem_folder, 'output')
+
+        in_list = get_io(input_folder, self.problem_metadata)
+        out_list = get_io(output_folder, self.problem_metadata)
+
         patterns = {"#": "\\#", "$": "\\$", "%": "\\%", "&": "\\&", "_": "\\_",
                     "{": "\\{", "}": "\\}", ">": "\\textgreater{}", "<": "\\textless{}",
                     "^": "\\textasciicircum{}", "\\": "\\textbackslash{}", " ": "~"}
@@ -123,7 +173,7 @@ class LatexFormatter:
                 self.f_out.write(f'\\LinhaExemplo{{{left}}}{{{right}}}\n')
         self.f_out.write("\\end{Exemplo}\n\n")
 
-    def write_tutorial(self) -> None:
+    def __write_tutorial(self) -> None:
         """Escreve o documento do tutorial (editorial) do problema.
 
         Emite apenas estrutura. Corpo da fonte, pacotes, numeração de página e
@@ -155,3 +205,20 @@ class LatexFormatter:
         """Return the relative path from base_path to target_path."""
         base_path: str = os.path.dirname(statement_folder)
         return os.path.relpath(statement_folder, base_path)
+
+
+    def __set_problem_statement_folder(self) -> None:
+        statement_folder = os.path.join(self.problem_folder, 'statement')
+        verify_path(statement_folder)
+        self.statement_folder = statement_folder
+
+    def __set_problem_metadata(self) -> None:
+        """Reads and validates the problem metadata from the problem.json file.
+
+        Returns:
+            dict: The validated problem metadata.
+        """
+        problem_json_path = os.path.join(self.problem_folder, 'problem.json')
+        problem_metadata = parse_json(problem_json_path)
+        check_problem_metadata(problem_metadata)
+        self.problem_metadata = problem_metadata
