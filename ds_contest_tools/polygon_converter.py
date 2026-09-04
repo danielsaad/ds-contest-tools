@@ -5,7 +5,8 @@ import xml.etree.ElementTree as ET
 from typing import Optional
 
 from .config import IGNORED_DIRS
-from .util.fileutils import get_statement_files, unzip_package
+from .enumarate.statement_files import StatementFiles
+from .util.fileutils import get_statement_file, unzip_package
 from .util.jsonutils import parse_json, write_to_json
 from .logger import info_log, warning_log
 from .metadata import Paths
@@ -308,20 +309,19 @@ def copy_statement_files(package_data: dict, interactive: bool, language=DEFAULT
     problem_folder = Paths().get_problem_dir()
     statement_dir = os.path.join(problem_folder, 'statement')
 
-    statement_files = get_statement_files(statement_dir, interactive)
-    with open(statement_files[0], 'w') as f:
-        f.writelines(package_data['statement'])
-    with open(statement_files[1], 'w') as f:
-        f.writelines(package_data['input_description'])
-    with open(statement_files[2], 'w') as f:
-        f.writelines(package_data['output_description'])
-    with open(statement_files[3], 'w') as f:
-        f.writelines(package_data['notes'])
-    with open(statement_files[4], 'w') as f:
-        f.writelines(package_data['tutorial'])
+    sections = [
+        (StatementFiles.DESCRIPTION, package_data['statement']),
+        (StatementFiles.INPUT, package_data['input_description']),
+        (StatementFiles.OUTPUT, package_data['output_description']),
+        (StatementFiles.NOTES, package_data['notes']),
+        (StatementFiles.TUTORIAL, package_data['tutorial']),
+    ]
     if interactive:
-        with open(statement_files[5], 'w') as f:
-            f.writelines(package_data['interaction'])
+        sections.append((StatementFiles.INTERACTOR, package_data['interaction']))
+
+    for statement_file, content in sections:
+        with open(get_statement_file(statement_dir, statement_file), 'w') as f:
+            f.writelines(content)
 
     package_folder = os.path.join(
         Paths().get_output_dir(), 'statement-sections', language)

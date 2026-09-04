@@ -2,7 +2,6 @@ import os
 import shutil
 import zipfile
 from math import floor, log10
-from typing import Optional
 
 from .jsonutils import parse_json
 from ..logger import error_log
@@ -82,25 +81,19 @@ def copy_directory(source: str, dest: str) -> None:
                                 os.path.join(dest_path, file))
 
 
-def get_statement_files(statement_folder: str, statement_file: StatementFiles, interactive: Optional[bool] = False) -> list:
-    """Return statement file of the problem.
+def get_statement_file(statement_folder: str, statement_file: StatementFiles) -> str:
+    """Return the path to one statement file of the problem.
 
     Args:
         statement_folder: Path to the statement folder.
-        statement_file: The type of statement file to retrieve.
-        interactive : Whether the problem is interactive. Defaults to False.
+        statement_file: Which statement file to retrieve.
 
     Returns:
-        A list containing the absolute path to the statement files.
+        The path to the statement file.
     """
-    statement_file = statement_file.file_name + statement_file.extension
-
-    if interactive and statement_file == StatementFiles.INTERACTOR.filename:
-        statement_files = [os.path.join(statement_folder, statement_file)]
-    else:
-        statement_files = [os.path.join(statement_folder, statement_file)]
-    [verify_path(file) for file in statement_files]
-    return statement_files
+    filepath = os.path.join(statement_folder, statement_file.filename)
+    verify_path(filepath)
+    return filepath
 
 
 def check_interactive_problem(problem_dir: str) -> bool:
@@ -125,7 +118,7 @@ def has_lines(statement_folder: str, statement_file: StatementFiles) -> bool:
     with open(filepath, 'r') as f:
         lines = f.readlines()
     return len(lines) > 0
-    
+
 def unzip_package(path: str) -> None:
     """Unzips the package at the given path.
 

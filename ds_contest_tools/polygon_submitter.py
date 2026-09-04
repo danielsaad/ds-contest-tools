@@ -1,7 +1,8 @@
 import os
 from typing import Dict, List, Tuple, Union
 
-from .util.fileutils import get_statement_files
+from .enumarate.statement_files import StatementFiles
+from .util.fileutils import get_statement_file
 from .util.jsonutils import parse_json
 from .logger import error_log, warning_log
 from .metadata import Paths
@@ -63,27 +64,19 @@ def save_statement(name: str, interactive: bool) -> tuple:
     statement_dir: str = os.path.join(
         Paths().get_problem_dir(), 'statement')
 
-    statement_files: List[str] = get_statement_files(statement_dir)
-    with open(statement_files[0], 'r') as f:
-        legend = ''.join(f.readlines())
-    with open(statement_files[1], 'r') as f:
-        inp = ''.join(f.readlines())
-    with open(statement_files[2], 'r') as f:
-        out = ''.join(f.readlines())
-    with open(statement_files[3], 'r') as f:
-        notes = ''.join(f.readlines())
-    with open(statement_files[4], 'r') as f:
-        tutorial = ''.join(f.readlines())
+    def read_section(statement_file: StatementFiles) -> str:
+        with open(get_statement_file(statement_dir, statement_file), 'r') as f:
+            return ''.join(f.readlines())
 
     params: dict = {
         'lang': LANGUAGE,
         'encoding': ENCODING,
         'name': name,
-        'legend': legend,
-        'input': inp,
-        'output': out,
-        'notes': notes,
-        'tutorial': tutorial}
+        'legend': read_section(StatementFiles.DESCRIPTION),
+        'input': read_section(StatementFiles.INPUT),
+        'output': read_section(StatementFiles.OUTPUT),
+        'notes': read_section(StatementFiles.NOTES),
+        'tutorial': read_section(StatementFiles.TUTORIAL)}
     return ('problem.saveStatement', params)
 
 
