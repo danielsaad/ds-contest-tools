@@ -114,7 +114,7 @@ def main():
         if statistics_flag:
             print(f'STATISTICS=1', file=ouf)
         else:
-            print(f'STATISTIC=0', file=ouf)
+            print(f'STATISTICS=0', file=ouf)
     compress(contest_folder)
 
 

@@ -171,6 +171,7 @@ def print_to_latex(problem_folder: str, options=config.DEFAULT_PDF_OPTIONS):
                     "^": "\\textasciicircum{}",
                     "~": "\\textasciitilde{}",
                     "\\": "\\textbackslash{}",
+                    "-": "\\textendash{}",
                     " ": "~"}
         if io_samples > 0:
             print("\n\n\\ExemploEntrada\n", file=f_out)
@@ -235,9 +236,8 @@ def print_tutorial_to_latex(problem_folder: str, problem_metadata: dict,
         print("\\pagenumbering{gobble}", file=f_out)
         print("\\usepackage{hyperref}", file=f_out)
         print("\\usepackage{graphicx}", file=f_out)
-        print("\\input{statement/preamble.tex}", file=f_out)
         if preamble_info != None:
-            print(preamble_info, file=f_out)
+            print("\\input{statement/preamble.tex}", file=f_out)
         print("\\title{ Tutorial: " +
               problem_metadata["problem"]["title"]+"}", file=f_out)
         print("\\author{"+problem_metadata["author"]["name"]+"}", file=f_out)

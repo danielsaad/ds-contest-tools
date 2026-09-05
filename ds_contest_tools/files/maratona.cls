@@ -130,32 +130,20 @@
 
 % Entrada
 \newcommand{\Entrada}{
-	\bigskip
-	\begin{large}
-		\textbf{Entrada} \\
-	\end{large}
+	\section*{Entrada}
 }
 
 % Saida
 \newcommand{\Saida}{
-	\bigskip
-	\begin{large}
-		\textbf{Saída} \\
-	\end{large}
+	\section*{Saída}
 }
 
 \newcommand{\Interacao}{
-	\bigskip
-	\begin{large}
-		\textbf{Interação} \\
-	\end{large}
+	\section*{Interação}
 }
 
 \newcommand{\Notas}{
-	\bigskip
-	\begin{large}
-		\textbf{Notas} \\
-	\end{large}
+	\section*{Notas}
 }
 
 % Exemplo
@@ -176,10 +164,7 @@
 % Exemplo de Entrada
 \newenvironment{ExemploEntrada}
 {
-	\bigskip
-	\begin{large}
-		\textbf{Exemplo} \\
-	\end{large}
+	\section*{Exemplo}
 }
 {
 }

@@ -2,6 +2,7 @@ import argparse
 import os
 import pathlib
 import shutil
+from pathlib import Path
 import subprocess
 import sys
 
@@ -21,14 +22,27 @@ class moj_converter:
     def convert_to_moj(self):
         check_problem_metadata(self.problem_metadata)
         self.setup_moj_dirs()
+        self.fill_conf()
         self.fill_author()
         self.fill_tags()
-        self.fill_conf()
-        self.create_markdown()
         self.copy_tests()
-        self.copy_checker()
+        self.copy_images()
         self.copy_solutions()
         self.copy_originals()
+
+    def copy_images(self):
+        info_log('Copying images')
+
+        images = [
+            p for p in Path(self.problem_folder).iterdir()
+            if p.is_file() and p.suffix.lower() in {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".tiff"}
+        ]
+
+        for img in images:
+            src_path = img
+            dst_path = pathlib.Path(self.output_folder, 'docs', img.name)
+            shutil.copy2(src_path, dst_path)
+            info_log(f'Copied image {img.name} to {dst_path}')
 
     def copy_originals(self):
         src_path = pathlib.Path(self.problem_folder, 'src')
@@ -46,18 +60,14 @@ class moj_converter:
             shutil.copy(statement_tutorial, dst_path.as_posix())
 
     def fill_conf(self):
-        info_log('Creating conf file')
         conf_file = os.path.join(self.output_folder, 'conf')
+        info_log(f'Creating conf file {conf_file}')
         with open(conf_file, 'w') as ouf:
-            print('PUBLIC=no', file=ouf)
-            # print(f'ULIMITS[-s]={self.problem_metadata['problem']
-            #       ['memory_limit_mb']*1000}', file=ouf)
-            # print(f'ULIMITS[-v]={self.problem_metadata['problem']
-            #       ['memory_limit_mb']*1000}', file=ouf)
-            # drift values
-            languages=['c','cpp']
-            for l in languages:
-                print(f'TLMOD[{l}.drift]=0.25',file=ouf)
+            rss_limit = self.problem_metadata['problem']['memory_limit_mb']*1024
+            print(f'MEMLIMITMB={rss_limit}', file=ouf)
+            print(f'TLMOD[calibrafactor]=1.35', file=ouf)
+            print(f'ULIMITS[-u]=10000', file=ouf)
+            print(f'ALLOWPARALLELTEST=y', file=ouf)
 
     def fill_author(self):
         info_log('Creating author file')
@@ -81,49 +91,6 @@ class moj_converter:
             for t in tags:
                 print(f'#{t}', file=ouf)
 
-    def create_markdown(self):
-        ''' Creates the markdown file from the problem metadata and tex files'''
-        image_files = [os.path.join(self.problem_folder, x) for x in os.listdir(
-            self.problem_folder) if os.path.splitext(x)[1] in ['.png', '.jpeg', '.pdf', '.jpg'] and os.path.splitext(x)[0] not in [f'{os.path.basename(self.problem_folder)}', f'{os.path.basename(self.problem_folder)}-tutorial']]
-        for img in image_files:
-            shutil.copy(img, self.output_folder)
-
-        markdown_file = os.path.join(
-            self.output_folder, 'docs', 'enunciado.md')
-        title_str = self.problem_metadata['problem']['title']
-
-        with open(markdown_file, 'w') as ouf:
-            print(f'% {title_str}', file=ouf)
-            statement_files = fileutils.get_statement_files(
-                os.path.join(self.problem_folder, 'statement'))
-            statement_str = fileutils.unserialize_file(statement_files[0])
-            input_str = fileutils.unserialize_file(statement_files[1])
-            output_str = fileutils.unserialize_file(statement_files[2])
-            notes_str = fileutils.unserialize_file(statement_files[3])
-            print(f'{statement_str}\n', file=ouf)
-            print(f'## Entrada\n {input_str}\n', file=ouf)
-            print(f'## Saída\n {output_str}\n', file=ouf)
-            n_io_sample = self.problem_metadata['build']['io_samples']
-            if n_io_sample > 1:
-                print('## Exemplos\n', file=ouf)
-            elif n_io_sample == 1:
-                print('## Exemplo\n', file=ouf)
-
-            for i in range(n_io_sample):
-                input_file = os.path.join(
-                    self.problem_folder, 'input', f'{i+1}')
-                output_file = os.path.join(
-                    self.problem_folder, 'output', f'{i+1}')
-                input_str = fileutils.unserialize_file(input_file)
-                output_str = fileutils.unserialize_file(output_file)
-                print('### Entrada\n', file=ouf)
-                print(f"```\n{input_str}```\n", file=ouf)
-                print('### Saída\n', file=ouf)
-                print(f"```\n{output_str}```\n", file=ouf)
-
-            if notes_str != '':
-                print(f'## Notas\n {notes_str}\n', file=ouf)
-
     def copy_tests(self):
         info_log('Copying input and output')
         input_folder = os.path.join(self.problem_folder, 'input')
@@ -134,14 +101,15 @@ class moj_converter:
         fileutils.recursive_overwrite(output_folder, moj_output_folder)
         fileutils.rename_io(moj_input_folder)
         fileutils.rename_io(moj_output_folder)
-
-    def copy_checker(self):
-        info_log('Creating BOCA Checker')
-        src_file = os.path.join(self.problem_folder, 'src', 'checker.cpp')
-        executable_file = os.path.join(
-            self.output_folder, 'scripts', 'compare.sh')
-        subprocess.run(
-            ['g++', src_file, '-DBOCA_SUPPORT', '-o', executable_file])
+        info_log('Creating sample files')
+        io_samples = self.problem_metadata['build']['io_samples']
+        for i in range(io_samples):
+            shutil.copyfile(os.path.join(
+                input_folder, f'{i+1}'), os.path.join(moj_input_folder, f'sample{i+1}'))
+            info_log(f'Created sample{i+1} in {moj_input_folder}')
+            shutil.copyfile(os.path.join(
+                output_folder, f'{i+1}'), os.path.join(moj_output_folder, f'sample{i+1}'))
+            info_log(f'Created sample{i+1} in {moj_output_folder}')
 
     def copy_solutions(self):
         info_log('Copying Solutions')
@@ -195,8 +163,8 @@ def convert_to_moj(problem_folder, output_folder):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('problem_folder', help='Contest UNIX ID')
-    parser.add_argument('output_folder', help='Contest Name')
+    parser.add_argument('problem_folder', help='Input folder in DS format')
+    parser.add_argument('output_folder', help='Output folder for MOJ problem')
     args = parser.parse_args()
     problem_folder = args.problem_folder
     output_folder = args.output_folder
