@@ -484,7 +484,7 @@ def get_requests_list(problem_id: str, manual_testcases: bool) -> List[Tuple[str
 
     # Get test parameters of the problem
     if manual_testcases:
-        save_manual_testcases(problem_id, problem_metadata['io_samples'])
+        save_manual_testcases(problem_id, problem_metadata['build']['io_samples'])
     else:
         requests_list += save_testcases(
             problem_metadata['build']['io_samples'], interactive, tmp_folder)

@@ -63,11 +63,15 @@ class moj_converter:
         conf_file = os.path.join(self.output_folder, 'conf')
         info_log(f'Creating conf file {conf_file}')
         with open(conf_file, 'w') as ouf:
-            rss_limit = self.problem_metadata['problem']['memory_limit_mb']*1024
+            rss_limit = self.problem_metadata['problem']['memory_limit_mb']
             print(f'MEMLIMITMB={rss_limit}', file=ouf)
             print(f'TLMOD[calibrafactor]=1.35', file=ouf)
             print(f'ULIMITS[-u]=10000', file=ouf)
             print(f'ALLOWPARALLELTEST=y', file=ouf)
+            print(f'TLMOD[java.drift]=0.25', file=ouf)
+            print(f'TLMOD[c.drift]=0.25', file=ouf)
+            print(f'TLMOD[cpp.drift]=0.25', file=ouf)
+            print(f'TLMOD[py.drift]=0.25', file=ouf)
 
     def fill_author(self):
         info_log('Creating author file')
