@@ -13,7 +13,6 @@ nav:
     - 'Créditos': 'credits.md'
   - Desenvolvimento:
     - 'Documentação': 'documentation.md'
-
 theme:
   name: readthedocs
   highlightjs: true

@@ -12,16 +12,52 @@
 % Permite quebra de linha dentro das células de exemplo — ver \LinhaExemplo.
 \RequirePackage{seqsplit}
 
+% ---------------------------------------------------------------
+% Cabeçalho do problema
+%
+% Argumento vazio = não exibir: o gerador envia tempo e memória vazios quando
+% a configuração manda ocultar os limites.
+%
+% O olymp.sty omite a linha de um limite só quando o argumento do `problem` é
+% LITERALMENTE vazio: ele testa com \ifx&#4&, e uma macro que expande para
+% vazio não passa nesse teste (sairia o rótulo sem valor). Por isso a escolha
+% acontece aqui, antes de abrir o ambiente, e cada ramo abre o `problem` com o
+% argumento já resolvido.
+% ---------------------------------------------------------------
+
+% Teste de vazio com \detokenize, robusto a qualquer conteúdo.
+\newcommand{\pol@sevazio}[3]{%
+    \if\relax\detokenize{#1}\relax
+        \expandafter\@firstoftwo
+    \else
+        \expandafter\@secondoftwo
+    \fi{#2}{#3}%
+}
+
+% #1 título, #2 tempo, #3 memória.
+\newcommand{\pol@abre}[3]{%
+    \pol@sevazio{#2}%
+        {\pol@abrecomtempo{#1}{}{#3}}%
+        {\pol@abrecomtempo{#1}{#2 second}{#3}}%
+}
+
+% #1 título, #2 texto do tempo (já resolvido), #3 memória.
+\newcommand{\pol@abrecomtempo}[3]{%
+    \pol@sevazio{#3}%
+        {\begin{problem}{#1}{standard input}{standard output}{#2}{}}%
+        {\begin{problem}{#1}{standard input}{standard output}{#2}{#3 megabytes}}%
+}
+
 \newenvironment{Problema}[4]{
     % #1 is label, #2 is title, #3 is time, #4 is memory
-    \begin{problem}{#2}{standard input}{standard output}{#3 second}{#4 megabytes}
+    \pol@abre{#2}{#3}{#4}
 }{
     \end{problem}
 }
 
 \newenvironment{ProblemaAutor}[5]{
     % #1 is label, #2 is title, #3 is time, #4 is memory, #5 is author
-    \begin{problem}{#2}{standard input}{standard output}{#3 second}{#4 megabytes}
+    \pol@abre{#2}{#3}{#4}
     \textit{Author: #5}\par
 }{
     \end{problem}

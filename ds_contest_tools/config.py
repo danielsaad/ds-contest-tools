@@ -16,12 +16,17 @@ LATEX_FORMATS = {
         'class_file': 'atcoder.cls',
         'support_files': [],
     },
+    'icpc': {
+        'class_file': 'icpc.cls',
+        'support_files': [],
+    },
 }
 LATEX_CLASSES = tuple(LATEX_FORMATS)
 DEFAULT_LATEX_CLASS = 'ds-contest-tools'
 
 DEFAULT_PDF_OPTIONS = {
-    'display_author': True,
+    'display_author': False,
+    'display_limits': True,
     'problem_label': '',
     'event': False,
     'latex_class': DEFAULT_LATEX_CLASS

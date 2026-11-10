@@ -94,14 +94,25 @@
 % ---------------------------------------------------------------------------
 \newcommand{\atc@autor}{}
 
+% Linha de limites. Argumento vazio = não exibir: o gerador envia tempo e
+% memória vazios quando a configuração manda ocultá-los. Sem nenhum dos dois,
+% a linha some inteira, com o espaço que a acompanha; o separador " / " só
+% aparece com os dois presentes.
+\newcommand{\atc@limites}[2]{%
+    \atc@sevazio{#1#2}{}{%
+        {\small\textcolor{atlimits}{%
+            \atc@sevazio{#1}{}{\NomeLimiteTempo: #1\ seg}%
+            \atc@sevazio{#1}{}{\atc@sevazio{#2}{}{\ /\ }}%
+            \atc@sevazio{#2}{}{\NomeLimiteMemoria: #2\ MiB}}}%
+        \par\vspace{0.4em}}%
+}
+
 \newcommand{\atc@cabecalho}[4]{%
     {\LARGE\bfseries
         \ifthenelse{\equal{#1}{}}{#2}{#1\ -\ #2}%
     }\par
     \atcoderline
-    {\small\textcolor{atlimits}{%
-        \NomeLimiteTempo: #3\ seg / \NomeLimiteMemoria: #4\ MiB}}%
-    \par\vspace{0.4em}%
+    \atc@limites{#3}{#4}%
     \atcodersection{\NomeDescricao}%
     \ignorespaces
 }

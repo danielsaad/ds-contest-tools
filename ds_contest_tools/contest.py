@@ -11,6 +11,21 @@ from .util.pdfutils import build_pdf, merge_pdfs
 from .util.utils import check_subprocess_output, convert_idx_to_string, verify_path
 
 
+def contest_pdf_options(label: str, author: bool, latex_class: str) -> dict:
+    """Return the PDF options of a contest problem.
+
+    Starts from `config.DEFAULT_PDF_OPTIONS`, so `build` and `contest` share
+    the same defaults. `author` (the `--author` flag) only forces the author
+    to be shown; it never hides it.
+    """
+    options = config.DEFAULT_PDF_OPTIONS.copy()
+    options.update({'display_author': options['display_author'] or author,
+                    'problem_label': label,
+                    'event': True,
+                    'latex_class': latex_class})
+    return options
+
+
 def build_contest_pdf(author: bool = False, latex_class: str = config.DEFAULT_LATEX_CLASS) -> None:
     """Build contest PDF from PDFs of the list of problems."""
     info_log('Creating contest PDF')
@@ -26,10 +41,7 @@ def build_contest_pdf(author: bool = False, latex_class: str = config.DEFAULT_LA
         # Generate problems PDFs
         for i, folder in enumerate(problem_folder_l):
             label = convert_idx_to_string(i)
-            options = {'display_author': author,
-                       'problem_label': label,
-                       'event': True,
-                       'latex_class': latex_class}
+            options = contest_pdf_options(label, author, latex_class)
             build_pdf(folder, output_folder, options)
             basename = os.path.basename(folder)
             problem_pdf_l.append(os.path.join(output_folder, basename+'.pdf'))
@@ -64,10 +76,7 @@ def build_boca_packages(author: bool = False, latex_class: str = config.DEFAULT_
     output_folder = Paths().get_output_dir()
     for i, folder in enumerate(problem_folder_l):
         label = convert_idx_to_string(i)
-        options = {'display_author': author,
-                   'problem_label': label,
-                   'event': True,
-                   'latex_class': latex_class}
+        options = contest_pdf_options(label, author, latex_class)
         # Update PDF with new label and event
         build_pdf(folder, folder, options)
         boca_pack(folder, folder)

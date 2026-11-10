@@ -88,20 +88,22 @@ class LatexFormatter:
             self.f_out.write(
                 "\\Evento{" + self.problem_metadata['problem']['event'] + "}\n")
 
-        if self.options.get('display_author'):
-            self.f_out.write("\\begin{ProblemaAutor}{" + self.options.get('problem_label', '')
-                  + "}{" + self.problem_metadata["problem"]["title"] + "}{" +
-                  str(self.problem_metadata["problem"]["time_limit"]) +
-                  "}{" +
-                  str(self.problem_metadata["problem"]["memory_limit_mb"]) +
-                  "}{" + self.problem_metadata["author"]["name"] + "}\n")
+        problem = self.problem_metadata["problem"]
+        # Argumento vazio = não exibir: a classe omite o item.
+        if self.options.get('display_limits', True):
+            time_limit = str(problem["time_limit"])
+            memory_limit = str(problem["memory_limit_mb"])
         else:
-            self.f_out.write("\\begin{Problema}{" + self.options.get('problem_label', '')
-                  + "}{" + self.problem_metadata["problem"]["title"] + "}{" +
-                  str(self.problem_metadata["problem"]["time_limit"]) +
-                  "}{" +
-                  str(self.problem_metadata["problem"]["memory_limit_mb"]) +
-                  "}\n")
+            time_limit = memory_limit = ''
+
+        header_args = ("{" + self.options.get('problem_label', '') + "}{" + problem["title"]
+                       + "}{" + time_limit + "}{" + memory_limit + "}")
+
+        if self.options.get('display_author'):
+            self.f_out.write("\\begin{ProblemaAutor}" + header_args
+                             + "{" + self.problem_metadata["author"]["name"] + "}\n")
+        else:
+            self.f_out.write("\\begin{Problema}" + header_args + "\n")
 
     def __write_description(self) -> None:
         latex_command: str = self.__get_latex_input(
@@ -127,6 +129,9 @@ class LatexFormatter:
         self.f_out.write(latex_command)
 
     def __write_notes(self) -> None:
+        # Sem conteúdo, nem o título da seção: evita um "Notas" vazio no PDF.
+        if not has_lines(self.statement_folder, StatementFiles.NOTES):
+            return
         self.f_out.write("\\Notas\n\n")
         latex_command: str = self.__get_latex_input(
             self.statement_folder, StatementFiles.NOTES.file_name)
@@ -182,9 +187,11 @@ class LatexFormatter:
         """
         self.__write_preamble()
 
+        # Argumento vazio = não exibir, como nos limites do enunciado.
+        author = self.problem_metadata["author"]["name"] if self.options.get('display_author') else ''
         self.f_out.write(
             "\\begin{Tutorial}{" + self.problem_metadata["problem"]["title"]
-            + "}{" + self.problem_metadata["author"]["name"] + "}\n")
+            + "}{" + author + "}\n")
 
         latex_command: str = self.__get_latex_input(
             self.statement_folder, StatementFiles.TUTORIAL.file_name)

@@ -112,12 +112,31 @@ def check_interactive_problem(problem_dir: str) -> bool:
         error_log("Interactive value in problem.json is not defined.")
     return problem_metadata['problem']['interactive']
 
+# Uma linha só conta como conteúdo com MAIS caracteres do que isto, fora os
+# espaços das pontas. Um arquivo salvo só com quebra de linha, ou com sobras
+# curtas, não deve abrir uma seção vazia no PDF.
+MIN_CONTENT_LINE_LENGTH = 5
+
+
 def has_lines(statement_folder: str, statement_file: StatementFiles) -> bool:
+    """Checks whether a statement file has content.
+
+    A file has content when at least one line is longer than
+    `MIN_CONTENT_LINE_LENGTH` characters, ignoring surrounding whitespace.
+    A missing file counts as empty.
+
+    Args:
+        statement_folder: Path to the statement folder.
+        statement_file: The statement file to check.
+
+    Returns:
+        True if the file has content, False otherwise.
+    """
     filepath = os.path.join(statement_folder, statement_file.filename)
-    lines = []
+    if not os.path.isfile(filepath):
+        return False
     with open(filepath, 'r') as f:
-        lines = f.readlines()
-    return len(lines) > 0
+        return any(len(line.strip()) > MIN_CONTENT_LINE_LENGTH for line in f)
 
 def unzip_package(path: str) -> None:
     """Unzips the package at the given path.

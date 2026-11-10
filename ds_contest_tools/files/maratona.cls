@@ -109,24 +109,47 @@
 
 
 % Problema
+%
+% Argumento vazio = não exibir: o gerador envia tempo, memória e autor vazios
+% quando a configuração manda ocultá-los. Cada item depois do título só
+% aparece com valor e leva consigo a quebra que o separa do item anterior.
+% Assim, qualquer combinação de itens ocultos mantém os visíveis separados.
+
+% Teste de vazio com \detokenize, robusto a qualquer conteúdo. Um \ifx
+% compararia só os dois primeiros tokens ("LLUIS" passaria por vazio).
+\newcommand{\mar@sevazio}[3]{%
+	\if\relax\detokenize{#1}\relax
+		\expandafter\@firstoftwo
+	\else
+		\expandafter\@secondoftwo
+	\fi{#2}{#3}%
+}
+
+% #1 é o valor que decide se o item aparece; #2 é o texto do item.
+\newcommand{\mar@item}[2]{\mar@sevazio{#1}{}{{\\\footnotesize #2}}}
+
+% #1 rótulo, #2 título, #3 tempo, #4 memória, #5 autor.
+\newcommand{\mar@cabecalho}[5]{%
+	\begin{center}
+		\Large{\ifthenelse{\equal{#1}{}}{\textbf{{#2}}}{\textbf{Problema {#1} \\ {#2} }}}%
+		\mar@item{#3}{\textbf{Limite de tempo: {#3}s}}%
+		\mar@item{#4}{\textbf{Limite de memória: {#4}MB}}%
+		\mar@item{#5}{Autor: {#5}}%
+	\end{center}
+}
+
 \newcounter{problem}
 \newenvironment{Problema}[4]{
 	\stepcounter{problem}
 	\newpage
-	\begin{center}
-		\Large{\ifthenelse{\equal{#1}{}}{\textbf{{#2}}}{\textbf{Problema {#1} \\ {#2} }}}{\\\footnotesize \textbf{Limite de tempo: {#3}s}}{\\\footnotesize \textbf{Limite de memória: {#4}MB}}
-	\end{center}
+	\mar@cabecalho{#1}{#2}{#3}{#4}{}
 }
 
 \newcounter{problemAutor}
 \newenvironment{ProblemaAutor}[5]{
 	\stepcounter{problemAutor}
 	\newpage
-	\begin{center}
-		\Large{\ifthenelse{\equal{#1}{}}{\textbf{{#2}}}{\textbf{Problema {#1} \\ {#2} }}}{\\\footnotesize \textbf{Limite de tempo: {#3}s}}{\\\footnotesize \textbf{Limite de memória: {#4}MB\\}}{
-			\footnotesize Autor: {#5}
-		}
-	\end{center}
+	\mar@cabecalho{#1}{#2}{#3}{#4}{#5}
 }
 
 
