@@ -22,6 +22,7 @@
 \RequirePackage{url}
 \RequirePackage{needspace}
 \RequirePackage{ifthen}
+\RequirePackage{fancyhdr}
 
 \pagestyle{empty}
 
@@ -36,6 +37,7 @@
 \definecolor{atline}{HTML}{DEE2E6}    % reguas separadoras
 \definecolor{attext}{HTML}{1A1A1A}    % corpo do texto
 \definecolor{atlimits}{HTML}{A03B3B}  % linha de limites, em vermelho escuro
+\definecolor{athead}{HTML}{6C757D}    % nome do evento no cabecalho
 
 \color{attext}
 
@@ -124,9 +126,20 @@
     \atc@cabecalho{#1}{#2}{#3}{#4}%
 }{}
 
-% O visual de referencia nao exibe nome de evento. A macro existe porque o
-% contrato exige que esteja definida, nao que produza saida.
-\newcommand{\Evento}[1]{}
+\newcommand{\atc@evento}{}
+
+\fancypagestyle{atcevento}{%
+    \fancyhf{}%
+    \fancyhead[L]{\small\textcolor{athead}{\atc@evento}}%
+    \renewcommand{\headrulewidth}{0.8pt}%
+    \renewcommand{\headrule}{{\color{atline}%
+        \hrule\@height\headrulewidth\@width\headwidth
+        \vskip-\headrulewidth}}%
+}
+
+\newcommand{\Evento}[1]{%
+    \atc@sevazio{#1}{}{\renewcommand{\atc@evento}{#1}\pagestyle{atcevento}}%
+}
 
 \newcommand{\Paginacao}[2]{}
 
