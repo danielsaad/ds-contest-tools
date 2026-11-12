@@ -26,8 +26,10 @@
 \RequirePackage{url}
 \RequirePackage{seqsplit}
 \RequirePackage{ifthen}
+\RequirePackage{fancyhdr}
 
-% Cabecalho e rodape estao fora do escopo (DEC-5).
+% Sem cabecalho nem rodape por padrao (DEC-5); o \Evento liga o cabecalho com
+% o nome do evento.
 \pagestyle{empty}
 
 \setlength{\parindent}{0pt}
@@ -121,9 +123,22 @@
     \ignorespaces
 }{\par}
 
-% Cabecalho e rodape estao fora do escopo. A macro existe porque o contrato
-% exige que esteja definida, nao que produza saida (DEC-5).
-\newcommand{\Evento}[1]{}
+% Cabecalho do evento: o nome a esquerda, sobre uma regua fina, na margem
+% superior (fora da area de texto calibrada). Diverge da referencia, que poe o
+% evento no rodape, para seguir o mesmo cabecalho do atcoder.cls. So o caderno
+% (comando contest) emite \Evento; sem ele, ou com o nome vazio, a pagina
+% continua sem cabecalho.
+\newcommand{\icpc@evento}{}
+
+\fancypagestyle{icpcevento}{%
+    \fancyhf{}%
+    \fancyhead[L]{\small\icpc@evento}%
+    \renewcommand{\headrulewidth}{0.4pt}%
+}
+
+\newcommand{\Evento}[1]{%
+    \icpc@sevazio{#1}{}{\renewcommand{\icpc@evento}{#1}\pagestyle{icpcevento}}%
+}
 
 % Este formato nao numera as paginas: \Paginacao existe so pelo contrato.
 \newcommand{\Paginacao}[2]{}
