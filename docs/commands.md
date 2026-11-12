@@ -44,6 +44,7 @@ Opções:
 - **-p, --pdf**: Gera apenas os PDFs da maratona.
 - **-i, --io**: Gera apenas os arquivos de entrada/saída dos problemas da maratona.
 - **--author**: Adiciona o nome do autor no cabeçalho dos PDFs da maratona.
+- **--no-event**: Omite o nome do evento (campo `event` do `problem.json`) no cabeçalho dos PDFs da maratona e dos pacotes BOCA. Sem a flag, o nome aparece em todos os formatos.
 - **-lc, --latex-class `<formato>`**: Define o formato usado para gerar os PDFs. Os formatos aceitos são `ds-contest-tools`, `polygon` e `atcoder`; `ds-contest-tools` utiliza internamente `maratona.cls` e é a opção padrão.
 
 ## convert_to

@@ -11,17 +11,17 @@ from .util.pdfutils import build_pdf, merge_pdfs
 from .util.utils import check_subprocess_output, convert_idx_to_string, verify_path
 
 
-def contest_pdf_options(label: str, author: bool, latex_class: str) -> dict:
+def contest_pdf_options(label: str, author: bool, latex_class: str, event: bool = True) -> dict:
     """Return the PDF options of a contest problem.
 
     Starts from `config.DEFAULT_PDF_OPTIONS`, so `build` and `contest` share
     the same defaults. `author` (the `--author` flag) only forces the author
-    to be shown; it never hides it.
+    to be shown; it never hides it. `event` is turned off by `--no-event`.
     """
     options = config.DEFAULT_PDF_OPTIONS.copy()
     options.update({'display_author': options['display_author'] or author,
                     'problem_label': label,
-                    'event': True,
+                    'event': event,
                     'latex_class': latex_class})
     return options
 
@@ -37,7 +37,7 @@ def page_ranges(page_counts: list) -> list:
     return ranges
 
 
-def build_contest_pdf(author: bool = False, latex_class: str = config.DEFAULT_LATEX_CLASS) -> None:
+def build_contest_pdf(author: bool = False, latex_class: str = config.DEFAULT_LATEX_CLASS, event: bool = True) -> None:
     """Build contest PDF from PDFs of the list of problems."""
     info_log('Creating contest PDF')
 
@@ -53,7 +53,7 @@ def build_contest_pdf(author: bool = False, latex_class: str = config.DEFAULT_LA
         statement_counts, tutorial_counts = [], []
         with muted_info_log():
             for label, folder in zip(labels, problem_folder_l):
-                options = contest_pdf_options(label, author, latex_class)
+                options = contest_pdf_options(label, author, latex_class, event)
                 statement_pages, tutorial_pages = build_pdf(folder, output_folder, options)
                 basename = os.path.basename(folder)
                 merged = os.path.exists(os.path.join(folder, basename+'-tutorial.pdf'))
@@ -63,7 +63,7 @@ def build_contest_pdf(author: bool = False, latex_class: str = config.DEFAULT_LA
         tutorial_ranges = page_ranges(tutorial_counts)
 
         for i, folder in enumerate(problem_folder_l):
-            options = contest_pdf_options(labels[i], author, latex_class)
+            options = contest_pdf_options(labels[i], author, latex_class, event)
             options['pagination'] = statement_ranges[i]
             options['tutorial_pagination'] = tutorial_ranges[i]
             build_pdf(folder, output_folder, options)
@@ -90,14 +90,14 @@ def build_contest_pdf(author: bool = False, latex_class: str = config.DEFAULT_LA
         remove_latex_assets(copied_assets)
 
 
-def build_boca_packages(author: bool = False, latex_class: str = config.DEFAULT_LATEX_CLASS) -> None:
+def build_boca_packages(author: bool = False, latex_class: str = config.DEFAULT_LATEX_CLASS, event: bool = True) -> None:
     """Build BOCA packages from the list of problems."""
     info_log('Creating BOCA Files')
     problem_folder_l = Paths().get_problem_dir()
     output_folder = Paths().get_output_dir()
     for i, folder in enumerate(problem_folder_l):
         label = convert_idx_to_string(i)
-        options = contest_pdf_options(label, author, latex_class)
+        options = contest_pdf_options(label, author, latex_class, event)
         build_pdf(folder, folder, options)
         boca_pack(folder, folder)
         boca_file_path = os.path.join(folder, 'boca.zip')
