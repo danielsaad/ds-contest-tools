@@ -5,7 +5,7 @@ import subprocess
 from .boca import boca_pack
 from . import config
 from .util.latexutils import clean_auxiliary_files
-from .logger import info_log
+from .logger import info_log, muted_info_log
 from .metadata import Paths
 from .util.pdfutils import build_pdf, merge_pdfs
 from .util.utils import check_subprocess_output, convert_idx_to_string, verify_path
@@ -26,6 +26,17 @@ def contest_pdf_options(label: str, author: bool, latex_class: str) -> dict:
     return options
 
 
+def page_ranges(page_counts: list) -> list:
+    """Return (first page, total pages) for each document of a merged PDF."""
+    total_pages = sum(page_counts)
+    ranges = []
+    first_page = 1
+    for count in page_counts:
+        ranges.append((first_page, total_pages))
+        first_page += count
+    return ranges
+
+
 def build_contest_pdf(author: bool = False, latex_class: str = config.DEFAULT_LATEX_CLASS) -> None:
     """Build contest PDF from PDFs of the list of problems."""
     info_log('Creating contest PDF')
@@ -38,25 +49,35 @@ def build_contest_pdf(author: bool = False, latex_class: str = config.DEFAULT_LA
     from .util.pdfutils import copy_latex_assets, remove_latex_assets
     copied_assets = copy_latex_assets(latex_class, output_folder)
     try:
-        # Generate problems PDFs
+        labels = [convert_idx_to_string(i) for i in range(len(problem_folder_l))]
+        statement_counts, tutorial_counts = [], []
+        with muted_info_log():
+            for label, folder in zip(labels, problem_folder_l):
+                options = contest_pdf_options(label, author, latex_class)
+                statement_pages, tutorial_pages = build_pdf(folder, output_folder, options)
+                basename = os.path.basename(folder)
+                merged = os.path.exists(os.path.join(folder, basename+'-tutorial.pdf'))
+                statement_counts.append(statement_pages)
+                tutorial_counts.append(tutorial_pages if merged else 0)
+        statement_ranges = page_ranges(statement_counts)
+        tutorial_ranges = page_ranges(tutorial_counts)
+
         for i, folder in enumerate(problem_folder_l):
-            label = convert_idx_to_string(i)
-            options = contest_pdf_options(label, author, latex_class)
+            options = contest_pdf_options(labels[i], author, latex_class)
+            options['pagination'] = statement_ranges[i]
+            options['tutorial_pagination'] = tutorial_ranges[i]
             build_pdf(folder, output_folder, options)
             basename = os.path.basename(folder)
             problem_pdf_l.append(os.path.join(output_folder, basename+'.pdf'))
             if os.path.exists(os.path.join(folder, basename+'-tutorial.pdf')):
                 tutorial_pdf_l.append(os.path.join(
                     output_folder, basename+'-tutorial.pdf'))
-        # Merge PDFs
         clean_auxiliary_files(output_folder)
         merge_pdf = os.path.join(output_folder, 'maratona.pdf')
         merge_tutorial_pdf = os.path.join(output_folder, 'tutoriais.pdf')
         merge_pdfs(problem_pdf_l, merge_pdf)
         if tutorial_pdf_l:
             merge_pdfs(tutorial_pdf_l, merge_tutorial_pdf)
-        # Remove problems PDFs and ignore PDFs which are from
-        # the same folder as the contest.
         for f in problem_pdf_l:
             folder_name = os.path.basename(output_folder) + '.pdf'
             if folder_name != os.path.basename(f):
@@ -77,7 +98,6 @@ def build_boca_packages(author: bool = False, latex_class: str = config.DEFAULT_
     for i, folder in enumerate(problem_folder_l):
         label = convert_idx_to_string(i)
         options = contest_pdf_options(label, author, latex_class)
-        # Update PDF with new label and event
         build_pdf(folder, folder, options)
         boca_pack(folder, folder)
         boca_file_path = os.path.join(folder, 'boca.zip')

@@ -1,9 +1,12 @@
+import contextlib
 import io
 import logging
 import os
 import sys
 
 from .metadata import Paths
+
+_info_muted = False
 
 
 class tcolors:
@@ -85,9 +88,23 @@ def info_log(text: str) -> None:
     """
     tool = logging.getLogger('tool')
     info = convert_to_string(text)
-    if len(info) > 0:
+    if len(info) > 0 and not _info_muted:
         tool.info(info)
         print(f"{tcolors.OKGREEN}{text}{tcolors.ENDC}")
+
+
+@contextlib.contextmanager
+def muted_info_log():
+    """Suppress `info_log` messages, on screen and in tool.log, inside the block.
+
+    Warnings, errors and debug output are still logged.
+    """
+    global _info_muted
+    previous, _info_muted = _info_muted, True
+    try:
+        yield
+    finally:
+        _info_muted = previous
 
 
 def warning_log(text: str) -> None:

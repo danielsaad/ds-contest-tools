@@ -128,6 +128,8 @@
 % contrato exige que esteja definida, nao que produza saida.
 \newcommand{\Evento}[1]{}
 
+\newcommand{\Paginacao}[2]{}
+
 % -- Secoes do enunciado ----------------------------------------------------
 
 \newcommand{\Entrada}{\atcoderline\atcodersection{\NomeEntrada}}
@@ -135,36 +137,8 @@
 \newcommand{\Interacao}{\atcoderline\atcodersection{\NomeInteracao}}
 \newcommand{\Notas}{\atcoderline\atcodersection{\NomeNotas}}
 
-% No AtCoder cada caso de teste traz seus proprios rotulos; nao ha titulo
-% unico de secao para os exemplos. No-op deliberado.
 \newcommand{\ExemploEntrada}{}
 
-% ---------------------------------------------------------------------------
-% Exemplos — traducao do modelo de tabela para o modelo de blocos
-%
-% O gerador emite um modelo de LINHAS DE TABELA:
-%
-%     \begin{Exemplo}\CasoExemplo
-%     \LinhaExemplo{entrada linha 1}{saida linha 1}
-%     \LinhaExemplo{entrada linha 2}{}
-%     \CasoExemplo
-%     ...
-%     \end{Exemplo}
-%
-% O AtCoder mostra BLOCOS SEQUENCIAIS: a entrada inteira numa caixa, depois a
-% saida inteira em outra. Esta classe acumula as duas colunas ao longo do
-% caso e as materializa quando o caso termina — em \CasoExemplo (que fecha o
-% caso anterior) e em \end{Exemplo} (que fecha o ultimo).
-%
-% Uma linha vazia e materializada como \mbox{}\\, nao como \\ solto: dois \\
-% seguidos disparam "There's no line here to end".
-%
-% Linhas vazias sao ADIADAS em vez de emitidas na hora: o gerador preenche
-% com vazio o lado mais curto do par, e emitir esse preenchimento deixaria
-% linhas em branco no fim da caixa. Adiando, uma linha vazia so aparece se
-% houver conteudo depois dela — preserva vazio no meio do dado e descarta o
-% preenchimento do fim.
-% ---------------------------------------------------------------------------
 \newcounter{atcsample}
 \newcounter{atc@pendentradas}
 \newcounter{atc@pendsaidas}
@@ -175,7 +149,6 @@
 \newcommand{\atc@entrada}{}
 \newcommand{\atc@saida}{}
 
-% Teste de argumento vazio robusto a conteudo com caracteres especiais.
 \newcommand{\atc@sevazio}[3]{\if\relax\detokenize{#1}\relax#2\else#3\fi}
 
 \newcommand{\atc@reinicia}{%
@@ -204,8 +177,6 @@
          \g@addto@macro\atc@saida{#1}}%
 }
 
-% \leavevmode e necessario: se o dado comecar com linha vazia, o acumulador
-% comeca com \\, que so e valido em modo horizontal.
 \newcommand{\atc@caixa}[1]{%
     \begin{atcoderbox}\raggedright\leavevmode#1\end{atcoderbox}%
 }
@@ -245,12 +216,6 @@
     \global\atc@temcasofalse
 }
 
-% ---------------------------------------------------------------------------
-% Tutorial (editorial do problema)
-%
-% O gerador emite \begin{Tutorial}{titulo}{autor} + \input + \end{Tutorial}.
-% Corpo da fonte, pacotes e layout do titulo sao decididos aqui.
-% ---------------------------------------------------------------------------
 \newenvironment{Tutorial}[2]{%
     {\LARGE\bfseries \NomeTutorial: #1}\par
     \atcoderline
@@ -259,22 +224,12 @@
     \ignorespaces
 }{}
 
-% ---------------------------------------------------------------------------
-% Auxiliares para o autor do enunciado
-%
-% Nao fazem parte do contrato do gerador: o corpo do enunciado e LaTeX livre,
-% vindo de statement/*.tex, e pode usar estes recursos para reproduzir os
-% elementos caracteristicos da apresentacao de referencia.
-% ---------------------------------------------------------------------------
-
-% Caixa cinza com o formato dos dados, como a que segue "Entrada" no AtCoder.
 \newenvironment{formato}{%
     \par\vspace{0.2em}\begin{atcoderbox}%
 }{%
     \end{atcoderbox}\par
 }
 
-% Lista de restricoes com espacamento compacto.
 \newlist{listarestricoes}{itemize}{1}
 \setlist[listarestricoes]{leftmargin=1.6em, topsep=0.2em, itemsep=0.15em,
                           parsep=0pt, label=\textbullet}

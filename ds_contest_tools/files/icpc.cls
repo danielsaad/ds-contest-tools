@@ -125,6 +125,9 @@
 % exige que esteja definida, nao que produza saida (DEC-5).
 \newcommand{\Evento}[1]{}
 
+% Este formato nao numera as paginas: \Paginacao existe so pelo contrato.
+\newcommand{\Paginacao}[2]{}
+
 % ---------------------------------------------------------------------------
 % Secoes
 %

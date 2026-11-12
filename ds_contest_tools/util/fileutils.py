@@ -112,11 +112,7 @@ def check_interactive_problem(problem_dir: str) -> bool:
         error_log("Interactive value in problem.json is not defined.")
     return problem_metadata['problem']['interactive']
 
-# Uma linha só conta como conteúdo com MAIS caracteres do que isto, fora os
-# espaços das pontas. Um arquivo salvo só com quebra de linha, ou com sobras
-# curtas, não deve abrir uma seção vazia no PDF.
 MIN_CONTENT_LINE_LENGTH = 5
-
 
 def has_lines(statement_folder: str, statement_file: StatementFiles) -> bool:
     """Checks whether a statement file has content.

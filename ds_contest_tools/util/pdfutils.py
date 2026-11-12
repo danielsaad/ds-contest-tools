@@ -1,11 +1,12 @@
 import os
+import re
 import shutil
 import subprocess
 from typing import Optional
 
 from .. import config
 from .latexutils import clean_auxiliary_files
-from ..logger import error_log, info_log
+from ..logger import convert_to_string, error_log, info_log
 from ..metadata import Paths
 from .utils import check_subprocess_output, verify_path
 
@@ -100,7 +101,17 @@ def merge_pdfs(pdf_list: list, output_file: str) -> None:
     info_log("PDFs Merged")
 
 
-def build_pdf(problem_folder: Optional[str] = '', output_directory: Optional[str] = '', options=config.DEFAULT_PDF_OPTIONS) -> None:
+def get_page_count(pdflatex_stdout: bytes) -> int:
+    """Return the page count reported by pdflatex.
+
+    pdflatex wraps long lines, so the line breaks are removed before searching.
+    """
+    match = re.search(r'Output written on .*?\((\d+) pages?',
+                      convert_to_string(pdflatex_stdout).replace('\n', ''))
+    return int(match.group(1)) if match else 0
+
+
+def build_pdf(problem_folder: Optional[str] = '', output_directory: Optional[str] = '', options=config.DEFAULT_PDF_OPTIONS) -> tuple:
     """Builds the problem and tutorial PDFs.
 
     Problem folder and output directory are optional due to the creation of contests PDFs.
@@ -109,6 +120,9 @@ def build_pdf(problem_folder: Optional[str] = '', output_directory: Optional[str
         problem_folder: The path to the problem folder. If empty, the default problem folder is used.
         output_directory: The path to the output directory. If empty, the default problem folder is used.
         options: A dictionary containing the options to pass to the LaTeX compiler.
+
+    Returns:
+        The page counts of the statement and of the tutorial (0 if there is none).
     """
     info_log('Building PDF')
     if problem_folder == '':
@@ -124,23 +138,28 @@ def build_pdf(problem_folder: Optional[str] = '', output_directory: Optional[str
 
         tex_filename = os.path.basename(problem_folder) + '.tex'
         tex_filepath = os.path.join(problem_folder, tex_filename)
-        generate_pdf(problem_folder, folder, tex_filepath)
+        statement_pages = generate_pdf(problem_folder, folder, tex_filepath)
 
         # Generate tutorial PDF from tex file
         tutorial_filename = os.path.basename(problem_folder)+'-tutorial.tex'
         tutorial_filepath = os.path.join(problem_folder, tutorial_filename)
+        tutorial_pages = 0
         if os.path.isfile(tutorial_filepath):
-            generate_pdf(problem_folder, folder, tutorial_filepath)
+            tutorial_pages = generate_pdf(problem_folder, folder, tutorial_filepath)
+        return statement_pages, tutorial_pages
     finally:
         remove_latex_assets(copied_assets)
 
 
-def generate_pdf(problem_folder: str, output_folder: str, tex_path: str) -> None:
+def generate_pdf(problem_folder: str, output_folder: str, tex_path: str) -> int:
     """Generates a PDF from a tex file.
 
     Args:
         output_folder: The path to the output folder.
         tex_path: The path to the tex file.
+
+    Returns:
+        The number of pages of the generated PDF.
     """
     old_cwd = os.getcwd()
     command = ["pdflatex", '--output-directory',
@@ -159,3 +178,4 @@ def generate_pdf(problem_folder: str, output_folder: str, tex_path: str) -> None
         os.chdir(old_cwd)
 
     clean_auxiliary_files(output_folder)
+    return get_page_count(p.stdout)

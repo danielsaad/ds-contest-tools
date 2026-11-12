@@ -16,10 +16,8 @@
 \RequirePackage{graphics}
 \RequirePackage{graphicx}
 \RequirePackage{amssymb,amsmath,wrapfig}
-% amsthm depois de amsmath (exigência do pacote). Usado pelo ambiente Tutorial.
 \RequirePackage{amsthm}
 \RequirePackage{url}
-% Permite quebra de linha dentro das células de exemplo — ver \LinhaExemplo.
 \RequirePackage{seqsplit}
 \RequirePackage{xcolor,colortbl}
 \RequirePackage{xcolor}
@@ -108,15 +106,6 @@
 }
 
 
-% Problema
-%
-% Argumento vazio = não exibir: o gerador envia tempo, memória e autor vazios
-% quando a configuração manda ocultá-los. Cada item depois do título só
-% aparece com valor e leva consigo a quebra que o separa do item anterior.
-% Assim, qualquer combinação de itens ocultos mantém os visíveis separados.
-
-% Teste de vazio com \detokenize, robusto a qualquer conteúdo. Um \ifx
-% compararia só os dois primeiros tokens ("LLUIS" passaria por vazio).
 \newcommand{\mar@sevazio}[3]{%
 	\if\relax\detokenize{#1}\relax
 		\expandafter\@firstoftwo
@@ -153,20 +142,8 @@
 }
 
 
-% Código-fonte
 \newcommand{\codigofonte}[1]{Nome do arquivo fonte: {#1}}
 
-% ---------------------------------------------------------------
-% Rótulos das seções do enunciado
-%
-% Para trocar de idioma, sobrescreva no .tex antes de \begin{document}:
-%     \renewcommand{\NomeEntrada}{Input}
-%     \renewcommand{\NomeSaida}{Output}
-%
-% Mesma separação rótulo/formatação adotada pelo olymp.sty (\kw@Input +
-% \createsection), mas sem "@" no nome, para permitir \renewcommand
-% direto no .tex sem precisar de \makeatletter.
-% ---------------------------------------------------------------
 \newcommand{\NomeEntrada}{Entrada}
 \newcommand{\NomeSaida}{Saída}
 \newcommand{\NomeInteracao}{Interação}
@@ -174,8 +151,6 @@
 \newcommand{\NomeExemplo}{Exemplo}
 \newcommand{\NomeTutorial}{Tutorial}
 
-% Formatação comum a todas as seções do enunciado.
-% Altere aqui para mudar espaçamento ou tipografia de todas de uma vez.
 \newcommand{\SecaoEnunciado}[1]{
 	\bigskip
 	\begin{large}
@@ -193,42 +168,14 @@
 
 \newcommand{\Notas}{\SecaoEnunciado{\NomeNotas}}
 
-% ---------------------------------------------------------------
-% Cabeçalho do evento
-%
-% O gerador emite \Evento{...}; a classe decide onde ele aparece.
-% ---------------------------------------------------------------
 \newcommand{\Evento}[1]{\lhead{#1}}
 
-% ---------------------------------------------------------------
-% Exemplos
-%
-% O gerador emite apenas a estrutura lógica:
-%
-%     \begin{Exemplo}
-%     \CasoExemplo                  <- inicia um caso de teste
-%     \LinhaExemplo{entrada}{saida} <- uma linha do caso
-%     \LinhaExemplo{entrada}{}
-%     \CasoExemplo
-%     ...
-%     \end{Exemplo}
-%
-% Fonte, zebrado e alinhamento são decididos aqui, não no gerador.
-% ---------------------------------------------------------------
+\newcommand{\Paginacao}[2]{}
+
 \newcounter{exemplocaso}
 
-% O \noalign é necessário: \stepcounter é inexpansível e, sem ele, abriria
-% a primeira célula da linha, fazendo o \rowcolor de \LinhaExemplo cair no
-% meio da célula (erro "Misplaced \noalign").
 \newcommand{\CasoExemplo}{\noalign{\stepcounter{exemplocaso}}}
 
-% O \seqsplit permite quebra em qualquer posição dentro da célula.
-%
-% Sem ele o conteúdo transborda em vez de quebrar: o gerador converte todo
-% espaço em "~" (espaço inquebrável) para preservar espaços consecutivos, e o
-% "~" proíbe a quebra que a coluna X do tabularx faria naturalmente.
-% Preservar o espaço é decisão de conteúdo (fica no gerador); permitir a
-% quebra é decisão de apresentação e mora aqui.
 \newcommand{\LinhaExemplo}[2]{%
 	\ifodd\value{exemplocaso}\else\rowcolor{gray!20}\fi%
 	\texttt{\seqsplit{#1}} & \texttt{\seqsplit{#2}}\\%
@@ -239,8 +186,6 @@
 
 	\setcounter{exemplocaso}{0}%
 	\tabularx{\textwidth}{XX}
-	%    {@{\extracolsep{\fill}}|l|l|}
-	%    {|l|l@{\extracolsep{\fill}|}}
 	\hline
 	\NomeEntrada & \NomeSaida \\\hline
 }
@@ -249,29 +194,11 @@
 	\endtabularx
 }
 
-% Exemplo de Entrada
 \newenvironment{ExemploEntrada}
 {\SecaoEnunciado{\NomeExemplo}}
 {
 }
 
-% ---------------------------------------------------------------
-% Tutorial (editorial do problema)
-%
-% O gerador emite apenas:
-%
-%     \begin{Tutorial}{<título do problema>}{<autor>}
-%     \input{statement/tutorial}
-%     \end{Tutorial}
-%
-% Corpo da fonte, pacotes, numeração de página e layout do título são
-% decididos aqui. Antes viviam num preâmbulo montado em Python.
-%
-% Nota de layout: o tutorial passa a usar as margens desta classe, e não as
-% do pacote fullpage que o gerador carregava. É deliberado — o objetivo de
-% usar a mesma classe é que enunciado e tutorial tenham identidade visual
-% coerente.
-% ---------------------------------------------------------------
 \newenvironment{Tutorial}[2]{%
 	\title{\NomeTutorial: #1}%
 	\author{#2}%

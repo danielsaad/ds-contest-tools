@@ -28,6 +28,8 @@ DEFAULT_PDF_OPTIONS = {
     'display_author': False,
     'display_limits': True,
     'problem_label': '',
+    'pagination': None,
+    'tutorial_pagination': None,
     'event': False,
     'latex_class': DEFAULT_LATEX_CLASS
 }

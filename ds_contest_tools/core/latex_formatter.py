@@ -72,8 +72,13 @@ class LatexFormatter:
                 self.f_out: TextIOWrapper = f_out
                 self.__write_tutorial()
 
-    def __write_preamble(self) -> None:
-        """Abre o documento com a classe escolhida pelo formato."""
+    def __write_preamble(self, pagination_option: str) -> None:
+        """Abre o documento com a classe escolhida pelo formato.
+
+        Args:
+            pagination_option: Chave de `options` com a paginação deste
+                documento no caderno (`pagination` ou `tutorial_pagination`).
+        """
         latex_class = self.options.get('latex_class', config.DEFAULT_LATEX_CLASS)
         class_name = os.path.splitext(
             config.LATEX_FORMATS[latex_class]['class_file'])[0]
@@ -81,15 +86,19 @@ class LatexFormatter:
         self.f_out.write(f"\\documentclass{{{class_name}}}")
         self.f_out.write("\\begin{document}")
 
+        pagination = self.options.get(pagination_option)
+        if pagination:
+            first_page, total_pages = pagination
+            self.f_out.write(f"\\Paginacao{{{first_page}}}{{{total_pages}}}\n")
+
     def __write_header(self, ) -> None:
-        self.__write_preamble()
+        self.__write_preamble('pagination')
 
         if self.options.get('event'):
             self.f_out.write(
                 "\\Evento{" + self.problem_metadata['problem']['event'] + "}\n")
 
         problem = self.problem_metadata["problem"]
-        # Argumento vazio = não exibir: a classe omite o item.
         if self.options.get('display_limits', True):
             time_limit = str(problem["time_limit"])
             memory_limit = str(problem["memory_limit_mb"])
@@ -129,7 +138,6 @@ class LatexFormatter:
         self.f_out.write(latex_command)
 
     def __write_notes(self) -> None:
-        # Sem conteúdo, nem o título da seção: evita um "Notas" vazio no PDF.
         if not has_lines(self.statement_folder, StatementFiles.NOTES):
             return
         self.f_out.write("\\Notas\n\n")
@@ -161,8 +169,6 @@ class LatexFormatter:
                 map(re.escape, patterns_dict.keys())))
             return regex.sub(lambda mo: patterns_dict[mo.string[mo.start():mo.end()]], text)
 
-        # Apenas a estrutura lógica é emitida aqui. Fonte, zebrado e
-        # alinhamento são responsabilidade da classe LaTeX (\LinhaExemplo).
         self.f_out.write("\n\n\\ExemploEntrada\n")
         self.f_out.write("\\begin{Exemplo}")
         for tc in range(0, len(in_list)):
@@ -185,7 +191,7 @@ class LatexFormatter:
         layout do título são decididos pelo ambiente `Tutorial` de cada `.cls`
         — antes viviam num preâmbulo montado aqui em Python.
         """
-        self.__write_preamble()
+        self.__write_preamble('tutorial_pagination')
 
         # Argumento vazio = não exibir, como nos limites do enunciado.
         author = self.problem_metadata["author"]["name"] if self.options.get('display_author') else ''
