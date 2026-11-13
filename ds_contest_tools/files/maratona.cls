@@ -33,6 +33,7 @@
 \else
 \RequirePackage[hypertex]{hyperref}
 \fi
+\RequirePackage{lastpage}
 
 
 \newcommand{\var}[1]{\ensuremath{{#1}}}
@@ -54,8 +55,22 @@
 
 \DeclareGraphicsExtensions{png}
 
+\newcommand{\TextoPagina}[2]{Página #1 de #2}
+
+\newif\ifmar@numerar
+\newcommand{\mar@total}{\pageref*{LastPage}}
+\newcommand{\mar@rodape}{\ifmar@numerar\TextoPagina{\thepage}{\mar@total}\fi}
+
 \lhead{DS Contest Tools}
+\cfoot{\mar@rodape}
 \pagestyle{fancy}
+
+% Página de título do tutorial (\maketitle).
+\fancypagestyle{plain}{%
+	\fancyhf{}%
+	\cfoot{\mar@rodape}%
+	\renewcommand{\headrulewidth}{0pt}%
+}
 
 % Capa
 \newenvironment{Maratona}[3]
@@ -170,7 +185,11 @@
 
 \newcommand{\Evento}[1]{\lhead{#1}}
 
-\newcommand{\Paginacao}[2]{}
+% \thepage é redefinido sem \pagenumbering, que zeraria o contador.
+\newcommand{\NumerarPaginas}{\mar@numerartrue\renewcommand{\thepage}{\arabic{page}}}
+
+% Sem \Paginacao, o total vem do LastPage.
+\newcommand{\Paginacao}[2]{\setcounter{page}{#1}\renewcommand{\mar@total}{#2}}
 
 \newcounter{exemplocaso}
 

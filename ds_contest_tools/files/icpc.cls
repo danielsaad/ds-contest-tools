@@ -27,9 +27,10 @@
 \RequirePackage{seqsplit}
 \RequirePackage{ifthen}
 \RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
 
 % Sem cabecalho nem rodape por padrao (DEC-5); o \Evento liga o cabecalho com
-% o nome do evento.
+% o nome do evento e o \NumerarPaginas, o rodape com a pagina.
 \pagestyle{empty}
 
 \setlength{\parindent}{0pt}
@@ -60,6 +61,7 @@
 \newcommand{\NomeAutor}{Autor}
 \newcommand{\NomeLimiteTempo}{Limite de tempo}
 \newcommand{\NomeLimiteMemoria}{Limite de memória}
+\newcommand{\TextoPagina}[2]{Página #1 de #2}
 
 % Teste de vazio com \detokenize (DEC-7). Um \ifx compararia so os dois
 % primeiros tokens: um autor "LLUIS Vidal" passaria por vazio.
@@ -130,18 +132,36 @@
 % continua sem cabecalho.
 \newcommand{\icpc@evento}{}
 
+\newif\ificpc@numerar
+\newcommand{\icpc@total}{\pageref{LastPage}}
+\newcommand{\icpc@rodape}{%
+    \ificpc@numerar\small\TextoPagina{\thepage}{\icpc@total}\fi
+}
+
 \fancypagestyle{icpcevento}{%
     \fancyhf{}%
     \fancyhead[L]{\small\icpc@evento}%
+    \fancyfoot[C]{\icpc@rodape}%
     \renewcommand{\headrulewidth}{0.4pt}%
+}
+
+\fancypagestyle{icpcpagina}{%
+    \fancyhf{}%
+    \fancyfoot[C]{\icpc@rodape}%
+    \renewcommand{\headrulewidth}{0pt}%
 }
 
 \newcommand{\Evento}[1]{%
     \icpc@sevazio{#1}{}{\renewcommand{\icpc@evento}{#1}\pagestyle{icpcevento}}%
 }
 
-% Este formato nao numera as paginas: \Paginacao existe so pelo contrato.
-\newcommand{\Paginacao}[2]{}
+\newcommand{\NumerarPaginas}{%
+    \icpc@numerartrue
+    \expandafter\icpc@sevazio\expandafter{\icpc@evento}{\pagestyle{icpcpagina}}{}%
+}
+
+% Sem \Paginacao, o total vem do LastPage.
+\newcommand{\Paginacao}[2]{\setcounter{page}{#1}\renewcommand{\icpc@total}{#2}}
 
 % ---------------------------------------------------------------------------
 % Secoes

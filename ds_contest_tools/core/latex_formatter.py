@@ -86,6 +86,9 @@ class LatexFormatter:
         self.f_out.write(f"\\documentclass{{{class_name}}}")
         self.f_out.write("\\begin{document}")
 
+        if self.options.get('page_numbers'):
+            self.f_out.write("\\NumerarPaginas\n")
+
         pagination = self.options.get(pagination_option)
         if pagination:
             first_page, total_pages = pagination
@@ -193,7 +196,6 @@ class LatexFormatter:
         """
         self.__write_preamble('tutorial_pagination')
 
-        # Argumento vazio = não exibir, como nos limites do enunciado.
         author = self.problem_metadata["author"]["name"] if self.options.get('display_author') else ''
         self.f_out.write(
             "\\begin{Tutorial}{" + self.problem_metadata["problem"]["title"]

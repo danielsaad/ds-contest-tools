@@ -28,6 +28,7 @@ DEFAULT_PDF_OPTIONS = {
     'display_author': False,
     'display_limits': True,
     'problem_label': '',
+    'page_numbers': False,
     'pagination': None,
     'tutorial_pagination': None,
     'event': False,

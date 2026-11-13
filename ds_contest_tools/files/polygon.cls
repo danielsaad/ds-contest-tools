@@ -101,6 +101,17 @@
 \DeclareRobustCommand{\contestname}{\thecontestname\strut}
 \newcommand{\Evento}[1]{\renewcommand{\thecontestname}{#1}}
 
+% O rodapé do olymp ("Page X of Y") só aparece com \NumerarPaginas. O plain,
+% usado pelo \maketitle do tutorial, recebe o mesmo rodapé.
+\newif\ifpol@numerar
+\let\pol@rodape\@oddfoot
+\renewcommand{\@oddfoot}{\ifpol@numerar\pol@rodape\fi}
+\def\ps@plain{%
+    \let\@oddhead\@empty\let\@evenhead\@empty
+    \def\@oddfoot{\ifpol@numerar\pol@rodape\fi}\let\@evenfoot\@oddfoot}
+
+\newcommand{\NumerarPaginas}{\pol@numerartrue}
+
 \newcommand{\Paginacao}[2]{%
     \setcounter{page}{#1}%
     \gdef\lastpage@putlabel{%

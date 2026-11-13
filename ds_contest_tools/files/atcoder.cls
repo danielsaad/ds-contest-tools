@@ -23,6 +23,7 @@
 \RequirePackage{needspace}
 \RequirePackage{ifthen}
 \RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
 
 \pagestyle{empty}
 
@@ -84,6 +85,7 @@
 \newcommand{\NomeTutorial}{Tutorial}
 \newcommand{\NomeLimiteTempo}{Limite de Tempo}
 \newcommand{\NomeLimiteMemoria}{Limite de Memória}
+\newcommand{\TextoPagina}[2]{Página #1 de #2}
 
 % ---------------------------------------------------------------------------
 % Cabecalho do problema
@@ -128,20 +130,39 @@
 
 \newcommand{\atc@evento}{}
 
+\newif\ifatc@numerar
+\newcommand{\atc@total}{\pageref{LastPage}}
+\newcommand{\atc@rodape}{%
+    \ifatc@numerar\small\textcolor{athead}{\TextoPagina{\thepage}{\atc@total}}\fi
+}
+
 \fancypagestyle{atcevento}{%
     \fancyhf{}%
     \fancyhead[L]{\small\textcolor{athead}{\atc@evento}}%
+    \fancyfoot[C]{\atc@rodape}%
     \renewcommand{\headrulewidth}{0.8pt}%
     \renewcommand{\headrule}{{\color{atline}%
         \hrule\@height\headrulewidth\@width\headwidth
         \vskip-\headrulewidth}}%
 }
 
+\fancypagestyle{atcpagina}{%
+    \fancyhf{}%
+    \fancyfoot[C]{\atc@rodape}%
+    \renewcommand{\headrulewidth}{0pt}%
+}
+
 \newcommand{\Evento}[1]{%
     \atc@sevazio{#1}{}{\renewcommand{\atc@evento}{#1}\pagestyle{atcevento}}%
 }
 
-\newcommand{\Paginacao}[2]{}
+\newcommand{\NumerarPaginas}{%
+    \atc@numerartrue
+    \expandafter\atc@sevazio\expandafter{\atc@evento}{\pagestyle{atcpagina}}{}%
+}
+
+% Sem \Paginacao, o total vem do LastPage.
+\newcommand{\Paginacao}[2]{\setcounter{page}{#1}\renewcommand{\atc@total}{#2}}
 
 % -- Secoes do enunciado ----------------------------------------------------
 

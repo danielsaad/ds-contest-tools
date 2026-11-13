@@ -32,6 +32,7 @@ Opções de construção:
 - **-ngvoc**: Gera apenas os executáveis e os PDFs do problema. É a união entre as opções *-ng*, *-no* e *-nc*.
 - **-c, --cpu-count `<qtde-threads>`**: Define a quantidade de *threads* a serem criadas na execução do checker, indicado por *qtde-threads*.
 - **-lc, --latex-class `<formato>`**: Define o formato usado para gerar o PDF. Os formatos aceitos são `ds-contest-tools`, `polygon` e `atcoder`; `ds-contest-tools` utiliza internamente `maratona.cls` e é a opção padrão.
+- **--page-numbers**: Numera as páginas dos PDFs do problema no rodapé, no formato "Página X de Y" (no formato `polygon`, "Page X of Y"). Sem a flag, nenhum formato numera as páginas.
 
 ## contest
 
@@ -45,6 +46,7 @@ Opções:
 - **-i, --io**: Gera apenas os arquivos de entrada/saída dos problemas da maratona.
 - **--author**: Adiciona o nome do autor no cabeçalho dos PDFs da maratona.
 - **--no-event**: Omite o nome do evento (campo `event` do `problem.json`) no cabeçalho dos PDFs da maratona e dos pacotes BOCA. Sem a flag, o nome aparece em todos os formatos.
+- **--page-numbers**: Numera as páginas dos PDFs da maratona e dos pacotes BOCA no rodapé, no formato "Página X de Y" (no formato `polygon`, "Page X of Y"). No caderno da maratona e no de tutoriais, a numeração é contínua entre os problemas; nos pacotes BOCA, cada problema é numerado separadamente. Sem a flag, nenhum formato numera as páginas.
 - **-lc, --latex-class `<formato>`**: Define o formato usado para gerar os PDFs. Os formatos aceitos são `ds-contest-tools`, `polygon` e `atcoder`; `ds-contest-tools` utiliza internamente `maratona.cls` e é a opção padrão.
 
 ## convert_to
