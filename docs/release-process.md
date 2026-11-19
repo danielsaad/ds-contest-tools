@@ -1,14 +1,31 @@
 # Processo de Lançamento (Release Process)
 
-Este documento descreve como funciona o fluxo de publicação de novas versões do pacote `ds-contest-tools`.
+Este documento descreve o fluxo de publicação de novas versões do pacote `ds-contest-tools`.
 
 O processo de lançamento de uma nova versão da aplicação é automatizado usando o `setuptools_scm` para o versionamento dinâmico baseado em Tags do Git, aliado ao GitHub Actions para a Integração e Entrega Contínuas (CI/CD).
 
-**A validação de novas versões ocorre conferindo o título do Pull Request e o arquivo `CHANGELOG.md`.** Você não precisa (e não deve) alterar a versão manualmente em arquivos `.py` ou no `pyproject.toml`.
+Para contribuições do dia a dia que não envolvem lançamento de versão, consulte as [Diretrizes para Pull Requests](pull-requests.md).
+
+> [!IMPORTANT]
+> **A validação de novas versões ocorre conferindo o título do Pull Request e o arquivo `CHANGELOG.md`.** Você não precisa (e não deve) alterar a versão manualmente em arquivos `.py` ou no `pyproject.toml`.
 
 ---
 
-## 🚀 Como lançar uma nova versão
+## Visão Geral do Fluxo
+
+```mermaid
+flowchart LR
+    A["Branch release/vX.Y.Z"] --> B["Atualiza CHANGELOG.md"]
+    B --> C["Abre PR (Release vX.Y.Z)"]
+    C --> D{"CI: Validação"}
+    D -- Aprovado --> E["Merge na master"]
+    E --> F["Action: tag-release (vX.Y.Z)"]
+    F --> G["Action: publish-pypi (PyPI)"]
+```
+
+---
+
+## Como lançar uma nova versão
 
 Para publicar uma nova versão oficial (ex: `1.2.0`), siga estes passos:
 
@@ -33,9 +50,10 @@ Cole logo após o bloco de comentário e preencha com as alterações da versão
 
 Faça o commit dessa alteração (ex: `git commit -m "chore: release v1.2.0"`) e abra um Pull Request para a branch `master`.
 
-> **IMPORTANTE: Padrões de Nomenclatura do PR**
+> [!IMPORTANT]
+> **Padrões de Nomenclatura do PR**
 >
-> A esteira é inteligente, mas precisa que o título do Pull Request indique claramente que se trata de uma release para poder extrair a versão. Os formatos aceitos abrangem várias convenções da comunidade (com ou sem 'v' maiúsculo/minúsculo):
+> A esteira é inteligente, mas precisa que o **título** do Pull Request indique claramente que se trata de uma release para poder extrair a versão. Os formatos aceitos abrangem várias convenções da comunidade (com ou sem 'v' maiúsculo/minúsculo):
 >
 > **Família "Release":**
 >
@@ -85,7 +103,7 @@ Pronto! Em alguns minutos a nova versão estará disponível para todo o mundo v
 
 ---
 
-## ⚠️ Regras Importantes
+## Regras importantes
 
 * O formato da versão no CHANGELOG deve ser estritamente `[X.Y.Z]`.
 * O título do Pull Request de release deve seguir um dos padrões aceitos (ex: `Release vX.Y.Z`).

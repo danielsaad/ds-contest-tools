@@ -8,32 +8,32 @@ Para o fluxo específico de lançamento de versões, consulte o [Processo de Lan
 
 ## 1. Padrão de Nomenclatura (Conventional Commits)
 
-Recomendamos fortemente o uso de **Conventional Commits** para os títulos dos seus Pull Requests. Isso ajuda a nossa esteira de CI/CD a entender automaticamente o propósito da sua alteração.
+Recomendamos fortemente o uso de **Conventional Commits** para os títulos dos seus Pull Requests. Isso ajuda a nossa esteira de CI/CD a entender automaticamente o propósito da sua alteração e padroniza o histórico do projeto.
 
 ### Prefixos Comuns:
 
-* **`docs:`** Alterações exclusivas em documentação (ex: manuais, README.md, docstrings).
-  > *Exemplo: `docs: atualizar guia de instalação no README`*
-* **`chore:`** Atualizações de tarefas de manutenção, ferramentas, dependências ou esteiras de CI/CD (GitHub Actions).
-  > *Exemplo: `chore: atualizar versão da action de lint`*
-* **`feat:`** Uma nova funcionalidade para o usuário.
-* **`fix:`** Uma correção de bug para o usuário.
-* **`refactor:`** Uma mudança de código que não corrige um bug nem adiciona uma funcionalidade.
-* **`test:`** Adição ou correção de testes automatizados.
+| Prefixo | Descrição | Exemplo de Título |
+| :--- | :--- | :--- |
+| **`feat:`** | Nova funcionalidade para o usuário | `feat: adicionar suporte ao formato atcoder` |
+| **`fix:`** | Correção de bug no código | `fix: corrigir timeout na geração de PDFs` |
+| **`docs:`** | Alterações exclusivas em documentação | `docs: atualizar guia de instalação no README` |
+| **`chore:`** | Tarefas de manutenção, dependências ou CI/CD | `chore: atualizar versão das actions do GitHub` |
+| **`refactor:`** | Mudança interna sem alterar comportamento | `refactor: extrair formatador LaTeX para módulo puro` |
+| **`test:`** | Adição ou correção de testes automatizados | `test: adicionar casos de teste para checker` |
 
 ### PRs de Release
 
-Se o seu PR tem o objetivo de gerar uma nova versão no PyPI, o título deve ser estritamente no formato `Release vX.Y.Z` (ou equivalente). A automação reconhecerá isso e exigirá a atualização do `CHANGELOG.md`.
+Se o seu PR tem o objetivo de gerar uma nova versão no PyPI, o título deve ser no formato `Release vX.Y.Z` (ou equivalente aceito pela esteira). A automação reconhecerá isso e exigirá a atualização correspondente no `CHANGELOG.md`.
 
 ---
 
 ## 2. Pull Requests que NÃO alteram versão
 
-A grande maioria dos Pull Requests no dia a dia (como documentação, correções ou ajustes em CI/CD) não altera a versão da aplicação. 
+A grande maioria dos Pull Requests no dia a dia (como documentação, correções ou ajustes em CI/CD) não altera a versão da aplicação.
 
-Ao abrir PRs desse tipo, o comportamento da nossa esteira é altamente otimizado:
+Ao abrir PRs desse tipo, não é necessário atualizar o `CHANGELOG.md`, e a esteira de CI/CD seguirá regras específicas para otimizar a execução.
 
-### 2.1. Alterações exclusivas de Documentação e Configuração
+### 2.1. Alterações apenas na Documentação e na Configuração
 
 Se o seu PR alterar **apenas** arquivos dos seguintes caminhos:
 
@@ -42,8 +42,8 @@ Se o seu PR alterar **apenas** arquivos dos seguintes caminhos:
 * Arquivos ignorados (`.gitignore`)
 * Configurações administrativas (`.github/CODEOWNERS`)
 
-**A esteira de CI/CD não será executada**.
-A esteira de CI/CD está configurada com a regra `paths-ignore` no nosso workflow de CI. Isso significa que mudanças em textos e configurações que não afetam o código Python não desperdiçam recursos executando testes e builds desnecessários. O merge será muito mais rápido!
+> [!TIP]
+> **Execução Otimizada:** A esteira de CI/CD está configurada com a regra `paths-ignore`. Mudanças que afetam exclusivamente documentação ou arquivos administrativos não disparam testes nem builds desnecessários, permitindo um merge muito mais ágil.
 
 ### 2.2. Alterações de CI/CD ou Código sem Release
 
