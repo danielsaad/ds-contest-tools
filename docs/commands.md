@@ -33,6 +33,7 @@ Opções de construção:
 - **-c, --cpu-count `<qtde-threads>`**: Define a quantidade de *threads* a serem criadas na execução do checker, indicado por *qtde-threads*.
 - **-lc, --latex-class `<formato>`**: Define o formato usado para gerar o PDF. Os formatos aceitos são `ds-contest-tools`, `polygon` e `atcoder`; `ds-contest-tools` utiliza internamente `maratona.cls` e é a opção padrão.
 - **--page-numbers**: Numera as páginas dos PDFs do problema no rodapé, no formato "Página X de Y" (no formato `polygon`, "Page X of Y"). Sem a flag, nenhum formato numera as páginas.
+- **--limits**: Exibe os limites de tempo e de memória no cabeçalho do PDF do problema. Sem a flag, os limites seguem a opção `display_limits` do `config.py`, que por padrão os oculta. Um limite ausente no `problem.json` não aparece no PDF; a construção completa, que roda o *checker*, continua exigindo os dois.
 
 ## contest
 
@@ -47,6 +48,7 @@ Opções:
 - **--author**: Adiciona o nome do autor no cabeçalho dos PDFs da maratona.
 - **--no-event**: Omite o nome do evento (campo `event` do `problem.json`) no cabeçalho dos PDFs da maratona e dos pacotes BOCA. Sem a flag, o nome aparece em todos os formatos.
 - **--page-numbers**: Numera as páginas dos PDFs da maratona e dos pacotes BOCA no rodapé, no formato "Página X de Y" (no formato `polygon`, "Page X of Y"). No caderno da maratona e no de tutoriais, a numeração é contínua entre os problemas; nos pacotes BOCA, cada problema é numerado separadamente. Sem a flag, nenhum formato numera as páginas.
+- **--limits**: Exibe os limites de tempo e de memória no cabeçalho dos PDFs da maratona e dos pacotes BOCA. Sem a flag, os limites seguem a opção `display_limits` do `config.py`, que por padrão os oculta. Um limite ausente no `problem.json` não aparece nos PDFs; os pacotes BOCA, gerados sem `-p`, continuam exigindo os dois, porque o BOCA os usa na correção.
 - **-lc, --latex-class `<formato>`**: Define o formato usado para gerar os PDFs. Os formatos aceitos são `ds-contest-tools`, `polygon` e `atcoder`; `ds-contest-tools` utiliza internamente `maratona.cls` e é a opção padrão.
 
 ## convert_to

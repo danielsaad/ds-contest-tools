@@ -10,6 +10,7 @@ def execute_build(options: BuildOptions) -> None:
     pdf_options = DEFAULT_PDF_OPTIONS.copy()
     pdf_options['latex_class'] = options.latex_class
     pdf_options['page_numbers'] = options.page_numbers
+    pdf_options['display_limits'] = pdf_options['display_limits'] or options.limits
 
     if options.pdf:
         info_log('Generating problem PDF')

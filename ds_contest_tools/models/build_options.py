@@ -19,10 +19,11 @@ class BuildOptions:
         ngvoc: Whether to build only problem executables and PDFs or not.
         latex_class: LaTeX class file to be used to build the PDFs.
         page_numbers: Whether to number the PDF pages or not.
+        limits: Whether to show the time and memory limits in the PDF or not.
         problem_dir: Path to the problem directory.
     """
 
-    def __init__(self, problem_dir: str, all_solutions: bool, specific_solution: str, cpu_count: int, io: bool, pdf: bool, no_validator: bool, no_generator: bool, no_checker: bool, no_output: bool, ngvoc: bool, latex_class: str = 'ds-contest-tools', page_numbers: bool = False):
+    def __init__(self, problem_dir: str, all_solutions: bool, specific_solution: str, cpu_count: int, io: bool, pdf: bool, no_validator: bool, no_generator: bool, no_checker: bool, no_output: bool, ngvoc: bool, latex_class: str = 'ds-contest-tools', page_numbers: bool = False, limits: bool = False):
         self.problem_dir = problem_dir
         self.all_solutions = all_solutions
         self.specific_solution = specific_solution
@@ -36,3 +37,4 @@ class BuildOptions:
         self.ngvoc = ngvoc
         self.latex_class = latex_class
         self.page_numbers = page_numbers
+        self.limits = limits

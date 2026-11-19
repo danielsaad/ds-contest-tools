@@ -26,7 +26,7 @@ DEFAULT_LATEX_CLASS = 'ds-contest-tools'
 
 DEFAULT_PDF_OPTIONS = {
     'display_author': False,
-    'display_limits': True,
+    'display_limits': False,
     'problem_label': '',
     'page_numbers': False,
     'pagination': None,

@@ -7,7 +7,7 @@ from ds_contest_tools import config
 from ds_contest_tools.enumarate.statement_files import StatementFiles
 from ds_contest_tools.util.jsonutils import parse_json
 from ds_contest_tools.util.latexutils import get_io
-from ds_contest_tools.logger import info_log
+from ds_contest_tools.logger import error_log, info_log
 from ds_contest_tools.util.utils import check_problem_metadata, verify_path
 from ds_contest_tools.util.fileutils import has_lines
 
@@ -103,8 +103,8 @@ class LatexFormatter:
 
         problem = self.problem_metadata["problem"]
         if self.options.get('display_limits', True):
-            time_limit = str(problem["time_limit"])
-            memory_limit = str(problem["memory_limit_mb"])
+            time_limit = str(problem.get("time_limit", ''))
+            memory_limit = str(problem.get("memory_limit_mb", ''))
         else:
             time_limit = memory_limit = ''
 
@@ -230,10 +230,11 @@ class LatexFormatter:
     def __set_problem_metadata(self) -> None:
         """Reads and validates the problem metadata from the problem.json file.
 
-        Returns:
-            dict: The validated problem metadata.
+        Limits are optional here: when missing, the PDF does not show them.
         """
         problem_json_path = os.path.join(self.problem_folder, 'problem.json')
         problem_metadata = parse_json(problem_json_path)
-        check_problem_metadata(problem_metadata)
+        check_problem_metadata(problem_metadata, require_limits=False)
+        if not problem_metadata['problem']['title'].strip():
+            error_log("Variable 'title' in 'problem' is empty in problem.json.")
         self.problem_metadata = problem_metadata

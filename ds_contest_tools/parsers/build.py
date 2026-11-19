@@ -7,7 +7,7 @@ from ds_contest_tools.models.build_options import BuildOptions
 
 from .common import *
 
-def cli_handler(problem_dir, all, specific, cpu_count, io, pdf, no_validator, no_generator, no_checker, no_output, ngvoc, latex_class, page_numbers=False) -> None:
+def cli_handler(problem_dir, all, specific, cpu_count, io, pdf, no_validator, no_generator, no_checker, no_output, ngvoc, latex_class, page_numbers=False, limits=False) -> None:
     """
     Handle the command line interface for the build command.
 
@@ -25,11 +25,12 @@ def cli_handler(problem_dir, all, specific, cpu_count, io, pdf, no_validator, no
         ngvoc: Whether to build only executables and PDFs.
         latex_class: The LaTeX class file to be used to build the PDFs.
         page_numbers: Whether to number the PDF pages.
+        limits: Whether to show the time and memory limits in the PDF.
     """
     logger.info_log(f"Building problem in {problem_dir}")
     setup_and_validate_paths(problem_dir)
     options: BuildOptions = BuildOptions(all_solutions=all, specific_solution=specific,
-                                         cpu_count=cpu_count, io=io, pdf=pdf, no_validator=no_validator, no_generator=no_generator, no_checker=no_checker, no_output=no_output, ngvoc=ngvoc, latex_class=latex_class, problem_dir=problem_dir, page_numbers=page_numbers)
+                                         cpu_count=cpu_count, io=io, pdf=pdf, no_validator=no_validator, no_generator=no_generator, no_checker=no_checker, no_output=no_output, ngvoc=ngvoc, latex_class=latex_class, problem_dir=problem_dir, page_numbers=page_numbers, limits=limits)
 
     execute_build(options)
 
@@ -72,6 +73,7 @@ def add_parser(subparsers) -> None:
         '-lc', '--latex-class', help='LaTeX class file to be used to build the PDFs (without .cls extension)',
         choices=LATEX_CLASSES, default=DEFAULT_LATEX_CLASS)
     parser_build.add_argument('--page-numbers', action='store_true', help='number the PDF pages')
+    parser_build.add_argument('--limits', action='store_true', help='show the time and memory limits in the PDF')
     parser_build.add_argument('problem_dir', help='path to the problem directory')
     parser_build.set_defaults(function=lambda options: cli_handler(
-        problem_dir=options.problem_dir, all=options.all, specific=options.specific, cpu_count=options.cpu_count, io=options.io, pdf=options.pdf, no_validator=options.no_validator, no_generator=options.no_generator, no_checker=options.no_checker, no_output=options.no_output, ngvoc=options.ngvoc, latex_class=options.latex_class, page_numbers=options.page_numbers))
+        problem_dir=options.problem_dir, all=options.all, specific=options.specific, cpu_count=options.cpu_count, io=options.io, pdf=options.pdf, no_validator=options.no_validator, no_generator=options.no_generator, no_checker=options.no_checker, no_output=options.no_output, ngvoc=options.ngvoc, latex_class=options.latex_class, page_numbers=options.page_numbers, limits=options.limits))

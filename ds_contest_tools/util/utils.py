@@ -125,18 +125,20 @@ def verify_supported_languages(solution_file: str):
             f'Programming language for solution {solution_file} is not supported or has an invalid extension')
 
 
-def check_problem_metadata(problem_metadata: dict) -> None:
+def check_problem_metadata(problem_metadata: dict, require_limits: bool = True) -> None:
     """Check variables inside problem.json for type errors.
 
     Args:
         problem_metadata: The problem.json file as a dictionary.
+        require_limits: Whether the time and memory limits must be defined.
     """
     verify_solutions(problem_metadata['solutions'])
 
     expected_types = {
-        'problem': {'time_limit': int, 'memory_limit_mb': int, 'interactive': bool, 'grader': bool},
+        'problem': {'title': str, 'time_limit': int, 'memory_limit_mb': int, 'interactive': bool, 'grader': bool},
         'io_samples': int
     }
+    optional = set() if require_limits else {'time_limit', 'memory_limit_mb'}
     for key in expected_types:
         if key not in problem_metadata:
             error_log(f"Variable {key} is not defined in problem.json.")
@@ -150,6 +152,8 @@ def check_problem_metadata(problem_metadata: dict) -> None:
         for subkey, expected_type in expected_types[key].items():
             value = problem_metadata[key].get(subkey)
             if subkey not in problem_metadata[key]:
+                if subkey in optional:
+                    continue
                 error_log(
                     f"Variable '{subkey}' is not defined in '{key}' in problem.json.")
             if not isinstance(value, expected_type):

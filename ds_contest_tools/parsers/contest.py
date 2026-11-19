@@ -4,7 +4,7 @@ from ..metadata import Paths
 from .common import *
 
 
-def process_contest(problems_dir: list, output_dir: str, pdf: bool, io: bool, author: bool, no_verify: bool, latex_class: str, no_event: bool = False, page_numbers: bool = False) -> None:
+def process_contest(problems_dir: list, output_dir: str, pdf: bool, io: bool, author: bool, no_verify: bool, latex_class: str, no_event: bool = False, page_numbers: bool = False, limits: bool = False) -> None:
     """
     Process the contest files.
 
@@ -18,6 +18,7 @@ def process_contest(problems_dir: list, output_dir: str, pdf: bool, io: bool, au
         latex_class: The LaTeX class file to be used to build the PDFs.
         no_event: Whether is to hide the event name in the PDFs header.
         page_numbers: Whether is to number the PDFs pages.
+        limits: Whether is to show the time and memory limits in the PDFs.
     """
     setup_and_validate_paths(problems_dir, output_dir, additional_verification=['pdfjam'])
     os.makedirs(output_dir, exist_ok=True)
@@ -30,10 +31,10 @@ def process_contest(problems_dir: list, output_dir: str, pdf: bool, io: bool, au
     if io:
         build_input_output()
     elif pdf:
-        build_contest_pdf(author=author, latex_class=latex_class, event=not no_event, page_numbers=page_numbers)
+        build_contest_pdf(author=author, latex_class=latex_class, event=not no_event, page_numbers=page_numbers, limits=limits)
     else:
-        build_boca_packages(author=author, latex_class=latex_class, event=not no_event, page_numbers=page_numbers)
-        build_contest_pdf(author=author, latex_class=latex_class, event=not no_event, page_numbers=page_numbers)
+        build_boca_packages(author=author, latex_class=latex_class, event=not no_event, page_numbers=page_numbers, limits=limits)
+        build_contest_pdf(author=author, latex_class=latex_class, event=not no_event, page_numbers=page_numbers, limits=limits)
     info_log('Contest files generated successfully')
 
 
@@ -54,6 +55,7 @@ def add_parser(subparsers) -> None:
     contest_parser.add_argument('--author', action='store_true', help='add author name to PDFs')
     contest_parser.add_argument('--no-event', action='store_true', help='hide the event name in the PDFs header')
     contest_parser.add_argument('--page-numbers', action='store_true', help='number the PDFs pages')
+    contest_parser.add_argument('--limits', action='store_true', help='show the time and memory limits in the PDFs')
     contest_parser.add_argument('-nv', '--no-verify', action='store_true', help='do not verify and rebuild problems', default=False)
     contest_parser.add_argument(
         '-lc', '--latex-class', help='LaTeX class file to be used to build the PDFs (without .cls extension)',
@@ -63,4 +65,4 @@ def add_parser(subparsers) -> None:
     contest_parser.add_argument(
         'contest_dir', help='directory which the contest will be saved')
     contest_parser.set_defaults(function=lambda options: process_contest(
-        options.problem_dir, options.contest_dir, options.pdf, options.io, options.author, options.no_verify, options.latex_class, options.no_event, options.page_numbers))
+        options.problem_dir, options.contest_dir, options.pdf, options.io, options.author, options.no_verify, options.latex_class, options.no_event, options.page_numbers, options.limits))
