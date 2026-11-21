@@ -51,8 +51,8 @@ def init_problem(interactive: bool, grader: bool, verify_folder: bool = True, ig
     # Verify interactive problem
     if interactive:
         # Create .interactive files for statement
-        os.makedirs(os.path.join(problem_folder, 'input'))
-        os.makedirs(os.path.join(problem_folder, 'output'))
+        os.makedirs(os.path.join(problem_folder, 'input'),exist_ok=True)
+        os.makedirs(os.path.join(problem_folder, 'output'),exist_ok=True)
         open(os.path.join(
             *[problem_folder, 'input', '1.interactive']), 'w').close()
         open(os.path.join(
@@ -383,8 +383,10 @@ def produce_outputs(problem_obj: Problem, problem_metadata: dict) -> None:
                 interactor: str = os.path.join(
                     problem_dir, 'bin', 'interactor')
                 verify_path(interactor)
+                print(f'command 1 = {command}')
                 command: list = [interactor, inf_path, ouf_path,
                                  '<', tmp_fifo, '|', *command, '>', tmp_fifo]
+                print(f'command 2 = {command}')
                 p = subprocess.Popen(
                     ' '.join(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
                 p.wait()

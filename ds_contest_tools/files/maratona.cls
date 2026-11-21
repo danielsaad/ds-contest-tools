@@ -1,5 +1,5 @@
 \ProvidesPackage{maratona}
-\LoadClass[12pt]{article}
+\LoadClass[11pt]{article}
 
 % remove page numbers
 \pagenumbering{gobble}
@@ -109,7 +109,7 @@
 	\stepcounter{problem}
 	\newpage
 	\begin{center}
-		\Large{\ifthenelse{\equal{#1}{}}{\textbf{{#2}}}{\textbf{Problema {#1} \\ {#2} }}}{\\\footnotesize \textbf{Limite de tempo: {#3}s}}{\\\footnotesize \textbf{Limite de memória: {#4}MB}}
+		\Large{\ifthenelse{\equal{#1}{}}{\textbf{{#2}}}{\textbf{Problema {#1} -- {#2} }}}{\\\footnotesize \textbf{Limite de tempo: {#3}s}}{\\[-0.1cm]\footnotesize \textbf{Limite de memória: {#4}MB}}
 	\end{center}
 }
 
@@ -118,7 +118,7 @@
 	\stepcounter{problemAutor}
 	\newpage
 	\begin{center}
-		\Large{\ifthenelse{\equal{#1}{}}{\textbf{{#2}}}{\textbf{Problema {#1} \\ {#2} }}}{\\\footnotesize \textbf{Limite de tempo: {#3}s}}{\\\footnotesize \textbf{Limite de memória: {#4}MB\\}}{
+		\Large{\ifthenelse{\equal{#1}{}}{\textbf{{#2}}}{\textbf{Problema {#1} -- {#2} }}}{\\\footnotesize \textbf{Limite de tempo: {#3}s}}{\\[-0.1cm]\footnotesize \textbf{Limite de memória: {#4}MB\\}}{
 			\footnotesize Autor: {#5}
 		}
 	\end{center}
@@ -130,32 +130,20 @@
 
 % Entrada
 \newcommand{\Entrada}{
-	\bigskip
-	\begin{large}
-		\textbf{Entrada} \\
-	\end{large}
+	\section*{Entrada}
 }
 
 % Saida
 \newcommand{\Saida}{
-	\bigskip
-	\begin{large}
-		\textbf{Saída} \\
-	\end{large}
+	\section*{Saída}
 }
 
 \newcommand{\Interacao}{
-	\bigskip
-	\begin{large}
-		\textbf{Interação} \\
-	\end{large}
+	\section*{Interação}
 }
 
 \newcommand{\Notas}{
-	\bigskip
-	\begin{large}
-		\textbf{Notas} \\
-	\end{large}
+	\section*{Notas}
 }
 
 % Exemplo
@@ -176,10 +164,7 @@
 % Exemplo de Entrada
 \newenvironment{ExemploEntrada}
 {
-	\bigskip
-	\begin{large}
-		\textbf{Exemplo} \\
-	\end{large}
+	\section*{Exemplo}
 }
 {
 }

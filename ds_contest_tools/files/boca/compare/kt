@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+# encoding: utf-8
+import sys
+from decimal import *
+
+EPS = 1e-9
+
+def AC(msg):
+  print(f'YES! {msg}')
+  sys.exit(4)
+
+
+def WA(msg):
+  print(f'NO :/ {msg}')
+  sys.exit(6)
+
+
+def BAD_JUDGE(msg):
+  print(f'unexpected judge behaviour, {msg}')
+  sys.exit(43)
+
+
+def clean_content(file):
+  return list(filter(None, map(str.strip, file.readlines())))
+
+
+def read_solution(filename):
+  with open(filename, 'r') as output_file:
+    solution = clean_content(output_file)
+  return solution
+
+
+def acceptable_error(x, y, epsilon):
+  # Check absolute precision.
+  if -epsilon <= x - y <= epsilon:
+    return True
+
+  # Is x or y too close to zero?
+  if -epsilon <= x <= epsilon or -epsilon <= y <= epsilon:
+    return False
+
+  # Check relative precision.
+  return (-epsilon <= (x - y) / x <= epsilon or -epsilon <= (x - y) / y <= epsilon)
+
+
+def parse_output(output, on_error=WA):
+  if len(output) != 1:
+    on_error(f'{len(output)} output lines, expected one')
+  try:
+    ans = Decimal(output[0])
+    if not ans.is_finite():
+      on_error(f'{ans} is not finite')
+    return ans
+  except Exception as e:
+    on_error(f'cannot parse {output[0]}, {e=}')
+
+
+try:
+  team_output_fn = sys.argv[1]
+  sol_output_fn = sys.argv[2]
+  problem_input_fn = sys.argv[3]
+
+  team_output = read_solution(team_output_fn)
+  reference_output = read_solution(sol_output_fn)
+  is_same_output = team_output == reference_output
+
+  team_solution = parse_output(team_output)
+  reference_solution = parse_output(reference_output, on_error=BAD_JUDGE)
+
+  if acceptable_error(team_solution, reference_solution, EPS):
+    if is_same_output:
+      AC('files match exactly')
+    else:
+      AC(f'values are approximately equal (team={team_solution}, reference={reference_solution})')
+  elif is_same_output:
+    BAD_JUDGE('same outputs not flagged as approximately equal')
+  else:
+    WA(f'team response ({team_solution}) too far from reference ({reference_solution}) [eps={EPS}]')
+
+except Exception as e:
+  BAD_JUDGE(f'something bad happened: {e}')
+
+BAD_JUDGE('no veredict found')

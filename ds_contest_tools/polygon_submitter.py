@@ -27,7 +27,7 @@ def update_info(problem_metadata: dict) -> tuple:
         A tuple containing the method and the parameters for the request.
     """
     interactive: bool = problem_metadata['interactive']
-    time_limit: int = problem_metadata['time_limit'] * 1000
+    time_limit: int = int(problem_metadata['time_limit']) * 1000
     memory_limit: int = problem_metadata['memory_limit_mb']
 
     if not 250 <= time_limit <= 15000:
@@ -484,10 +484,10 @@ def get_requests_list(problem_id: str, manual_testcases: bool) -> List[Tuple[str
 
     # Get test parameters of the problem
     if manual_testcases:
-        save_manual_testcases(problem_id, problem_metadata['io_samples'])
+        save_manual_testcases(problem_id, problem_metadata['build']['io_samples'])
     else:
         requests_list += save_testcases(
-            problem_metadata['io_samples'], interactive, tmp_folder)
+            problem_metadata['build']['io_samples'], interactive, tmp_folder)
 
     return requests_list
 
