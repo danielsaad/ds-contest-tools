@@ -11,7 +11,7 @@ Atualmente, esta coleção de ferramentas suporta a exportação de problemas pa
 ## Pré-requisitos
 
 Para rodar as ferramentas é necessário ter instalado de antemão:
-* `python` >= 3.8: as principais ferramentas estão escritas nesta linguagem;
+* `python` >= 3.10: as principais ferramentas estão escritas nesta linguagem;
 * `pdflatex`: para geração de PDFs a partir de arquivos .tex;
 * `pdfjam`: para fazer a união de arquivos PDFs,  geralmente disponível junto com o ambiente LaTeX;
 * `make`, para compilação dos fontes e instalação dos executáveis a partir dos makefiles gerados;

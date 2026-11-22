@@ -76,8 +76,7 @@ def add_parser(subparsers) -> None:
 
     default_threads = max(floor(os.cpu_count() * 0.7), 1)
     parser_build.add_argument('-c', '--cpu-count', help="number of threads to be used "
-                              f"when checking solutions. Default is {
-                                    default_threads} threads.",
+                              f"when checking solutions. Default is {default_threads} threads.",
                               type=int, default=default_threads)
     parser_build.add_argument(
         '-nv', '--no-validator', help='build problem without the validator', action='store_true')

@@ -1,0 +1,82 @@
+name: Create Release Tag
+
+on:
+  pull_request:
+    branches: [ master ]
+    types: [ closed ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versão da release (ex: 1.0.0 ou v1.0.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  create-tag:
+    name: Create Git Tag from Release PR or Manual Dispatch
+    runs-on: ubuntu-latest
+    # Executa se for disparo manual OU se o PR foi mergeado
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.pull_request.merged == true
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Extrair versão
+      id: extract-version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          RAW_VERSION="${{ inputs.version }}"
+          VERSION=$(echo "$RAW_VERSION" | grep -oP '^(?:v)?\K\d+\.\d+\.\d+$' || true)
+          
+          if [ -z "$VERSION" ]; then
+            echo "::error::Versão informada manualmente inválida: '$RAW_VERSION'. Esperado: X.Y.Z ou vX.Y.Z"
+            exit 1
+          fi
+          
+          echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "TAG=v$VERSION" >> $GITHUB_OUTPUT
+          echo "🚀 Release manual: $VERSION | Tag: v$VERSION"
+        else
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          
+          # Extrai versão de formatos como: "1.2.0", "v1.2.0", "Release v1.2.0", "Release 1.2.0", "release: 1.2.0", "chore(release): 1.2.0"
+          VERSION=$(echo "$PR_TITLE" | grep -oP '^(?:[Rr]elease(?:\s+v?|\:\s*v?)|\bchore\([Rr]elease\)\:\s*v?|v)?\K\d+\.\d+\.\d+$' || true)
+          
+          if [ -n "$VERSION" ]; then
+            echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
+            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+            echo "TAG=v$VERSION" >> $GITHUB_OUTPUT
+            echo "📦 Versão extraída do PR: $VERSION | Tag: v$VERSION"
+          else
+            echo "IS_RELEASE=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ PR mergeado não é um PR de release ('$PR_TITLE'). Nenhuma tag será criada."
+          fi
+        fi
+
+    - name: Verificar se a tag já existe
+      if: steps.extract-version.outputs.IS_RELEASE == 'true'
+      run: |
+        TAG="${{ steps.extract-version.outputs.TAG }}"
+        if git rev-parse "$TAG" >/dev/null 2>&1; then
+          echo "::error::A tag $TAG já existe no repositório. Abortando."
+          exit 1
+        fi
+        echo "Tag $TAG ainda não existe. Prosseguindo."
+
+    - name: Criar e enviar a tag
+      if: steps.extract-version.outputs.IS_RELEASE == 'true'
+      run: |
+        TAG="${{ steps.extract-version.outputs.TAG }}"
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git tag -a "$TAG" -m "Release $TAG"
+        git push origin "$TAG"
+        echo "✅ Tag $TAG criada e enviada com sucesso!"

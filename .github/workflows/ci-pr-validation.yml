@@ -1,0 +1,79 @@
+name: CI PR Validation
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+      - '.gitignore'
+      - '.github/CODEOWNERS'
+  workflow_dispatch:
+
+jobs:
+  test-and-build:
+    name: Run Tests and Dry Build
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+      
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+        cache: "pip"
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install build
+        
+    - name: Dry-run Build
+      run: |
+        python -m build
+                
+  validate-release-version:
+    name: Validate Release Version in CHANGELOG
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Verificar se é PR de Release e extrair versão
+      id: extract-version
+      run: |
+        PR_TITLE="${{ github.event.pull_request.title }}"
+        
+        # Extrai versão de formatos como: "1.2.0", "v1.2.0", "Release v1.2.0", "Release 1.2.0", "release: 1.2.0", "chore(release): 1.2.0"
+        VERSION=$(echo "$PR_TITLE" | grep -oP '^(?:[Rr]elease(?:\s+v?|\:\s*v?)|\bchore\([Rr]elease\)\:\s*v?|v)?\K\d+\.\d+\.\d+$' || true)
+        
+        if [ -n "$VERSION" ]; then
+          echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 PR de release identificado para a versão: $VERSION"
+        else
+          echo "IS_RELEASE=false" >> $GITHUB_OUTPUT
+          echo "ℹ️ Não é um PR de release ('$PR_TITLE'). Validação de versão ignorada."
+        fi
+        
+    - name: Validar CHANGELOG.md
+      if: steps.extract-version.outputs.IS_RELEASE == 'true'
+      run: |
+        VERSION="${{ steps.extract-version.outputs.VERSION }}"
+        
+        # Verifica se existe um cabeçalho '## [X.Y.Z]' no CHANGELOG.md
+        if grep -q "## \[$VERSION\]" CHANGELOG.md; then
+          echo "Sucesso: Versão $VERSION encontrada no CHANGELOG.md."
+        else
+          echo "::error::Versão $VERSION NÃO encontrada no CHANGELOG.md. Adicione a seção '## [$VERSION]' no CHANGELOG."
+          exit 1
+        fi

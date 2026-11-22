@@ -77,7 +77,7 @@ class moj_converter:
         info_log('Creating author file')
         author_file = os.path.join(self.output_folder, 'author')
         with open(author_file, 'w') as ouf:
-            author_str = f'{self.problem_metadata['author']['name']}'
+            author_str = f"{self.problem_metadata['author']['name']}"
             event_str = self.problem_metadata['problem']['event']
             output_str = author_str
             if event_str != '':
