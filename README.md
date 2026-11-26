@@ -18,7 +18,7 @@ Atualmente, esta coleção de ferramentas suportam a exportação de problemas p
 ## Pré-requisitos
 
 Para rodar as ferramentas é necessário ter instalado de antemão:
-* `python` >= 3.8: as principais ferramentas estão escritas nesta linguagem;
+* `python` >= 3.10: as principais ferramentas estão escritas nesta linguagem;
 * `pdflatex`: para geração de PDFs a partir de arquivos .tex;
 * `pdfjam`: para fazer a união de arquivos PDFs,  geralmente disponível junto com o ambiente LaTeX;
 * `make`, para compilação dos fontes e instalação dos executáveis a partir dos makefiles gerados;
@@ -57,3 +57,4 @@ ds-contest-tools build problem_dir
 Onde `problem_dir` é o diretório onde o problema será inicializado e compilado. Use o comando `ds-contest-tools --help` para obter mais informações sobre os comandos disponíveis.
 
 Para o primeiro uso ao converter problemas do Polygon, será necessário definir as chaves da API do Polygon. Tais chaves são armazenadas localmente no diretório raiz da ferramenta em um arquivo JSON.
+

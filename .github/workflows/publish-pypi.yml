@@ -3,7 +3,7 @@ name: Publish to PyPI
 on:
   push:
     tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]*.[0-9]*.[0-9]*"
   workflow_dispatch:
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: "3.8"
+        python-version: "3.10"
 
     - name: Install build dependencies
       run: |
@@ -35,13 +35,6 @@ jobs:
 
     - name: Check package with twine
       run: twine check dist/*
-
-    - name: Publish package to TestPyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        repository-url: https://test.pypi.org/legacy/
-        # Ignora falhas no TestPyPI caso a versão já exista de testes anteriores
-        skip-existing: true
-        
+      
     - name: Publish package to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1

@@ -8,6 +8,8 @@ nav:
     - 'Comandos': 'commands.md'
   - Sobre:
     - 'Contribuindo': 'contributing.md'
+    - 'Diretrizes de Pull Requests': 'pull-requests.md'
+    - 'Processo de Lançamento': 'release-process.md'
     - 'Notas de versão': 'release-notes.md'
     - 'Licença': 'license.md'
     - 'Créditos': 'credits.md'

@@ -7,7 +7,7 @@ from ..polygon_converter import get_polygon_problem
 from ..polygon_submitter import send_to_polygon
 from ..sqtpm import convert_to_sqtpm
 from .common import *
-
+from ..moj import convert_to_moj
 
 def verify_polygon_keys() -> None:
     """Check if the Polygon API keys file has been created and is accessible.
@@ -68,7 +68,12 @@ def process_convert_to(problem_format: str, problem_dir: str, output_dir: Union[
         setup_and_validate_paths(problem_dir, output_dir)
         verify_problem_type(problem_format)
         convert_to_sqtpm()
-
+    elif problem_format == 'moj':
+        if not output_dir:
+            output_dir = os.path.join(problem_dir,'moj') 
+        setup_and_validate_paths(problem_dir,output_dir)
+        verify_problem_type(problem_format)
+        convert_to_moj(os.path.abspath(problem_dir),os.path.abspath(output_dir))
     info_log('Problem converted successfully.')
 
 
@@ -104,7 +109,7 @@ def add_parser(subparsers) -> None:
     to_parser = subparsers.add_parser(
         'convert_to', help='convert problem to some format')
     to_parser.add_argument('format', choices=[
-                           'boca', 'polygon', 'sqtpm'],
+                           'boca', 'polygon', 'sqtpm','moj'],
                            help='format to convert the problem')
     to_parser.add_argument(
         'problem_dir', help='path to the problem directory')
