@@ -52,6 +52,16 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   - Descrição da correção de vulnerabilidade.
 -->
 
+## [1.1.0] - 31/08/2026
+
+### Adicionado
+
+- Adicionado `tag` no comando de linha para exibição da versão da aplicação.
+- Alterado o comando base de `dscontest` para `dsct`.
+- Correção da documentação
+- Ajuste na esteira de CI/CD para publicação do pacote no PyPI.
+- Documentação do processo de lançamento de novas versões do pacote.
+
 ## [1.0.0] - 30/08/2026
 
 ### Adicionado

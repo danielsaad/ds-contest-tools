@@ -6,6 +6,10 @@ on:
       - "v[0-9]*.[0-9]*.[0-9]*"
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build-and-publish:
     name: Build and Publish Release
@@ -16,6 +20,14 @@ jobs:
       id-token: write
 
     steps:
+    - name: Validate release tag ref
+      run: |
+        if [[ ! "$GITHUB_REF" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "::error::Publicação permitida apenas para tags no formato vX.Y.Z (ex: v1.2.0). Ref atual: '$GITHUB_REF'"
+          exit 1
+        fi
+        echo "📦 Publicando release para a ref: $GITHUB_REF"
+
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0

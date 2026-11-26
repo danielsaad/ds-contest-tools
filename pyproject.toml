@@ -25,11 +25,11 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Operating System :: Unix",
 ]
-dependencies = ["requests", "psutil"]
+dependencies = ["requests==2.32.4", "psutil"]
 
 
 [project.scripts]
-dscontest = "ds_contest_tools:main"
+dsct = "ds_contest_tools:main"
 
 [project.urls]
 repository = "https://github.com/danielsaad/ds-contest-tools/"

@@ -45,16 +45,16 @@ Para outros modos de instalação, consulte a [documentação](https://danielsaa
 
 ## Utilização
 
-Para rodar a ferramenta, utilize o comando `ds-contest-tools`.
+Para rodar a ferramenta, utilize o comando `dsct`.
 
 A ferramenta é utilizada da seguinte forma:
 
 ```bash
-ds-contest-tools init problem_dir
-ds-contest-tools build problem_dir
+dsct init problem_dir
+dsct build problem_dir
 ```
 
-Onde `problem_dir` é o diretório onde o problema será inicializado e compilado. Use o comando `ds-contest-tools --help` para obter mais informações sobre os comandos disponíveis.
+Onde `problem_dir` é o diretório onde o problema será inicializado e compilado. Use o comando `dsct --help` para obter mais informações sobre os comandos disponíveis.
 
 Para o primeiro uso ao converter problemas do Polygon, será necessário definir as chaves da API do Polygon. Tais chaves são armazenadas localmente no diretório raiz da ferramenta em um arquivo JSON.
 
