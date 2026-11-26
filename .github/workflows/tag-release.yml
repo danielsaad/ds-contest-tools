@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   create-tag:
@@ -26,46 +27,52 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
+        ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.merge_commit_sha || 'master' }}
         fetch-depth: 0
 
     - name: Extrair versão
       id: extract-version
+      env:
+        EVENT_NAME: ${{ github.event_name }}
+        RAW_VERSION: ${{ inputs.version }}
+        PR_TITLE: ${{ github.event.pull_request.title }}
       run: |
-        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          RAW_VERSION="${{ inputs.version }}"
-          VERSION=$(echo "$RAW_VERSION" | grep -oP '^(?:v)?\K\d+\.\d+\.\d+$' || true)
+        if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+          TRIMMED_VERSION=$(printf '%s' "$RAW_VERSION" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+          VERSION=$(printf '%s' "$TRIMMED_VERSION" | grep -oP '^(?:v)?\K\d+\.\d+\.\d+$' || true)
           
           if [ -z "$VERSION" ]; then
             echo "::error::Versão informada manualmente inválida: '$RAW_VERSION'. Esperado: X.Y.Z ou vX.Y.Z"
             exit 1
           fi
           
-          echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "TAG=v$VERSION" >> $GITHUB_OUTPUT
+          echo "IS_RELEASE=true" >> "$GITHUB_OUTPUT"
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "TAG=v$VERSION" >> "$GITHUB_OUTPUT"
           echo "🚀 Release manual: $VERSION | Tag: v$VERSION"
         else
-          PR_TITLE="${{ github.event.pull_request.title }}"
+          TRIMMED_TITLE=$(printf '%s' "$PR_TITLE" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
           
           # Extrai versão de formatos como: "1.2.0", "v1.2.0", "Release v1.2.0", "Release 1.2.0", "release: 1.2.0", "chore(release): 1.2.0"
-          VERSION=$(echo "$PR_TITLE" | grep -oP '^(?:[Rr]elease(?:\s+v?|\:\s*v?)|\bchore\([Rr]elease\)\:\s*v?|v)?\K\d+\.\d+\.\d+$' || true)
+          VERSION=$(printf '%s' "$TRIMMED_TITLE" | grep -oP '^(?:[Rr]elease(?:\s+v?|\:\s*v?)|\bchore\([Rr]elease\)\:\s*v?|v)?\K\d+\.\d+\.\d+$' || true)
           
           if [ -n "$VERSION" ]; then
-            echo "IS_RELEASE=true" >> $GITHUB_OUTPUT
-            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-            echo "TAG=v$VERSION" >> $GITHUB_OUTPUT
+            echo "IS_RELEASE=true" >> "$GITHUB_OUTPUT"
+            echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+            echo "TAG=v$VERSION" >> "$GITHUB_OUTPUT"
             echo "📦 Versão extraída do PR: $VERSION | Tag: v$VERSION"
           else
-            echo "IS_RELEASE=false" >> $GITHUB_OUTPUT
+            echo "IS_RELEASE=false" >> "$GITHUB_OUTPUT"
             echo "ℹ️ PR mergeado não é um PR de release ('$PR_TITLE'). Nenhuma tag será criada."
           fi
         fi
 
     - name: Verificar se a tag já existe
       if: steps.extract-version.outputs.IS_RELEASE == 'true'
+      env:
+        TAG: ${{ steps.extract-version.outputs.TAG }}
       run: |
-        TAG="${{ steps.extract-version.outputs.TAG }}"
-        if git rev-parse "$TAG" >/dev/null 2>&1; then
+        if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null 2>&1; then
           echo "::error::A tag $TAG já existe no repositório. Abortando."
           exit 1
         fi
@@ -73,10 +80,43 @@ jobs:
 
     - name: Criar e enviar a tag
       if: steps.extract-version.outputs.IS_RELEASE == 'true'
+      env:
+        TAG: ${{ steps.extract-version.outputs.TAG }}
       run: |
-        TAG="${{ steps.extract-version.outputs.TAG }}"
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git tag -a "$TAG" -m "Release $TAG"
-        git push origin "$TAG"
+        git push origin "refs/tags/$TAG"
         echo "✅ Tag $TAG criada e enviada com sucesso!"
+
+    # O push com GITHUB_TOKEN não dispara workflows `on: push: tags`, e o Trusted Publishing
+    # do PyPI não suporta `workflow_call`. Por isso disparamos `publish-pypi.yml` explicitamente
+    # via `workflow_dispatch` (uma das exceções permitidas para GITHUB_TOKEN) apontando para a tag.
+    - name: Disparar publicação no PyPI
+      if: steps.extract-version.outputs.IS_RELEASE == 'true'
+      uses: actions/github-script@v7
+      env:
+        TAG: ${{ steps.extract-version.outputs.TAG }}
+      with:
+        script: |
+          const tag = process.env.TAG;
+          const maxAttempts = 3;
+
+          for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+              await github.rest.actions.createWorkflowDispatch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: 'publish-pypi.yml',
+                ref: `refs/tags/${tag}`,
+              });
+              core.info(`🚀 Workflow publish-pypi.yml disparado para refs/tags/${tag}.`);
+              return;
+            } catch (error) {
+              if (attempt === maxAttempts || error.status !== 422) {
+                throw error;
+              }
+              core.warning(`Tentativa ${attempt} retornou 422; aguardando propagação da tag...`);
+              await new Promise((resolve) => setTimeout(resolve, 3000));
+            }
+          }

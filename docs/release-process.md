@@ -92,14 +92,64 @@ Após a aprovação oficial, faça o **Merge** do Pull Request na branch `master
 
 Assim que o merge for concluído, duas esteiras são disparadas em sequência:
 
-1. **Criação da Tag:** A esteira `tag-release` detecta que um PR com título `Release vX.Y.Z` foi mergeado e cria automaticamente a tag `v1.2.0` no repositório.
+1. **Criação da Tag:** A esteira `tag-release` detecta que um PR com título `Release vX.Y.Z` foi mergeado, cria automaticamente a tag `v1.2.0` no repositório e aciona o workflow de publicação.
 
-2. **Build e Deploy:** A criação da tag dispara a esteira `publish-pypi`, que:
+2. **Build e Deploy:** A esteira `publish-pypi` é executada sobre a tag criada e:
    - Gera os artefatos (`.whl` e `.tar.gz`) usando o `setuptools_scm` com a versão da tag.
    - Valida os artefatos com `twine check`.
-   - Publica automaticamente no **TestPyPI** e no **PyPI** oficial (via Trusted Publishing OIDC).
+   - Publica automaticamente no **PyPI** oficial (via Trusted Publishing OIDC).
 
 Pronto! Em alguns minutos a nova versão estará disponível para todo o mundo via `pip install ds-contest-tools`.
+
+---
+
+## Contingência e Execução Manual
+
+Se alguma etapa da esteira automática falhar após o merge na `master`, utilize o procedimento correspondente ao ponto de falha:
+
+### 1. A tag já foi criada, mas o `publish-pypi` falhou
+
+Se o erro foi pontual (ex.: instabilidade temporária do PyPI ou ajuste posterior nas permissões de *Trusted Publishing*), é possível reexecutar apenas a publicação mantendo o uso de OIDC:
+
+* **Pela interface do GitHub (UI):**
+  1. Acesse a aba **Actions** no GitHub e abra o workflow **Publish to PyPI** (`publish-pypi.yml`).
+  2. Clique em **Run workflow**.
+  3. No seletor **Use workflow from**, troque de `master` para a aba **Tags** e selecione a tag desejada (ex.: `v1.2.0`).
+  4. Clique em **Run workflow**.
+
+  > [!NOTE]
+  > O workflow valida se a referência selecionada é uma tag no formato `vX.Y.Z`. Executar a partir da branch `master` é bloqueado propositalmente para evitar publicação acidental de versões `.dev`.
+
+* **Pelo GitHub CLI (`gh`):**
+  ```bash
+  gh workflow run publish-pypi.yml --ref refs/tags/v1.2.0
+  ```
+
+*(Se o erro tiver sido transitório em uma execução já existente, também é possível clicar em **Re-run failed jobs** diretamente na página da execução que falhou.)*
+
+### 2. A tag ainda não foi criada após o merge
+
+Acesse **Actions** $\rightarrow$ **Create Release Tag** (`tag-release.yml`) $\rightarrow$ **Run workflow**, informe a versão no campo `version` (ex.: `1.2.0` ou `v1.2.0`) na branch `master` e execute. O workflow criará a tag e disparará o `publish-pypi.yml` automaticamente.
+
+### 3. Publicação local via `twine` (indisponibilidade do GitHub Actions)
+
+Como último recurso, um mantenedor com API Token no PyPI pode gerar e enviar o pacote localmente a partir da tag exata e com o diretório de trabalho limpo (para que o `setuptools_scm` gere a versão `X.Y.Z` sem sufixo `.dev` ou `.dirty`):
+
+```bash
+git fetch --tags
+git checkout v1.2.0
+git status
+
+rm -rf dist/ build/
+python -m build
+twine check dist/*
+twine upload dist/*
+```
+
+> [!CAUTION]
+> **Quando a falha exigir correção no código ou nos workflows:**
+> * **Versão ainda NÃO publicada no PyPI:** após corrigir o problema na `master`, remova a tag antiga (`git push origin :refs/tags/vX.Y.Z`) antes de recriá-la via **Create Release Tag**, ou avance para uma nova versão patch (`vX.Y.Z+1`).
+> * **Versão JÁ publicada no PyPI:** o PyPI não permite sobrescrever artefatos existentes; corrija o problema e publique uma nova versão patch (`vX.Y.Z+1`).
 
 ---
 
@@ -108,4 +158,4 @@ Pronto! Em alguns minutos a nova versão estará disponível para todo o mundo v
 * O formato da versão no CHANGELOG deve ser estritamente `[X.Y.Z]`.
 * O título do Pull Request de release deve seguir um dos padrões aceitos (ex: `Release vX.Y.Z`).
 * As aprovações de Pull Request na `master` são restritas aos responsáveis configurados no `CODEOWNERS`.
-* **Não crie tags manualmente.** A esteira `tag-release` é responsável por isso após o merge.
+* **Não crie tags manualmente no fluxo normal.** A esteira `tag-release` é responsável por isso após o merge (utilize a seção de contingência apenas em caso de falha na automação).
