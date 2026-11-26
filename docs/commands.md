@@ -6,7 +6,7 @@ Bem-vindo à página de comandos da ferramenta! Aqui você encontrará informaç
 
 O comando `init` é utilizado para inicializar um problema com os arquivos e diretórios necessários para começar a construção do problema.
 
-Uso: `ds-contest-tools init <problem_dir>`
+Uso: `dsct init <problem_dir>`
 
 Opções de inicialização:
 
@@ -17,7 +17,7 @@ Opções de inicialização:
 
 O comando `build` é utilizado para construir os problemas, ou seja, gerar e validar os casos de teste e verificar as soluções com o *checker*. Por padrão, constrói um problema utilizando apenas a solução principal.
 
-Uso: `ds-contest-tools build <problem_dir>`
+Uso: `dsct build <problem_dir>`
 
 Opções de construção:
 
@@ -36,7 +36,7 @@ Opções de construção:
 
 O comando `contest` é utilizado para gerar um diretório com *n* problemas a serem utilizados em uma maratona. 
 
-Uso: `ds-contest-tools contest <problem_dir [problem_dir...]> <contest_dir>`
+Uso: `dsct contest <problem_dir [problem_dir...]> <contest_dir>`
 
 Opções:
 
@@ -56,7 +56,7 @@ Converte o problema para um dos seguintes formatos:
     - Caso haja casos de teste com índices idênticos, esses serão substituídos pelo novo conjunto de casos de teste.
     - Se houver uma requisição de *script* do gerador, o antigo será substituído pelo novo.
 
-Uso: `ds-contest-tools convert_to <format> <problem_dir>`
+Uso: `dsct convert_to <format> <problem_dir>`
 
 Opções:
 
@@ -69,7 +69,7 @@ Converte para o formato da ferramenta o problema com um dos seguintes formatos:
 
 - **Polygon**: Baixa o pacote mais recente e pronto do Linux na pasta do problema e o utiliza para a conversão. Requisições adicionais à API do Polygon são feitas para encontrar o nome dos arquivos fonte e o tipo do problema.
 
-Uso: `ds-contest-tools convert_from <format> <problem_dir> <package_dir>`
+Uso: `dsct convert_from <format> <problem_dir> <package_dir>`
 
 Opções:
 
@@ -79,10 +79,10 @@ Opções:
 
 o comando `set_keys` é responsável por definir as chaves da API do Polygon que serão utilizadas para a conversão dos problemas. Essas chaves são necessárias para acessar e interagir com o Polygon, e são armazenadas localmente no repositório da ferramenta.
 
-Uso: `ds-contest-tools set_keys`
+Uso: `dsct set_keys`
 
 ## clean
 
 Remove executáveis ​​criados após a construção do problema.
 
-Uso: `ds-contest-tools clean <problem_dir>`
+Uso: `dsct clean <problem_dir>`
